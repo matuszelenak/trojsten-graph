@@ -1,18 +1,39 @@
+from django import forms
 from django.contrib import admin
-from django.contrib.admin import TabularInline
 
-from people.models import Person, Group, Relationship, RelationshipStatus
+from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote
 
 
-class NoteInline(TabularInline):
-    model = Person.notes.through
+class BaseNoteInlineForm(forms.ModelForm):
+    class Meta:
+        widgets = {
+            'text': forms.Textarea(attrs={'rows': 1})
+        }
+
+    def save(self, commit=True):
+        self.instance.created_by = self.user
+        return super().save(commit)
+
+
+class BaseNoteInline(admin.TabularInline):
+    form = BaseNoteInlineForm
+    readonly_fields = ('date_created', 'created_by')
     extra = 0
+
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        formset.form.user = request.user
+        return formset
+
+
+class PersonNoteInline(BaseNoteInline):
+    model = PersonNote
 
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'nickname', 'birth_date')
-    inlines = (NoteInline,)
+    inlines = (PersonNoteInline, )
     exclude = ('notes',)
 
 
@@ -34,6 +55,10 @@ class RelationshipAdmin(admin.ModelAdmin):
     inlines = (RelationshipStatusInline, )
 
 
+class RelationshipStatusNoteInline(BaseNoteInline):
+    model = RelationshipStatusNote
+
+
 @admin.register(RelationshipStatus)
 class RelationshipStatusAdmin(admin.ModelAdmin):
-    pass
+    inlines = (RelationshipStatusNoteInline, )

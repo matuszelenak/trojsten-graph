@@ -6,7 +6,7 @@ from datetime import datetime
 from django.core.management import BaseCommand
 from django.db import transaction
 
-from people.models import Person, Note, Group, GroupMembership, Relationship, RelationshipStatus
+from people.models import Person, Group, GroupMembership, Relationship, RelationshipStatus, PersonNote, GroupMembershipNote, RelationshipStatusNote
 
 
 def str_to_date(s):
@@ -27,7 +27,7 @@ def event_type_to_new_status(event_type):
         'SIB': RelationshipStatus.STATUS_SIBLING,
         'DAT': RelationshipStatus.STATUS_DATING,
         'DRB': RelationshipStatus.STATUS_RUMOUR,
-        'NDR': RelationshipStatus.STATUS_OLD_RUMOUR,
+        'NDR': None,
         'BRE': None,
         'ENG': RelationshipStatus.STATUS_ENGAGED,
         'MAR': RelationshipStatus.STATUS_MARRIED,
@@ -53,7 +53,9 @@ def get_by_old_pk(instances, pk):
 
 def import_people(people):
     Person.objects.all().delete()
+    PersonNote.objects.all().delete()
     imported_people = []
+    imported_notes = []
     for person in people:
         f = person['fields']
         p = Person.objects.create(
@@ -67,16 +69,25 @@ def import_people(people):
             visible=f['visible']
         )
         setattr(p, 'old_pk', person['pk'])
+        imported_people.append(p)
+
         if f['comment']:
-            p.notes.create(
-                text=f['comment'],
+            imported_notes.append(
+                PersonNote(
+                    type=PersonNote.TYPE_PUBLIC,
+                    person=p,
+                    text=f['comment']
+                )
             )
         if f['dataComment']:
-            p.notes.create(
-                text=f['dataComment'],
-                date_created=f['lastModified']
+            imported_notes.append(
+                PersonNote(
+                    type=PersonNote.TYPE_PRIVATE,
+                    person=p,
+                    text=f['dataComment'],
+                )
             )
-        imported_people.append(p)
+    PersonNote.objects.bulk_create(imported_notes)
 
     return imported_people
 
@@ -87,7 +98,7 @@ def import_groups(groups):
     parent_links = []
     for group in groups:
         f = group['fields']
-        g = Group.objects.create(
+        g = Group(
             name=f['name'],
             category=category_to_enum(f['category']),
             visible=f['visible'],
@@ -101,13 +112,17 @@ def import_groups(groups):
     for group_a, group_b in itertools.product(imported_groups, repeat=2):
         if (group_a.old_pk, group_b.old_pk) in parent_links:
             group_b.parent = group_a
-            group_b.save()
 
+    Group.objects.bulk_create(imported_groups)
     return imported_groups
 
 
 def import_memberships(memberships, new_people, new_groups):
     GroupMembership.objects.all().delete()
+    GroupMembershipNote.objects.all().delete()
+
+    imported_memberships = []
+    imported_notes = []
     for membership in memberships:
         f = membership['fields']
         person = get_by_old_pk(new_people, f['person'])
@@ -120,19 +135,28 @@ def import_memberships(memberships, new_people, new_groups):
         )
 
         if f['comment']:
-            m.notes.create(
-                text=f['comment'],
+            imported_notes.append(
+                GroupMembershipNote(
+                    type=GroupMembershipNote.TYPE_PUBLIC,
+                    membership=m,
+                    text=f['comment']
+                )
             )
         if f['dataComment']:
-            m.notes.create(
-                text=f['dataComment'],
-                date_created=f['lastModified']
+            imported_notes.append(
+                GroupMembershipNote(
+                    type=GroupMembershipNote.TYPE_PRIVATE,
+                    membership=m,
+                    text=f['dataComment'],
+                )
             )
+    GroupMembershipNote.objects.bulk_create(imported_notes)
 
 
 def import_relationships(events, people):
     Relationship.objects.all().delete()
     RelationshipStatus.objects.all().delete()
+    RelationshipStatusNote.objects.all().delete()
 
     events_per_pair = defaultdict(list)
     for event in events:
@@ -143,10 +167,10 @@ def import_relationships(events, people):
             'comment': f['comment'],
             'data_comment': f['dataComment'],
             'visible': f['visible'],
-            'modified': f['lastModified'],
             'type': f['type']
         })
 
+    imported_notes = []
     for pair, events in events_per_pair.items():
         first_pk, second_pk = tuple(map(int, pair.split(';')))
         first, second = get_by_old_pk(people, first_pk), get_by_old_pk(people, second_pk)
@@ -177,15 +201,22 @@ def import_relationships(events, people):
             status=event_type_to_new_status(first_event['type'])
         )
         if first_event['comment']:
-            previous_status.notes.create(text=first_event['comment'])
+            RelationshipStatusNote.objects.create(
+                status=previous_status,
+                text=first_event['comment'],
+                type=RelationshipStatusNote.TYPE_PUBLIC,
+                reason=RelationshipStatusNote.REASON_STATUS_START
+            )
         if first_event['data_comment']:
-            previous_status.notes.create(text=first_event['data_comment'], date_created=first_event['modified'])
+            RelationshipStatusNote.objects.create(
+                status=previous_status,
+                text=first_event['data_comment'],
+                type=RelationshipStatusNote.TYPE_PRIVATE,
+                reason=RelationshipStatusNote.REASON_STATUS_START
+            )
 
         for next_event in sorted_events[1:]:
             new_status_type = event_type_to_new_status(next_event['type'])
-            if previous_status:
-                previous_status.date_end = next_event['date']
-                previous_status.save(update_fields=['date_end'])
 
             if new_status_type:
                 new_status = RelationshipStatus.objects.create(
@@ -193,19 +224,40 @@ def import_relationships(events, people):
                     date_start=next_event['date'],
                     status=new_status_type
                 )
-                if next_event['comment']:
-                    new_status.notes.create(text=next_event['comment'])
-                if next_event['data_comment']:
-                    new_status.notes.create(text=next_event['data_comment'], date_created=next_event['modified'])
-                previous_status = new_status
+                note_kwargs = dict(
+                    reason=RelationshipStatusNote.REASON_STATUS_START,
+                    status=new_status
+                )
             else:
-                previous_status = None
+                assert previous_status.status in (RelationshipStatus.STATUS_DATING, RelationshipStatus.STATUS_RUMOUR, RelationshipStatus.STATUS_ENGAGED, RelationshipStatus.STATUS_MARRIED)
+                previous_status.date_end = next_event['date']
+                previous_status.save()
+                new_status = None
+                note_kwargs = dict(
+                    reason=RelationshipStatusNote.REASON_STATUS_END,
+                    status=previous_status
+                )
+
+            if next_event['comment']:
+                RelationshipStatusNote.objects.create(
+                    text=next_event['comment'],
+                    type=RelationshipStatusNote.TYPE_PUBLIC,
+                    **note_kwargs
+                )
+            if next_event['data_comment']:
+                RelationshipStatusNote.objects.create(
+                    text=next_event['data_comment'],
+                    type=RelationshipStatusNote.TYPE_PRIVATE,
+                    **note_kwargs
+                )
+
+            previous_status = new_status
+
 
 
 class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **kwargs):
-        Note.objects.all().delete()
         j = json.load(open('dump.json'))
 
         people = import_people([x for x in j if x['model'] == 'graph.person'])
