@@ -7,10 +7,16 @@ class Note(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('auth.User', null=True, on_delete=models.SET_NULL, related_name='notes')
 
+    def __str__(self):
+        return f'#{self.id}: {self.text} at {self.date_created.date()}'
+
 
 class Relationship(models.Model):
     first_person = models.ForeignKey('people.Person', related_name='+', on_delete=models.CASCADE)
     second_person = models.ForeignKey('people.Person', related_name='+', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.first_person} <-> {self.second_person}'
 
 
 class RelationshipStatus(models.Model):
@@ -40,7 +46,10 @@ class RelationshipStatus(models.Model):
     date_start = models.DateField(null=True, blank=True)
     date_end = models.DateField(null=True, blank=True)
 
-    notes = models.ManyToManyField('people.Note')
+    notes = models.ManyToManyField('people.Note', related_name='relationship_notes')
+
+    def __str__(self):
+        return f'{self.relationship} {self.get_status_display()}'
 
 
 class Person(models.Model):
@@ -65,7 +74,11 @@ class Person(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     death_date = models.DateField(null=True, blank=True)
 
-    notes = models.ManyToManyField('people.Note')
+    visible = models.BooleanField(default=True)
+    notes = models.ManyToManyField('people.Note', related_name='person_notes')
+
+    def __str__(self):
+        return f'{self.nickname or (self.first_name + self.last_name)}'
 
 
 class Group(models.Model):
@@ -90,6 +103,9 @@ class Group(models.Model):
 
     visible = models.BooleanField(default=True)
 
+    def __str__(self):
+        return f'{self.name}'
+
 
 class GroupMembership(models.Model):
     person = models.ForeignKey('people.Person', related_name='memberships', on_delete=models.CASCADE)
@@ -98,4 +114,4 @@ class GroupMembership(models.Model):
     date_started = models.DateField(null=True, blank=True)
     date_ended = models.DateField(null=True, blank=True)
 
-    notes = models.ManyToManyField('people.Note')
+    notes = models.ManyToManyField('people.Note', related_name='group_notes')
