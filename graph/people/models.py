@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Prefetch, Subquery, OuterRef, Q, F, Value
+from django.db.models import Prefetch, Subquery, OuterRef, Q, F, Value, Func
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -90,7 +90,7 @@ class RelationshipStatusQuerySet(models.QuerySet):
 
     def for_graph_display(self):
         return self.annotate(
-            days_together=Coalesce(F('date_end'), Value(timezone.localdate())) - F('date_start'),
+            days_together=Coalesce(F('date_end'), timezone.localdate()) - F('date_start'),
         )
 
 
@@ -150,9 +150,14 @@ class PersonQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'memberships',
-                queryset=GroupMembership.objects.select_related('group').filter(group__category=Group.CATEGORY_SEMINAR),
+                queryset=GroupMembership.objects.select_related('group').with_duration().filter(group__category=Group.CATEGORY_SEMINAR),
                 to_attr='seminar_memberships'
             )
+        )
+
+    def with_age(self):
+        return self.annotate(
+            age=Coalesce(F('death_date'), timezone.localdate()) - F('birth_date')
         )
 
 
@@ -220,12 +225,21 @@ class GroupMembershipNote(BaseNote):
     membership = models.ForeignKey('people.GroupMembership', related_name='notes', on_delete=models.CASCADE)
 
 
+class GroupMembershipQuerySet(models.QuerySet):
+    def with_duration(self):
+        return self.annotate(
+            duration=Coalesce(F('date_ended'), timezone.localdate()) - F('date_started'),
+        )
+
+
 class GroupMembership(models.Model):
     person = models.ForeignKey('people.Person', related_name='memberships', on_delete=models.CASCADE)
     group = models.ForeignKey('people.Group', related_name='memberships', on_delete=models.CASCADE)
 
     date_started = models.DateField(null=True, blank=True)
     date_ended = models.DateField(null=True, blank=True)
+
+    objects = GroupMembershipQuerySet.as_manager()
 
     class Meta:
         unique_together = ('person', 'group')

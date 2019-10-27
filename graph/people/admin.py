@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 
-from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote
+from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, GroupMembership
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -30,10 +30,15 @@ class PersonNoteInline(BaseNoteInline):
     model = PersonNote
 
 
+class GroupMembershipInline(admin.TabularInline):
+    extra = 0
+    model = GroupMembership
+
+
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'nickname', 'birth_date')
-    inlines = (PersonNoteInline, )
+    inlines = (PersonNoteInline, GroupMembershipInline)
     exclude = ('notes',)
 
 

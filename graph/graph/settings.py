@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'graph.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'graph',
         'USER': 'graph',
         'HOST': os.environ.get('PGHOST', 'localhost'),
