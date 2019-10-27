@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Prefetch, Subquery, OuterRef, Q
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -22,9 +24,42 @@ class BaseNote(models.Model):
         abstract = True
 
 
+class RelationshipQuerySet(models.QuerySet):
+    def with_people(self):
+        return self.select_related('first_person', 'second_person')
+
+    def with_statuses(self):
+        return self.select_related('statuses')
+
+    def for_people(self, people_pks):
+        return self.filter(
+            Q(first_person__in=people_pks) | Q(second_person__in=people_pks)
+        )
+
+    def with_status_for_date(self, date=timezone.localdate()):
+        return self.prefetch_related(
+            Prefetch(
+                'statuses',
+                queryset=RelationshipStatus.objects.for_date(date).order_by('relationship', '-date_start').distinct('relationship'),
+                to_attr='current_status'
+            )
+        )
+
+    def with_latest_status(self):
+        return self.prefetch_related(
+            Prefetch(
+                'statuses',
+                queryset=RelationshipStatus.objects.order_by('relationship', '-date_start').distinct('relationship'),
+                to_attr='latest_status'
+            )
+        )
+
+
 class Relationship(models.Model):
-    first_person = models.ForeignKey('people.Person', related_name='+', on_delete=models.CASCADE)
-    second_person = models.ForeignKey('people.Person', related_name='+', on_delete=models.CASCADE)
+    first_person = models.ForeignKey('people.Person', related_name='relationships_as_first', on_delete=models.CASCADE)
+    second_person = models.ForeignKey('people.Person', related_name='relationships_as_second', on_delete=models.CASCADE)
+
+    objects = RelationshipQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.first_person} <-> {self.second_person}'
@@ -42,6 +77,15 @@ class RelationshipStatusNote(BaseNote):
 
     reason = models.IntegerField(choices=REASONS)
     status = models.ForeignKey('people.RelationshipStatus', related_name='notes', on_delete=models.CASCADE)
+
+
+class RelationshipStatusQuerySet(models.QuerySet):
+    def for_date(self, date):
+        return self.filter(
+            date_start__lte=date
+        ).exclude(
+            date_end__lt=date
+        )
 
 
 class RelationshipStatus(models.Model):
@@ -69,8 +113,10 @@ class RelationshipStatus(models.Model):
     date_start = models.DateField(null=True, blank=True)
     date_end = models.DateField(null=True, blank=True)
 
+    objects = RelationshipStatusQuerySet.as_manager()
+
     def __str__(self):
-        return f'{self.relationship} {self.get_status_display()}'
+        return f'{self.relationship} {self.get_status_display()} from {self.date_start} to {self.date_end}'
 
     class Meta:
         verbose_name_plural = "relationship statuses"
@@ -79,6 +125,20 @@ class RelationshipStatus(models.Model):
 
 class PersonNote(BaseNote):
     person = models.ForeignKey('people.Person', related_name='notes', on_delete=models.CASCADE)
+
+
+class PersonQuerySet(models.QuerySet):
+    def with_current_relationships(self):
+        qs = self.prefetch_related(Prefetch(
+            'relationships_as_first',
+            queryset=Relationship.objects.with_status_for_date(),
+            to_attr='current_relationships_1'
+        )).prefetch_related(Prefetch(
+            'relationships_as_second',
+            queryset=Relationship.objects.with_status_for_date(),
+            to_attr='current_relationships_2'
+        ))
+        return qs
 
 
 class Person(models.Model):
@@ -104,6 +164,8 @@ class Person(models.Model):
     death_date = models.DateField(null=True, blank=True)
 
     visible = models.BooleanField(default=True)
+
+    objects = PersonQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.nickname or (self.first_name + self.last_name)}'
