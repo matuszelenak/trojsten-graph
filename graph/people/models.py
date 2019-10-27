@@ -1,5 +1,6 @@
 from django.db import models
-from django.db.models import Prefetch, Subquery, OuterRef, Q
+from django.db.models import Prefetch, Subquery, OuterRef, Q, F, Value
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -49,7 +50,7 @@ class RelationshipQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'statuses',
-                queryset=RelationshipStatus.objects.order_by('relationship', '-date_start').distinct('relationship'),
+                queryset=RelationshipStatus.objects.for_graph_display().order_by('relationship', '-date_start').distinct('relationship'),
                 to_attr='latest_status'
             )
         )
@@ -85,6 +86,11 @@ class RelationshipStatusQuerySet(models.QuerySet):
             date_start__lte=date
         ).exclude(
             date_end__lt=date
+        )
+
+    def for_graph_display(self):
+        return self.annotate(
+            days_together=Coalesce(F('date_end'), Value(timezone.localdate())) - F('date_start'),
         )
 
 
@@ -139,6 +145,15 @@ class PersonQuerySet(models.QuerySet):
             to_attr='current_relationships_2'
         ))
         return qs
+
+    def with_seminar_memberships(self):
+        return self.prefetch_related(
+            Prefetch(
+                'memberships',
+                queryset=GroupMembership.objects.select_related('group').filter(group__category=Group.CATEGORY_SEMINAR),
+                to_attr='seminar_memberships'
+            )
+        )
 
 
 class Person(models.Model):
