@@ -25,7 +25,6 @@ class GraphDataPreprocessor {
     }
 
     preprocessNode(node) {
-        // Create pie chart showing the ratio of seminar membership durations
         const cumulative_duration = node
             .seminar_memberships
             .map((m) => m.duration)
@@ -43,28 +42,30 @@ class GraphDataPreprocessor {
             previous_angle_end = angle_end;
         });
 
-        if (node.nick === 'Paťo'){
-            console.log(node);
-        }
-
         node.display_props.label = node.nick;
-        node.display_props.radius = 5 + Math.ceil(Math.log(node.age + 1))
+        node.display_props.radius = 3 + Math.ceil(Math.sqrt(node.age * 2))
     }
 
     preprocessEdge(edge) {
         edge.display_props.dashing = edge.status.is_active ? [] : [2, 2];
-        edge.display_props.width = edge.status.is_active ? Math.ceil(Math.log(Math.sqrt(edge.status.days_together / 30))) : 1;
+        edge.display_props.width = edge.status.is_active ? Math.ceil(Math.log(Math.sqrt(edge.status.days_together / 10))) : 1;
     }
 }
 
 
 class GraphRenderer {
-    constructor(graph, context) {
+    constructor(graph, canvas, config) {
         this.graph = graph;
-        this.context = context;
+        this.canvas = canvas;
+        console.log(this.canvas);
+        this.context = this.canvas.getContext('2d');
+        console.log(this.context);
+
+        this.bg_img = new Image();
+        this.bg_img.src = config.bg_url;
     }
 
-    renderEdge(edge) {
+    renderEdge = (edge) => {
         this.context.beginPath();
         this.context.lineWidth = edge.display_props.width;
         this.context.strokeStyle = '#ccc';
@@ -72,9 +73,9 @@ class GraphRenderer {
         this.context.moveTo(edge.source.x, edge.source.y);
         this.context.lineTo(edge.target.x, edge.target.y);
         this.context.stroke();
-    }
+    };
 
-    renderNode(node) {
+    renderNode = (node) => {
         this.context.beginPath();
         this.context.lineWidth = 2;
         this.context.arc(node.x, node.y, node.display_props.radius, 0, 2 * Math.PI, true);
@@ -94,12 +95,23 @@ class GraphRenderer {
         this.context.fillStyle = "#FFF";
         this.context.fillText(
             node.display_props.label,
-            node.x - context.measureText(node.display_props.label).width / 2,
+            node.x - this.context.measureText(node.display_props.label).width / 2,
             node.y - node.display_props.radius - 2
         );
-    }
+    };
 
-    renderGraph() {
+    renderGraph = (transform) => {
+        this.context.save();
+        this.context.fillStyle = '#222';
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        for (let w = 0; w < this.canvas.width; w += this.bg_img.width) {
+            for (let h = 0; h < this.canvas.height; h  += this.bg_img.height) {
+                this.context.drawImage(this.bg_img, w, h);
+            }
+        }
+        this.context.translate(transform.x, transform.y);
+        this.context.scale(transform.k, transform.k);
+
         this.graph.edges.forEach((edge) => {
             this.renderEdge(edge);
         });
@@ -107,5 +119,97 @@ class GraphRenderer {
         this.graph.nodes.forEach((node) => {
             this.renderNode(node);
         });
+
+        this.context.restore();
+    }
+}
+
+
+class GraphSimulation {
+    constructor(canvas, link_function){
+        this.canvas = canvas;
+        this.simulation = d3.forceSimulation()
+            .force("center", d3.forceCenter(this.canvas.width / 2, this.canvas.height / 2))
+            .force("collide", d3.forceCollide())
+            .force("x", d3.forceX(this.canvas.width / 2).strength(0.05))
+            .force("y", d3.forceY(this.canvas.height / 2).strength(0.05))
+            .force("charge", d3.forceManyBody().strength(-150))
+            .force("link", d3.forceLink().strength(0.4).id(link_function))
+            .alphaTarget(0)
+            .alphaDecay(0.05);
+
+        d3.select(this.canvas)
+            .call(d3.drag().subject(this.dragsubject)
+                .on("start", this.dragstarted)
+                .on("drag", this.dragged)
+                .on("end", this.dragended))
+            .call(d3.zoom().scaleExtent([1 / 10, 8]).on("zoom", this.zoomed));
+
+        this.transform = d3.zoomIdentity;
+        this.update_callback = () => {};
+        this.graph = {nodes: [], edges: []};
+    }
+
+    loadData = (graph_data) => {
+        this.graph = graph_data;
+        this.simulation.nodes(graph_data.nodes).on("tick", () => {
+            this.update_callback(this.transform);
+        });
+        this.simulation.force("link").links(graph_data.edges);
+    };
+
+    zoomed = () => {
+        this.transform = d3.event.transform;
+        this.update_callback(this.transform);
+    };
+
+    nodeOnMousePosition = (mouse_x, mouse_y) => {
+        let i, dx, dy, x = this.transform.invertX(mouse_x), y = this.transform.invertY(mouse_y);
+        for (i = 0; i < this.graph.nodes.length; ++i){
+            const node = this.graph.nodes[i];
+            dx = x - node.x;
+            dy = y - node.y;
+            if (dx * dx + dy * dy < node.display_props.radius * node.display_props.radius){
+                return node
+            }
+        }
+    };
+
+    dragsubject = () => {
+        const node = this.nodeOnMousePosition(d3.event.x, d3.event.y);
+        if (node) {
+            node.x = this.transform.applyX(node.x);
+            node.y = this.transform.applyY(node.y);
+            return node
+        }
+    };
+
+    dragstarted = () => {
+        if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
+        d3.event.subject.fx = this.transform.invertX(d3.event.x);
+        d3.event.subject.fy = this.transform.invertY(d3.event.y);
+    };
+
+    dragged = () => {
+        d3.event.subject.fx = this.transform.invertX(d3.event.x);
+        d3.event.subject.fy = this.transform.invertY(d3.event.y);
+    };
+
+    dragended = () => {
+        if (!d3.event.active) this.simulation.alphaTarget(0);
+        d3.event.subject.fx = null;
+        d3.event.subject.fy = null;
+    }
+}
+
+
+class TrojstenGraph {
+    constructor(graph_data, canvas, config) {
+        this.preprocessor = new GraphDataPreprocessor(graph_data);
+        this.simulation = new GraphSimulation(canvas, (node) => node.id);
+        this.renderer = new GraphRenderer(graph_data, canvas, config);
+
+        this.simulation.update_callback = this.renderer.renderGraph;
+        this.simulation.loadData(this.preprocessor.graph);
     }
 }

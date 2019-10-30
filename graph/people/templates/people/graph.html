@@ -8,97 +8,14 @@
 <script src="{% static 'people/graph_utils.js' %}"></script>
 
 <body style="margin: 0; padding: 0">
-<div id="graphDiv" style="margin: 0; padding: 0"></div>
+<canvas id="graph-canvas"></canvas>
 <script>
-    const height = window.innerHeight;
-    const graphWidth = window.innerWidth;
-
-    const graphCanvas = d3.select('#graphDiv').append('canvas')
-        .attr('width', graphWidth + 'px')
-        .attr('height', height + 'px')
-        .node();
-
-    const context = graphCanvas.getContext('2d');
-
-    const simulation = d3.forceSimulation()
-        .force("center", d3.forceCenter(graphWidth / 2, height / 2))
-        .force("collide", d3.forceCollide())
-        .force("x", d3.forceX(graphWidth / 2).strength(0.05))
-        .force("y", d3.forceY(height / 2).strength(0.05))
-        .force("charge", d3.forceManyBody().strength(-150))
-        .force("link", d3.forceLink().strength(0.5).id((node) => node.id))
-        .alphaTarget(0)
-        .alphaDecay(0.05);
-
-    let transform = d3.zoomIdentity;
-
-    function initGraph(graph_data) {
-        const preprocessor = new GraphDataPreprocessor(graph_data);
-        const renderer = new GraphRenderer(graph_data, context);
-
-        d3.select(graphCanvas)
-            .call(d3.drag().subject(dragsubject)
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended))
-            .call(d3.zoom().scaleExtent([1 / 10, 8]).on("zoom", zoomed));
-
-        function zoomed() {
-            console.log("zooming");
-            transform = d3.event.transform;
-            simulationUpdate();
-        }
-
-        function dragsubject() {
-            let i, x = transform.invertX(d3.event.x), y = transform.invertY(d3.event.y), dx, dy;
-            for (i = graph_data.nodes.length - 1; i >= 0; --i) {
-                node = graph_data.nodes[i];
-                dx = x - node.x;
-                dy = y - node.y;
-
-                if (dx * dx + dy * dy < node.display_props.radius * node.display_props.radius) {
-                    node.x = transform.applyX(node.x);
-                    node.y = transform.applyY(node.y);
-                    return node;
-                }
-            }
-        }
-
-        function dragstarted() {
-            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-            d3.event.subject.fx = transform.invertX(d3.event.x);
-            d3.event.subject.fy = transform.invertY(d3.event.y);
-        }
-
-        function dragged() {
-            d3.event.subject.fx = transform.invertX(d3.event.x);
-            d3.event.subject.fy = transform.invertY(d3.event.y);
-
-        }
-
-        function dragended() {
-            if (!d3.event.active) simulation.alphaTarget(0);
-            d3.event.subject.fx = null;
-            d3.event.subject.fy = null;
-        }
-
-        simulation.nodes(graph_data.nodes).on("tick", simulationUpdate);
-        simulation.force("link").links(graph_data.edges);
-
-        function simulationUpdate() {
-            context.save();
-            context.fillStyle = '#111';
-            context.fillRect(0, 0, graphWidth, height);
-            context.translate(transform.x, transform.y);
-            context.scale(transform.k, transform.k);
-            renderer.renderGraph();
-            context.restore();
-        }
-    }
+    const canvas = document.getElementById('graph-canvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     d3.json("{% url 'graph_data' %}", function (error, data) {
-        initGraph(data);
-    })
-
+        const graph = new TrojstenGraph(data, canvas, {bg_url: '{% static "people/texture.png" %}'})
+    });
 </script>
 </body>
