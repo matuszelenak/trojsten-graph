@@ -18,7 +18,7 @@ class TokenAuth:
                 return view_func(request, *args, **kwargs)
 
             token = request.GET.get('token')
-            if token and VerificationToken.objects.filter(valid_until__lt=timezone.localtime(), token=token).exists():
+            if token and VerificationToken.objects.filter(valid_until__gt=timezone.localtime(), token=token).exists():
                 return view_func(request, *args, **kwargs)
 
             raise PermissionDenied
