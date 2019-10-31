@@ -57,9 +57,7 @@ class GraphRenderer {
     constructor(graph, canvas, config) {
         this.graph = graph;
         this.canvas = canvas;
-        console.log(this.canvas);
         this.context = this.canvas.getContext('2d');
-        console.log(this.context);
 
         this.bg_img = new Image();
         this.bg_img.src = config.bg_url;
@@ -158,11 +156,6 @@ class GraphSimulation {
         this.simulation.force("link").links(graph_data.edges);
     };
 
-    zoomed = () => {
-        this.transform = d3.event.transform;
-        this.update_callback(this.transform);
-    };
-
     nodeOnMousePosition = (mouse_x, mouse_y) => {
         let i, dx, dy, x = this.transform.invertX(mouse_x), y = this.transform.invertY(mouse_y);
         for (i = 0; i < this.graph.nodes.length; ++i){
@@ -173,6 +166,11 @@ class GraphSimulation {
                 return node
             }
         }
+    };
+
+    zoomed = () => {
+        this.transform = d3.event.transform;
+        this.update_callback(this.transform);
     };
 
     dragsubject = () => {

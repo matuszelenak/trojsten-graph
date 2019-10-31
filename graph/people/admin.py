@@ -1,7 +1,10 @@
+import random
+import string
+
 from django import forms
 from django.contrib import admin
 
-from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, GroupMembership
+from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, GroupMembership, VerificationToken
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -73,3 +76,8 @@ class RelationshipStatusAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('relationship__first_person', 'relationship__second_person')
+
+
+@admin.register(VerificationToken)
+class VerificationTokenAdmin(admin.ModelAdmin):
+    readonly_fields = ('token', )

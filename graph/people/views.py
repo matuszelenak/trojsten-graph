@@ -1,8 +1,32 @@
+from functools import wraps
+
+from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
+from django.utils import timezone
+from django.utils.decorators import available_attrs
 from django.views import View
 from django.views.generic import TemplateView
 
-from people.models import Person, Relationship
+from people.models import Person, Relationship, VerificationToken
+
+
+class TokenAuth:
+    def __call__(self, view_func):
+        @wraps(view_func, assigned=available_attrs(view_func))
+        def _dispatch_method(request, *args, **kwargs):
+            if request.user and request.user.is_staff:
+                return view_func(request, *args, **kwargs)
+
+            token = request.GET.get('token')
+            if token and VerificationToken.objects.filter(valid_until__lt=timezone.localtime(), token=token).exists():
+                return view_func(request, *args, **kwargs)
+
+            raise PermissionDenied
+
+        return _dispatch_method
+
+
+token_auth = TokenAuth()
 
 
 class GraphView(TemplateView):
@@ -19,6 +43,7 @@ class GraphDataView(View):
         people = Person.objects.with_seminar_memberships().with_age().order_by('pk')
         relationships = list(Relationship.objects.with_people().for_people(list(people.values_list('pk', flat=True))).with_latest_status())
 
+        # TODO rework into some serializer
         response_data = {
             'nodes': [{
                 'id': person.pk,

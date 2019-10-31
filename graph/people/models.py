@@ -1,3 +1,6 @@
+import random
+import string
+
 from django.db import models
 from django.db.models import Prefetch, Subquery, OuterRef, Q, F, Value, Func
 from django.db.models.functions import Coalesce
@@ -243,3 +246,12 @@ class GroupMembership(models.Model):
 
     class Meta:
         unique_together = ('person', 'group')
+
+
+def random_token():
+    return ''.join(random.sample(string.ascii_uppercase + string.ascii_lowercase + string.digits, 10))
+
+
+class VerificationToken(models.Model):
+    token = models.CharField(max_length=128, default=random_token)
+    valid_until = models.DateTimeField()
