@@ -52,15 +52,11 @@ class GraphDataPreprocessor {
     }
 }
 
-
 class GraphRenderer {
-    constructor(graph, canvas, config) {
+    constructor(graph, canvas) {
         this.graph = graph;
         this.canvas = canvas;
         this.context = this.canvas.getContext('2d');
-
-        this.bg_img = new Image();
-        this.bg_img.src = config.bg_url;
     }
 
     renderEdge = (edge) => {
@@ -102,11 +98,6 @@ class GraphRenderer {
         this.context.save();
         this.context.fillStyle = '#222';
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        for (let w = 0; w < this.canvas.width; w += this.bg_img.width) {
-            for (let h = 0; h < this.canvas.height; h  += this.bg_img.height) {
-                this.context.drawImage(this.bg_img, w, h);
-            }
-        }
         this.context.translate(transform.x, transform.y);
         this.context.scale(transform.k, transform.k);
 
@@ -124,7 +115,7 @@ class GraphRenderer {
 
 
 class GraphSimulation {
-    constructor(canvas, link_function){
+    constructor(canvas, graph, renderer){
         this.canvas = canvas;
         this.simulation = d3.forceSimulation()
             .force("center", d3.forceCenter(this.canvas.width / 2, this.canvas.height / 2))
@@ -132,7 +123,7 @@ class GraphSimulation {
             .force("x", d3.forceX(this.canvas.width / 2).strength(0.05))
             .force("y", d3.forceY(this.canvas.height / 2).strength(0.05))
             .force("charge", d3.forceManyBody().strength(-150))
-            .force("link", d3.forceLink().strength(0.4).id(link_function))
+            .force("link", d3.forceLink().strength(0.4).id((node) => node.id))
             .alphaTarget(0)
             .alphaDecay(0.05);
 
@@ -143,18 +134,16 @@ class GraphSimulation {
                 .on("end", this.dragended))
             .call(d3.zoom().scaleExtent([1 / 10, 8]).on("zoom", this.zoomed));
 
-        this.transform = d3.zoomIdentity;
-        this.update_callback = () => {};
-        this.graph = {nodes: [], edges: []};
-    }
+        this.graph = graph;
+        this.simulation.nodes(graph.nodes);
+        this.simulation.force("link").links(graph.edges);
 
-    loadData = (graph_data) => {
-        this.graph = graph_data;
-        this.simulation.nodes(graph_data.nodes).on("tick", () => {
-            this.update_callback(this.transform);
+        this.renderer = renderer;
+        this.transform = d3.zoomIdentity;
+        this.simulation.on("tick", () => {
+            this.renderer.renderGraph(this.transform);
         });
-        this.simulation.force("link").links(graph_data.edges);
-    };
+    }
 
     nodeOnMousePosition = (mouse_x, mouse_y) => {
         let i, dx, dy, x = this.transform.invertX(mouse_x), y = this.transform.invertY(mouse_y);
@@ -170,7 +159,7 @@ class GraphSimulation {
 
     zoomed = () => {
         this.transform = d3.event.transform;
-        this.update_callback(this.transform);
+        this.renderer.renderGraph(this.transform);
     };
 
     dragsubject = () => {
@@ -197,17 +186,5 @@ class GraphSimulation {
         if (!d3.event.active) this.simulation.alphaTarget(0);
         d3.event.subject.fx = null;
         d3.event.subject.fy = null;
-    }
-}
-
-
-class TrojstenGraph {
-    constructor(graph_data, canvas, config) {
-        this.preprocessor = new GraphDataPreprocessor(graph_data);
-        this.simulation = new GraphSimulation(canvas, (node) => node.id);
-        this.renderer = new GraphRenderer(graph_data, canvas, config);
-
-        this.simulation.update_callback = this.renderer.renderGraph;
-        this.simulation.loadData(this.preprocessor.graph);
     }
 }
