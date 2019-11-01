@@ -1,6 +1,5 @@
 {% load static %}
 
-<html>
 <meta charset="utf-8">
 <title>Trojsten Graph</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -15,10 +14,18 @@
     canvas.height = window.innerHeight;
 
     const params = new URLSearchParams(window.location.search);
-    $.getJSON("{% url 'graph_data' %}" + "?" + params.toString(), function(graph) {
-        const preprocessor = new GraphDataPreprocessor(graph);
+    let graph, enums;
+    $.when(
+        $.getJSON("{% url 'graph_data' %}" + "?" + params.toString(), function(data) {
+            graph = data;
+        }),
+        $.getJSON("{% url 'enum_data' %}" + "?" + params.toString(), function(data) {
+            enums = data;
+        })
+    ).then(() => {
+        const preprocessor = new GraphDataPreprocessor(graph, enums);
         const renderer = new GraphRenderer(graph, canvas);
         const simulation = new GraphSimulation(canvas, graph, renderer);
-    });
+    })
 </script>
 </body>

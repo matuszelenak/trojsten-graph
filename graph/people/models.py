@@ -1,23 +1,28 @@
-import random
-import string
-
 from django.db import models
-from django.db.models import Prefetch, Subquery, OuterRef, Q, F, Value, Func
+from django.db.models import Prefetch, Q, F
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from people.utils import snake_to_camel, random_token
+
+
+class IntegerEnum(models.IntegerChoices):
+    @classmethod
+    def as_json(cls):
+        return {
+            snake_to_camel(name): value
+            for name, value in zip(cls.names, cls.values)
+        }
+
 
 class BaseNote(models.Model):
-    TYPE_PUBLIC = 1
-    TYPE_PRIVATE = 2
-    TYPES = (
-        (TYPE_PUBLIC, _('Public note')),
-        (TYPE_PRIVATE, _('Private note'))
-    )
+    class Types(IntegerEnum):
+        PUBLIC = 1, _('Public note')
+        PRIVATE = 2, _('Private note')
 
     text = models.TextField()
-    type = models.IntegerField(choices=TYPES)
+    type = models.IntegerField(choices=Types.choices)
     date_created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('auth.User', null=True, on_delete=models.SET_NULL, related_name='+')
 
@@ -70,16 +75,13 @@ class Relationship(models.Model):
 
 
 class RelationshipStatusNote(BaseNote):
-    REASON_STATUS_START = 1
-    REASON_STATUS_END = 2
-    REASON_OTHER = 3
-    REASONS = (
-        (REASON_STATUS_START, _('Note on relationship start')),
-        (REASON_STATUS_END, _('Note on relationship end')),
-        (REASON_OTHER, _('Unspecified reason'))
-    )
 
-    reason = models.IntegerField(choices=REASONS)
+    class Reasons(IntegerEnum):
+        STATUS_START = 1, _('Note on relationship start')
+        STATUS_END = 2, _('Note on relationship end')
+        OTHER = 3, _('Unspecified reason')
+
+    reason = models.IntegerField(choices=Reasons.choices)
     status = models.ForeignKey('people.RelationshipStatus', related_name='notes', on_delete=models.CASCADE)
 
 
@@ -98,26 +100,18 @@ class RelationshipStatusQuerySet(models.QuerySet):
 
 
 class RelationshipStatus(models.Model):
-    STATUS_BLOOD_RELATIVE = 1
-    STATUS_SIBLING = 2
-    STATUS_PARENT_CHILD = 3
-    STATUS_MARRIED = 4
-    STATUS_ENGAGED = 5
-    STATUS_DATING = 6
-    STATUS_RUMOUR = 7
 
-    STATUS_CHOICES = (
-        (STATUS_BLOOD_RELATIVE, _('Blood relatives')),
-        (STATUS_SIBLING, _('Siblings')),
-        (STATUS_PARENT_CHILD, _('Parent-child')),
-        (STATUS_MARRIED, _('Married')),
-        (STATUS_ENGAGED, _('Engaged')),
-        (STATUS_DATING, _('Dating')),
-        (STATUS_RUMOUR, _('Rumour')),
-    )
+    class StatusChoices(IntegerEnum):
+        BLOOD_RELATIVE = 1, _('Blood relatives')
+        SIBLING = 2, _('Siblings')
+        PARENT_CHILD = 3, _('Parent-child')
+        MARRIED = 4, _('Married')
+        ENGAGED = 5, _('Engaged')
+        DATING = 6, _('Dating')
+        RUMOUR = 7, _('Rumour')
 
     relationship = models.ForeignKey('people.Relationship', related_name='statuses', on_delete=models.CASCADE)
-    status = models.IntegerField(choices=STATUS_CHOICES)
+    status = models.IntegerField(choices=StatusChoices.choices)
 
     date_start = models.DateField(null=True, blank=True)
     date_end = models.DateField(null=True, blank=True)
@@ -153,7 +147,7 @@ class PersonQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'memberships',
-                queryset=GroupMembership.objects.select_related('group').with_duration().filter(group__category=Group.CATEGORY_SEMINAR),
+                queryset=GroupMembership.objects.select_related('group').with_duration().filter(group__category=Group.Categories.SEMINAR),
                 to_attr='seminar_memberships'
             )
         )
@@ -165,15 +159,10 @@ class PersonQuerySet(models.QuerySet):
 
 
 class Person(models.Model):
-    GENDER_MALE = 1
-    GENDER_FEMALE = 2
-    GENDER_OTHER = 3
-
-    GENDERS = (
-        (GENDER_MALE, _('Male')),
-        (GENDER_FEMALE, _('Female')),
-        (GENDER_OTHER, _('Other'))
-    )
+    class Genders(IntegerEnum):
+        MALE = 1, _('Male')
+        FEMALE = 2, _('Female')
+        OTHER = 3, _('Other')
 
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
@@ -181,7 +170,7 @@ class Person(models.Model):
 
     nickname = models.CharField(max_length=128, null=True, blank=True)
 
-    gender = models.IntegerField(choices=GENDERS)
+    gender = models.IntegerField(choices=Genders.choices)
 
     birth_date = models.DateField(null=True, blank=True)
     death_date = models.DateField(null=True, blank=True)
@@ -199,21 +188,15 @@ class Person(models.Model):
 
 
 class Group(models.Model):
-    CATEGORY_ELEMENTARY_SCHOOL = 1
-    CATEGORY_HIGH_SCHOOL = 2
-    CATEGORY_UNIVERSITY = 3
-    CATEGORY_SEMINAR = 4
-    CATEGORY_OTHER = 5
 
-    CATEGORIES = (
-        (CATEGORY_ELEMENTARY_SCHOOL, _('Elementary school')),
-        (CATEGORY_HIGH_SCHOOL, _('High school')),
-        (CATEGORY_UNIVERSITY, _('University school')),
-        (CATEGORY_SEMINAR, _('Seminar')),
-        (CATEGORY_OTHER, _('Other'))
-    )
+    class Categories(IntegerEnum):
+        ELEMENTARY_SCHOOL = 1, _('Elementary school')
+        HIGH_SCHOOL = 2, _('High school')
+        UNIVERSITY = 3, _('University')
+        SEMINAR = 4, _('Seminar')
+        OTHER = 5, _('Other')
 
-    category = models.IntegerField(choices=CATEGORIES)
+    category = models.IntegerField(choices=Categories.choices)
 
     parent = models.ForeignKey('people.Group', null=True, blank=True, related_name='children', on_delete=models.SET_NULL)
     name = models.CharField(max_length=256, unique=True)
@@ -246,10 +229,6 @@ class GroupMembership(models.Model):
 
     class Meta:
         unique_together = ('person', 'group')
-
-
-def random_token():
-    return ''.join(random.sample(string.ascii_uppercase + string.ascii_lowercase + string.digits, 10))
 
 
 class VerificationToken(models.Model):

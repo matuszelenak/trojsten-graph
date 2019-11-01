@@ -3,16 +3,15 @@ from functools import wraps
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.utils import timezone
-from django.utils.decorators import available_attrs
 from django.views import View
 from django.views.generic import TemplateView
 
-from people.models import Person, Relationship, VerificationToken
+from people.models import Person, Relationship, VerificationToken, RelationshipStatus, Group
 
 
 class TokenAuth:
     def __call__(self, view_func):
-        @wraps(view_func, assigned=available_attrs(view_func))
+        @wraps(view_func)
         def _dispatch_method(request, *args, **kwargs):
             if request.user and request.user.is_staff:
                 return view_func(request, *args, **kwargs)
@@ -36,6 +35,21 @@ class GraphView(TemplateView):
         data = super().get_context_data(**kwargs)
         data['person_cls'] = Person
         return data
+
+
+class GraphEnumView(View):
+
+    def get(self, request, *args, **kwargs):
+        enums = {
+            'relationships': RelationshipStatus.StatusChoices.as_json(),
+            'genders': Person.Genders.as_json(),
+            'groups': Group.Categories.as_json(),
+            'seminars': {
+                group.name: group.name
+                for group in Group.objects.filter(category=Group.Categories.SEMINAR)
+            }
+        }
+        return JsonResponse(enums)
 
 
 class GraphDataView(View):
@@ -67,6 +81,7 @@ class GraphDataView(View):
                     'status': {
                         'is_active': not rel.latest_status[0].date_end,
                         'days_together': rel.latest_status[0].days_together.days + 1,
+                        'type': rel.latest_status[0].status
                     }
                 }
                 for rel in relationships if rel.latest_status
