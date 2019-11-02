@@ -27,7 +27,7 @@ var PersonDetail = function (_React$Component) {
                     React.createElement(
                         'h2',
                         null,
-                        this.props.person.nick
+                        this.props.person.nickname
                     )
                 )
             );

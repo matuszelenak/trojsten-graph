@@ -7,6 +7,7 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from people.models import Person, Relationship, VerificationToken, RelationshipStatus, Group
+from people.serializers import PeopleSerializer, RelationshipSerializer
 
 
 class TokenAuth:
@@ -38,7 +39,6 @@ class GraphView(TemplateView):
 
 
 class GraphEnumView(View):
-
     def get(self, request, *args, **kwargs):
         enums = {
             'relationships': RelationshipStatus.StatusChoices.as_json(),
@@ -54,38 +54,9 @@ class GraphEnumView(View):
 
 class GraphDataView(View):
     def get(self, request, *args, **kwargs):
-        people = Person.objects.with_seminar_memberships().with_age().order_by('pk')
-        relationships = list(Relationship.objects.with_people().for_people(list(people.values_list('pk', flat=True))).with_latest_status())
-
-        # TODO rework into some serializer
+        people = Person.objects.for_graph_serialization()
         response_data = {
-            'nodes': [{
-                'id': person.pk,
-                'nick': person.nickname,
-                'gender': person.gender,
-                'age': person.age.days / 365 if person.age else 0,
-                'seminar_memberships': [
-                    {
-                        'group': membership.group.name,
-                        'from': str(membership.date_started),
-                        'to': str(membership.date_ended),
-                        'duration': membership.duration.days + 1
-                    }
-                    for membership in person.seminar_memberships
-                ]
-            } for person in people],
-            'edges': [
-                {
-                    'source': rel.first_person.pk,
-                    'target': rel.second_person.pk,
-                    'status': {
-                        'is_active': not rel.latest_status[0].date_end,
-                        'days_together': rel.latest_status[0].days_together.days + 1,
-                        'type': rel.latest_status[0].status
-                    }
-                }
-                for rel in relationships if rel.latest_status
-            ]
+            'nodes': PeopleSerializer(people, many=True).data,
+            'edges': RelationshipSerializer(Relationship.objects.for_graph_serialization(people), many=True).data
         }
-
         return JsonResponse(response_data)

@@ -21,7 +21,7 @@ from django.urls import include, path  # For django versions from 2.0 and up
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url(r'^graph/', include('people.urls'))
+    url(r'^', include('people.urls'))
 ]
 
 if settings.DEBUG:

@@ -37,13 +37,14 @@ class RelationshipQuerySet(models.QuerySet):
     def with_people(self):
         return self.select_related('first_person', 'second_person')
 
-    def with_statuses(self):
-        return self.select_related('statuses')
-
-    def for_people(self, people_pks):
-        return self.filter(
+    def for_people(self, people, require_visible=True):
+        people_pks = people.values_list('pk', flat=True)
+        qs = self.filter(
             Q(first_person__in=people_pks) | Q(second_person__in=people_pks)
         )
+        if require_visible:
+            qs = qs.filter(first_person__visible=True, second_person__visible=True)
+        return qs
 
     def with_status_for_date(self, date=timezone.localdate()):
         return self.prefetch_related(
@@ -54,14 +55,17 @@ class RelationshipQuerySet(models.QuerySet):
             )
         )
 
-    def with_latest_status(self):
+    def with_recent_statuses(self):
         return self.prefetch_related(
             Prefetch(
                 'statuses',
-                queryset=RelationshipStatus.objects.for_graph_display().order_by('relationship', '-date_start').distinct('relationship'),
-                to_attr='latest_status'
+                queryset=RelationshipStatus.objects.with_duration().order_by('relationship', '-date_start'),
+                to_attr='recent_statuses'
             )
         )
+
+    def for_graph_serialization(self, people):
+        return self.with_people().for_people(people).with_recent_statuses()
 
 
 class Relationship(models.Model):
@@ -93,9 +97,9 @@ class RelationshipStatusQuerySet(models.QuerySet):
             date_end__lt=date
         )
 
-    def for_graph_display(self):
+    def with_duration(self):
         return self.annotate(
-            days_together=Coalesce(F('date_end'), timezone.localdate()) - F('date_start'),
+            duration=Coalesce(F('date_end'), timezone.localdate()) - F('date_start'),
         )
 
 
@@ -143,19 +147,22 @@ class PersonQuerySet(models.QuerySet):
         ))
         return qs
 
-    def with_seminar_memberships(self):
+    def with_visible_memberships(self):
         return self.prefetch_related(
             Prefetch(
                 'memberships',
-                queryset=GroupMembership.objects.select_related('group').with_duration().filter(group__category=Group.Categories.SEMINAR),
-                to_attr='seminar_memberships'
+                queryset=GroupMembership.objects.select_related('group').filter(group__visible=True).with_duration(),
+                to_attr='visible_memberships'
             )
         )
 
     def with_age(self):
         return self.annotate(
-            age=Coalesce(F('death_date'), timezone.localdate()) - F('birth_date')
+            age=Coalesce(F('death_date'), timezone.localdate()) - Coalesce(F('birth_date'), timezone.localdate())
         )
+
+    def for_graph_serialization(self):
+        return self.filter(visible=True).with_visible_memberships().with_age().order_by('pk')
 
 
 class Person(models.Model):
@@ -214,7 +221,7 @@ class GroupMembershipNote(BaseNote):
 class GroupMembershipQuerySet(models.QuerySet):
     def with_duration(self):
         return self.annotate(
-            duration=Coalesce(F('date_ended'), timezone.localdate()) - F('date_started'),
+            duration=Coalesce(F('date_ended'), timezone.localdate()) - Coalesce(F('date_started'), timezone.localdate()),
         )
 
 

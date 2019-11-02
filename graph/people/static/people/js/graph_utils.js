@@ -28,6 +28,9 @@ class GraphDataPreprocessor {
     }
 
     preprocessNode(node) {
+        node.seminar_memberships = node.memberships.filter((membership) => {
+            return (this.seminarColors.hasOwnProperty(membership.group_name) && (membership.duration > 0))
+        });
         const cumulativeDuration = node.seminar_memberships.map((m) => m.duration).reduce((acc, val) => acc + val, 0);
 
         node.displayProps.pie = [];
@@ -37,19 +40,26 @@ class GraphDataPreprocessor {
             node.displayProps.pie.push({
                 angleStart: previousAngleEnd,
                 angleEnd: angleEnd,
-                color: this.seminarColors[membership.group]
+                color: this.seminarColors[membership.group_name]
             });
             previousAngleEnd = angleEnd;
         });
 
-        node.displayProps.label = node.nick;
+        node.displayProps.label = node.nickname;
         node.displayProps.radius = 3 + Math.ceil(Math.sqrt(node.age * 2))
     }
 
     preprocessEdge(edge) {
-        edge.displayProps.dashing = edge.status.is_active ? [] : [2, 2];
-        edge.displayProps.width = edge.status.is_active ? Math.ceil(Math.log(Math.sqrt(edge.status.days_together / 10))) : 1;
-        edge.displayProps.color = this.relationshipColors[edge.status.type]
+        const sorted_statuses = edge.statuses.map((status) => {
+            status.date_start = new Date(status.date_start);
+            status.date_end = status.date_end ? new Date(status.date_end): null;
+            return status
+        }).sort((a, b) => a.date_start < b.date_start ? 1 : -1);
+        edge.newest_status = sorted_statuses[0];
+
+        edge.displayProps.dashing = edge.newest_status.date_end ? [2, 2]: [];
+        edge.displayProps.width = edge.newest_status.date_end ? 1: Math.ceil(Math.log(Math.sqrt(edge.newest_status.days_together / 10)));
+        edge.displayProps.color = this.relationshipColors[edge.newest_status.status]
     }
 }
 

@@ -3,7 +3,7 @@ class PersonDetail extends React.Component {
         return (
             <div className='info-sidebar'>
                 <div className="row">
-                    <h2>{this.props.person.nick}</h2>
+                    <h2>{this.props.person.nickname}</h2>
                 </div>
             </div>
         )
