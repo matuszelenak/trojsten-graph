@@ -116,7 +116,7 @@ class GraphRenderer {
 
 
 class GraphSimulation {
-    constructor(canvas, graph, renderer){
+    constructor(graph, canvas){
         this.canvas = canvas;
         this.simulation = d3.forceSimulation()
             .force("center", d3.forceCenter(this.canvas.width / 2, this.canvas.height / 2))
@@ -139,10 +139,10 @@ class GraphSimulation {
         this.simulation.nodes(graph.nodes);
         this.simulation.force("link").links(graph.edges);
 
-        this.renderer = renderer;
+        this.render = () => {};
         this.transform = d3.zoomIdentity;
         this.simulation.on("tick", () => {
-            this.renderer.renderGraph(this.transform);
+            this.render(this.transform)
         });
     }
 
@@ -160,7 +160,7 @@ class GraphSimulation {
 
     zoomed = () => {
         this.transform = d3.event.transform;
-        this.renderer.renderGraph(this.transform);
+        this.render(this.transform)
     };
 
     dragsubject = () => {

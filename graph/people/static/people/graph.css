@@ -1,0 +1,21 @@
+html, body {
+    height : 100%;
+    width  : 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.info-sidebar {
+  height : 100%;
+  width  : 400px;
+  float  : right;
+  position : relative;
+  background-color : rgb(50, 50, 50);
+}

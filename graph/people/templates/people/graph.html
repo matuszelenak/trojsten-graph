@@ -2,30 +2,35 @@
 
 <meta charset="utf-8">
 <title>Trojsten Graph</title>
+<link rel="stylesheet" href="{% static 'people/graph.css' %}" type="text/css"/>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="{% static 'people/graph.js' %}"></script>
+{#<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>#}
+{#<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>#}
+<script src="https://unpkg.com/react@16/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" crossorigin></script>
+<script src="{% static 'people/js/graph_utils.js' %}"></script>
+<script src="{% static 'people/js/graph.js' %}"></script>
 
-<body style="margin: 0; padding: 0">
-<canvas id="graph-canvas"></canvas>
-<script>
-    const canvas = document.getElementById('graph-canvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
+<script type="text/javascript">
     const params = new URLSearchParams(window.location.search);
-    let graph, enums;
-    $.when(
-        $.getJSON("{% url 'graph_data' %}" + "?" + params.toString(), function(data) {
-            graph = data;
-        }),
-        $.getJSON("{% url 'enum_data' %}" + "?" + params.toString(), function(data) {
-            enums = data;
+    const graphJsonUrl = "{% url 'graph_data' %}" + "?" + params.toString(),
+          enumsJsonUrl = "{% url 'enum_data' %}" + "?" + params.toString();
+    $(document).ready(() => {
+        let graph, enums;
+        $.when(
+            $.getJSON(graphJsonUrl, function(data) {
+                graph = data;
+            }),
+            $.getJSON(enumsJsonUrl, function(data) {
+                enums = data;
+            })
+        ).then(() => {
+            initializeGraph(graph, enums);
         })
-    ).then(() => {
-        const preprocessor = new GraphDataPreprocessor(graph, enums);
-        const renderer = new GraphRenderer(graph, canvas);
-        const simulation = new GraphSimulation(canvas, graph, renderer);
-    })
+    });
 </script>
+<body>
+    <div id="container"></div>
 </body>
