@@ -4,14 +4,8 @@ from people.models import Person, Relationship, GroupMembership, RelationshipSta
 
 
 class GroupMembershipSerializer(serializers.ModelSerializer):
-    group_name = serializers.SerializerMethodField()
-    duration = serializers.SerializerMethodField()
-
-    def get_group_name(self, instance):
-        return instance.group.name
-
-    def get_duration(self, instance):
-        return instance.duration.days
+    group_name = serializers.CharField(source='group.name')
+    duration = serializers.IntegerField(source='duration.days')
 
     class Meta:
         model = GroupMembership
@@ -34,10 +28,7 @@ class PeopleSerializer(serializers.ModelSerializer):
 
 
 class RelationshipStatusSerializer(serializers.ModelSerializer):
-    days_together = serializers.SerializerMethodField()
-
-    def get_days_together(self, instance):
-        return instance.duration.days
+    days_together = serializers.IntegerField(source='duration.days')
 
     class Meta:
         model = RelationshipStatus
@@ -46,17 +37,11 @@ class RelationshipStatusSerializer(serializers.ModelSerializer):
 
 class RelationshipSerializer(serializers.ModelSerializer):
     statuses = serializers.SerializerMethodField()
-    source = serializers.SerializerMethodField()
-    target = serializers.SerializerMethodField()
+    source = serializers.IntegerField(source='first_person.pk')
+    target = serializers.IntegerField(source='second_person.pk')
 
     def get_statuses(self, instance):
         return RelationshipStatusSerializer(instance.recent_statuses, many=True).data
-
-    def get_source(self, obj):
-        return obj.first_person.pk
-
-    def get_target(self, obj):
-        return obj.second_person.pk
 
     class Meta:
         model = Relationship

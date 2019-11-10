@@ -32,11 +32,6 @@ token_auth = TokenAuth()
 class GraphView(TemplateView):
     template_name = 'people/graph.html'
 
-    def get_context_data(self, **kwargs):
-        data = super().get_context_data(**kwargs)
-        data['person_cls'] = Person
-        return data
-
 
 class GraphEnumView(View):
     def get(self, request, *args, **kwargs):

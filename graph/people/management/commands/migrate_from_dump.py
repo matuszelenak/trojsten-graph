@@ -16,34 +16,34 @@ def str_to_date(s):
 
 def sex_to_gender(sex):
     if sex == 'M':
-        return Person.GENDER_MALE
+        return Person.Genders.MALE
     if sex == 'F':
-        return Person.GENDER_FEMALE
-    return Person.GENDER_OTHER
+        return Person.Genders.FEMALE
+    return Person.Genders.OTHER
 
 
 def event_type_to_new_status(event_type):
     return {
-        'SIB': RelationshipStatus.STATUS_SIBLING,
-        'DAT': RelationshipStatus.STATUS_DATING,
-        'DRB': RelationshipStatus.STATUS_RUMOUR,
+        'SIB': RelationshipStatus.StatusChoices.SIBLING,
+        'DAT': RelationshipStatus.StatusChoices.DATING,
+        'DRB': RelationshipStatus.StatusChoices.RUMOUR,
         'NDR': None,
         'BRE': None,
-        'ENG': RelationshipStatus.STATUS_ENGAGED,
-        'MAR': RelationshipStatus.STATUS_MARRIED,
+        'ENG': RelationshipStatus.StatusChoices.ENGAGED,
+        'MAR': RelationshipStatus.StatusChoices.MARRIED,
         'DIV': None,
-        'CHI': RelationshipStatus.STATUS_PARENT_CHILD,
-        'REL': RelationshipStatus.STATUS_BLOOD_RELATIVE,
+        'CHI': RelationshipStatus.StatusChoices.PARENT_CHILD,
+        'REL': RelationshipStatus.StatusChoices.BLOOD_RELATIVE,
     }[event_type]
 
 
 def category_to_enum(cat):
     return {
-        'U': Group.CATEGORY_UNIVERSITY,
-        'E': Group.CATEGORY_ELEMENTARY_SCHOOL,
-        'H': Group.CATEGORY_HIGH_SCHOOL,
-        'S': Group.CATEGORY_SEMINAR,
-        'O': Group.CATEGORY_OTHER
+        'U': Group.Categories.UNIVERSITY,
+        'E': Group.Categories.ELEMENTARY_SCHOOL,
+        'H': Group.Categories.HIGH_SCHOOL,
+        'S': Group.Categories.SEMINAR,
+        'O': Group.Categories.OTHER
     }[cat]
 
 
@@ -62,7 +62,7 @@ def import_people(people):
             first_name=f['name'],
             last_name=f['surname'],
             maiden_name=f['maidenName'],
-            nickname=f['nickname'],
+            nickname=f['nickname'] if f['nickname'] != f['name'] + ' ' + f['surname'] else None,
             gender=sex_to_gender(f['sex']),
             birth_date=str_to_date(f['birthDate']),
             death_date=str_to_date(f['deathDate']),
@@ -74,7 +74,7 @@ def import_people(people):
         if f['comment']:
             imported_notes.append(
                 PersonNote(
-                    type=PersonNote.TYPE_PUBLIC,
+                    type=PersonNote.Types.PUBLIC,
                     person=p,
                     text=f['comment']
                 )
@@ -82,7 +82,7 @@ def import_people(people):
         if f['dataComment']:
             imported_notes.append(
                 PersonNote(
-                    type=PersonNote.TYPE_PRIVATE,
+                    type=PersonNote.Types.PRIVATE,
                     person=p,
                     text=f['dataComment'],
                 )
@@ -98,7 +98,7 @@ def import_groups(groups):
     parent_links = []
     for group in groups:
         f = group['fields']
-        g = Group(
+        g = Group.objects.create(
             name=f['name'],
             category=category_to_enum(f['category']),
             visible=f['visible'],
@@ -111,9 +111,10 @@ def import_groups(groups):
 
     for group_a, group_b in itertools.product(imported_groups, repeat=2):
         if (group_a.old_pk, group_b.old_pk) in parent_links:
+            print(f'{group_a} parent of  {group_b}')
             group_b.parent = group_a
+            group_b.save()
 
-    Group.objects.bulk_create(imported_groups)
     return imported_groups
 
 
@@ -121,7 +122,6 @@ def import_memberships(memberships, new_people, new_groups):
     GroupMembership.objects.all().delete()
     GroupMembershipNote.objects.all().delete()
 
-    imported_memberships = []
     imported_notes = []
     for membership in memberships:
         f = membership['fields']
@@ -137,7 +137,7 @@ def import_memberships(memberships, new_people, new_groups):
         if f['comment']:
             imported_notes.append(
                 GroupMembershipNote(
-                    type=GroupMembershipNote.TYPE_PUBLIC,
+                    type=GroupMembershipNote.Types.PUBLIC,
                     membership=m,
                     text=f['comment']
                 )
@@ -145,7 +145,7 @@ def import_memberships(memberships, new_people, new_groups):
         if f['dataComment']:
             imported_notes.append(
                 GroupMembershipNote(
-                    type=GroupMembershipNote.TYPE_PRIVATE,
+                    type=GroupMembershipNote.Types.PRIVATE,
                     membership=m,
                     text=f['dataComment'],
                 )
@@ -170,14 +170,9 @@ def import_relationships(events, people):
             'type': f['type']
         })
 
-    imported_notes = []
     for pair, events in events_per_pair.items():
         first_pk, second_pk = tuple(map(int, pair.split(';')))
         first, second = get_by_old_pk(people, first_pk), get_by_old_pk(people, second_pk)
-        rel = Relationship.objects.create(
-            first_person=first,
-            second_person=second
-        )
         sorted_events = sorted(events, key=lambda x: x['date'])
 
         cutoff = 0
@@ -192,27 +187,33 @@ def import_relationships(events, people):
         if not sorted_events:
             continue
 
+        rel = Relationship.objects.create(
+            first_person=first,
+            second_person=second
+        )
+
         print(rel, [x['type'] for x in sorted_events])
         first_event = sorted_events[0]
 
         previous_status = RelationshipStatus.objects.create(
             relationship=rel,
             date_start=first_event['date'],
-            status=event_type_to_new_status(first_event['type'])
+            status=event_type_to_new_status(first_event['type']),
+            visible=first_event['visible']
         )
         if first_event['comment']:
             RelationshipStatusNote.objects.create(
                 status=previous_status,
                 text=first_event['comment'],
-                type=RelationshipStatusNote.TYPE_PUBLIC,
-                reason=RelationshipStatusNote.REASON_STATUS_START
+                type=RelationshipStatusNote.Types.PUBLIC,
+                reason=RelationshipStatusNote.Reasons.STATUS_START
             )
         if first_event['data_comment']:
             RelationshipStatusNote.objects.create(
                 status=previous_status,
                 text=first_event['data_comment'],
-                type=RelationshipStatusNote.TYPE_PRIVATE,
-                reason=RelationshipStatusNote.REASON_STATUS_START
+                type=RelationshipStatusNote.Types.PRIVATE,
+                reason=RelationshipStatusNote.Reasons.STATUS_START
             )
 
         for next_event in sorted_events[1:]:
@@ -222,37 +223,39 @@ def import_relationships(events, people):
                 new_status = RelationshipStatus.objects.create(
                     relationship=rel,
                     date_start=next_event['date'],
-                    status=new_status_type
+                    status=new_status_type,
+                    visible=next_event['visible']
                 )
                 note_kwargs = dict(
-                    reason=RelationshipStatusNote.REASON_STATUS_START,
+                    reason=RelationshipStatusNote.Reasons.STATUS_START,
                     status=new_status
                 )
             else:
-                assert previous_status.status in (RelationshipStatus.STATUS_DATING, RelationshipStatus.STATUS_RUMOUR, RelationshipStatus.STATUS_ENGAGED, RelationshipStatus.STATUS_MARRIED)
-                previous_status.date_end = next_event['date']
-                previous_status.save()
+                assert previous_status.status in (RelationshipStatus.StatusChoices.DATING, RelationshipStatus.StatusChoices.RUMOUR, RelationshipStatus.StatusChoices.ENGAGED, RelationshipStatus.StatusChoices.MARRIED)
                 new_status = None
                 note_kwargs = dict(
-                    reason=RelationshipStatusNote.REASON_STATUS_END,
+                    reason=RelationshipStatusNote.Reasons.STATUS_END,
                     status=previous_status
                 )
+            if previous_status:
+                previous_status.date_end = next_event['date']
+                previous_status.visible &= next_event['visible']
+                previous_status.save()
 
             if next_event['comment']:
                 RelationshipStatusNote.objects.create(
                     text=next_event['comment'],
-                    type=RelationshipStatusNote.TYPE_PUBLIC,
+                    type=RelationshipStatusNote.Types.PUBLIC,
                     **note_kwargs
                 )
             if next_event['data_comment']:
                 RelationshipStatusNote.objects.create(
                     text=next_event['data_comment'],
-                    type=RelationshipStatusNote.TYPE_PRIVATE,
+                    type=RelationshipStatusNote.Types.PRIVATE,
                     **note_kwargs
                 )
 
             previous_status = new_status
-
 
 
 class Command(BaseCommand):

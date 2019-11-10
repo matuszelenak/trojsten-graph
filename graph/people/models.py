@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Prefetch, Q, F
+from django.db.models import Prefetch, Q, F, Exists, OuterRef
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -37,14 +37,16 @@ class RelationshipQuerySet(models.QuerySet):
     def with_people(self):
         return self.select_related('first_person', 'second_person')
 
-    def for_people(self, people, require_visible=True):
+    def visible(self):
+        return self.filter(first_person__visible=True, second_person__visible=True).filter(
+            Exists(RelationshipStatus.objects.filter(relationship=OuterRef('pk'), visible=True))
+        )
+
+    def for_people(self, people):
         people_pks = people.values_list('pk', flat=True)
-        qs = self.filter(
+        return self.filter(
             Q(first_person__in=people_pks) | Q(second_person__in=people_pks)
         )
-        if require_visible:
-            qs = qs.filter(first_person__visible=True, second_person__visible=True)
-        return qs
 
     def with_status_for_date(self, date=timezone.localdate()):
         return self.prefetch_related(
@@ -65,7 +67,7 @@ class RelationshipQuerySet(models.QuerySet):
         )
 
     def for_graph_serialization(self, people):
-        return self.with_people().for_people(people).with_recent_statuses()
+        return self.with_people().for_people(people).with_recent_statuses().visible()
 
 
 class Relationship(models.Model):
@@ -75,7 +77,7 @@ class Relationship(models.Model):
     objects = RelationshipQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.first_person} <-> {self.second_person}'
+        return f'{self.first_person} & {self.second_person}'
 
 
 class RelationshipStatusNote(BaseNote):
@@ -120,14 +122,17 @@ class RelationshipStatus(models.Model):
     date_start = models.DateField(null=True, blank=True)
     date_end = models.DateField(null=True, blank=True)
 
+    visible = models.BooleanField(default=True)
+
     objects = RelationshipStatusQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.relationship} {self.get_status_display()} from {self.date_start} to {self.date_end}'
+        return f'{self.relationship} : {self.get_status_display()} from {self.date_start}' + (f' to {self.date_end}' if self.date_end else '')
 
     class Meta:
         verbose_name_plural = "relationship statuses"
         get_latest_by = ('date_end', 'date_start')
+        ordering = ('-date_start', )
 
 
 class PersonNote(BaseNote):
@@ -187,11 +192,12 @@ class Person(models.Model):
     objects = PersonQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.nickname or (self.first_name + self.last_name)}'
+        return f'{self.nickname or (self.first_name + " " + self.last_name)}'
 
     class Meta:
         verbose_name_plural = "people"
         unique_together = ('first_name', 'last_name', 'nickname')
+        ordering = ('-birth_date',)
 
 
 class Group(models.Model):
@@ -236,6 +242,7 @@ class GroupMembership(models.Model):
 
     class Meta:
         unique_together = ('person', 'group')
+        ordering = ('-date_started',)
 
 
 class VerificationToken(models.Model):

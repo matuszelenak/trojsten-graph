@@ -28,6 +28,10 @@ class GraphDataPreprocessor {
     }
 
     preprocessNode(node) {
+        node.memberships.map((membership) => {
+            membership.date_started = new Date(membership.date_started);
+            membership.date_ended = membership.date_ended ? new Date(membership.date_ended) : null
+        });
         node.seminar_memberships = node.memberships.filter((membership) => {
             return (this.seminarColors.hasOwnProperty(membership.group_name) && (membership.duration > 0))
         });
@@ -45,7 +49,7 @@ class GraphDataPreprocessor {
             previousAngleEnd = angleEnd;
         });
 
-        node.displayProps.label = node.nickname;
+        node.displayProps.label = node.nickname ? node.nickname : node.first_name + ' ' + node.last_name;
         node.displayProps.radius = 3 + Math.ceil(Math.sqrt(node.age * 2))
     }
 
@@ -71,6 +75,7 @@ class GraphRenderer {
     }
 
     renderEdge = (edge) => {
+        this.context.save();
         this.context.beginPath();
         this.context.lineWidth = edge.displayProps.width;
         this.context.strokeStyle = edge.displayProps.color;
@@ -78,12 +83,17 @@ class GraphRenderer {
         this.context.moveTo(edge.source.x, edge.source.y);
         this.context.lineTo(edge.target.x, edge.target.y);
         this.context.stroke();
+        this.context.restore();
     };
 
     renderNode = (node) => {
+        this.context.save();
         this.context.beginPath();
         this.context.lineWidth = 2;
         this.context.arc(node.x, node.y, node.displayProps.radius, 0, 2 * Math.PI, true);
+        if (node.displayProps.selected){
+            this.context.strokeStyle = '#fff'
+        }
         this.context.stroke();
         if (node.displayProps.pie.length > 0) {
             node.displayProps.pie.forEach((section) => {
@@ -103,6 +113,7 @@ class GraphRenderer {
             node.x - this.context.measureText(node.displayProps.label).width / 2,
             node.y - node.displayProps.radius - 2
         );
+        this.context.restore();
     };
 
     renderGraph = (transform) => {
@@ -151,10 +162,12 @@ class GraphSimulation {
 
         this.render = () => {};
         this.transform = d3.zoomIdentity;
-        this.simulation.on("tick", () => {
-            this.render(this.transform)
-        });
+        this.simulation.on("tick", this.update);
     }
+
+    update = () => {
+        this.render(this.transform);
+    };
 
     nodeOnMousePosition = (mouseX, mouseY) => {
         let i, dx, dy, x = this.transform.invertX(mouseX), y = this.transform.invertY(mouseY);
@@ -170,7 +183,7 @@ class GraphSimulation {
 
     zoomed = () => {
         this.transform = d3.event.transform;
-        this.render(this.transform)
+        this.update()
     };
 
     dragsubject = () => {
@@ -198,4 +211,9 @@ class GraphSimulation {
         d3.event.subject.fx = null;
         d3.event.subject.fy = null;
     }
+}
+
+function dateToString(date, now_when_null=true){
+    const dateOpt = {year: 'numeric', month: 'numeric', day: 'numeric'};
+    return date ? date.toLocaleString('sk-SK', dateOpt) : (now_when_null ? 'Now' : '')
 }

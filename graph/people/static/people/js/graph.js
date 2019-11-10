@@ -18,6 +18,7 @@ var PersonDetail = function (_React$Component) {
     _createClass(PersonDetail, [{
         key: 'render',
         value: function render() {
+            var person = this.props.person;
             return React.createElement(
                 'div',
                 { className: 'info-sidebar' },
@@ -27,7 +28,40 @@ var PersonDetail = function (_React$Component) {
                     React.createElement(
                         'h2',
                         null,
-                        this.props.person.nickname
+                        person.first_name,
+                        ' ',
+                        person.nickname ? '"' + person.nickname + '"' : '',
+                        ' ',
+                        person.last_name
+                    ),
+                    React.createElement(
+                        'p',
+                        null,
+                        dateToString(new Date(person.birth_date))
+                    )
+                ),
+                person.memberships.length > 0 && React.createElement(
+                    'div',
+                    null,
+                    React.createElement(
+                        'h3',
+                        null,
+                        'Member of groups'
+                    ),
+                    React.createElement(
+                        'ul',
+                        null,
+                        person.memberships.map(function (membership) {
+                            return React.createElement(
+                                'li',
+                                { key: membership.group_name },
+                                membership.group_name,
+                                ':',
+                                dateToString(membership.date_started),
+                                ' -',
+                                dateToString(membership.date_ended)
+                            );
+                        })
                     )
                 )
             );
@@ -46,6 +80,42 @@ var RelationshipDetail = function (_React$Component2) {
         return _possibleConstructorReturn(this, (RelationshipDetail.__proto__ || Object.getPrototypeOf(RelationshipDetail)).apply(this, arguments));
     }
 
+    _createClass(RelationshipDetail, [{
+        key: 'render',
+        value: function render() {
+            return React.createElement(
+                'div',
+                { className: 'info-sidebar' },
+                React.createElement(
+                    'h2',
+                    null,
+                    this.props.firstPerson.displayProps.label,
+                    ' & ',
+                    this.props.secondPerson.displayProps.label
+                ),
+                React.createElement(
+                    'h3',
+                    null,
+                    'Relationship history'
+                ),
+                React.createElement(
+                    'ul',
+                    null,
+                    this.props.relationship.statuses.map(function (status, i) {
+                        return React.createElement(
+                            'li',
+                            { key: i },
+                            status.status,
+                            ':',
+                            dateToString(status.date_start),
+                            dateToString(status.date_end)
+                        );
+                    })
+                )
+            );
+        }
+    }]);
+
     return RelationshipDetail;
 }(React.Component);
 
@@ -57,10 +127,32 @@ var TrojstenGraph = function (_React$Component3) {
 
         var _this3 = _possibleConstructorReturn(this, (TrojstenGraph.__proto__ || Object.getPrototypeOf(TrojstenGraph)).call(this, props));
 
-        _this3.canvasClick = function (e) {
-            _this3.setState({
-                selectedPerson: _this3.simulation.nodeOnMousePosition(e.clientX, e.clientY)
+        _this3.getRelationship = function (firstPerson, secondPerson) {
+            return _this3.props.graph.edges.find(function (edge) {
+                if (edge.source === firstPerson && edge.target === secondPerson || edge.source === secondPerson && edge.target === firstPerson) {
+                    return true;
+                }
             });
+        };
+
+        _this3.canvasClick = function (e) {
+            var clickedNode = _this3.simulation.nodeOnMousePosition(e.clientX, e.clientY);
+            var selectedNodes = clickedNode ? _this3.state.selectedPeople.concat(clickedNode) : [];
+            selectedNodes = selectedNodes.slice(Math.max(0, selectedNodes.length - 2));
+            _this3.setState({
+                selectedPeople: selectedNodes
+            });
+            _this3.props.graph.nodes.forEach(function (node) {
+                node.displayProps.selected = false;
+            });
+            selectedNodes.forEach(function (node) {
+                node.displayProps.selected = true;
+            });
+            _this3.simulation.update();
+        };
+
+        _this3.search = function (e) {
+            _this3.props.graph.nodes.forEach(function (node) {});
         };
 
         _this3.canvasMouseMove = function (e) {
@@ -72,9 +164,37 @@ var TrojstenGraph = function (_React$Component3) {
             }
         };
 
-        _this3.state = {
-            selectedPerson: null
+        _this3.getSidebar = function () {
+            var firstPerson = _this3.state.selectedPeople[0],
+                secondPerson = _this3.state.selectedPeople[1],
+                relationship = void 0;
+            if (firstPerson) {
+                if (secondPerson && (relationship = _this3.getRelationship(firstPerson, secondPerson))) {
+                    return React.createElement(RelationshipDetail, {
+                        firstPerson: firstPerson,
+                        secondPerson: secondPerson,
+                        relationship: relationship,
+                        enums: _this3.props.enums
+                    });
+                }
+                return React.createElement(PersonDetail, { person: _this3.state.selectedPeople[0] });
+            }
         };
+
+        _this3.state = {
+            selectedPeople: []
+        };
+
+        var options = {
+            shouldSort: true,
+            threshold: 0.1,
+            location: 0,
+            distance: 100,
+            maxPatternLength: 32,
+            minMatchCharLength: 1,
+            keys: ['first_name', 'last_name', 'nickname', 'maiden_name']
+        };
+        _this3.fuse = new Fuse(props.graph.nodes, options);
         return _this3;
     }
 
@@ -82,6 +202,7 @@ var TrojstenGraph = function (_React$Component3) {
         key: 'componentDidMount',
         value: function componentDidMount() {
             this.canvas = this.refs.canvas;
+            this.searchInput = this.refs.search_query;
             var preprocessor = new GraphDataPreprocessor(this.props.graph, this.props.enums);
             this.renderer = new GraphRenderer(this.props.graph, this.canvas);
             this.simulation = new GraphSimulation(this.props.graph, this.canvas);
@@ -93,10 +214,20 @@ var TrojstenGraph = function (_React$Component3) {
             return React.createElement(
                 'div',
                 null,
-                React.createElement('canvas', {
+                React.createElement('canvas', { tabIndex: '1',
                     ref: 'canvas', width: window.innerWidth, height: window.innerHeight,
                     onClick: this.canvasClick, onMouseMove: this.canvasMouseMove }),
-                this.state.selectedPerson && React.createElement(PersonDetail, { person: this.state.selectedPerson })
+                React.createElement(
+                    'div',
+                    { className: 'search-bar' },
+                    React.createElement('input', { ref: 'search_query', type: 'text' }),
+                    React.createElement(
+                        'button',
+                        { onClick: this.search },
+                        'Search'
+                    )
+                ),
+                this.getSidebar()
             );
         }
     }]);
@@ -105,5 +236,6 @@ var TrojstenGraph = function (_React$Component3) {
 }(React.Component);
 
 function initializeGraph(graph, enums) {
+    console.log(enums);
     ReactDOM.render(React.createElement(TrojstenGraph, { graph: graph, enums: enums }), document.getElementById('container'));
 }
