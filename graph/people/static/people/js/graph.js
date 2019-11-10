@@ -37,6 +37,7 @@ var PersonDetail = function (_React$Component) {
                     React.createElement(
                         'p',
                         null,
+                        'Born on ',
                         dateToString(new Date(person.birth_date))
                     )
                 ),
@@ -56,9 +57,9 @@ var PersonDetail = function (_React$Component) {
                                 'li',
                                 { key: membership.group_name },
                                 membership.group_name,
-                                ':',
+                                ': From ',
                                 dateToString(membership.date_started),
-                                ' -',
+                                ' to ',
                                 dateToString(membership.date_ended)
                             );
                         })
@@ -105,9 +106,10 @@ var RelationshipDetail = function (_React$Component2) {
                         return React.createElement(
                             'li',
                             { key: i },
-                            status.status,
-                            ':',
+                            labels.StatusChoices[status.status],
+                            ': From ',
                             dateToString(status.date_start),
+                            ' to ',
                             dateToString(status.date_end)
                         );
                     })
@@ -137,8 +139,8 @@ var TrojstenGraph = function (_React$Component3) {
 
         _this3.canvasClick = function (e) {
             var clickedNode = _this3.simulation.nodeOnMousePosition(e.clientX, e.clientY);
-            var selectedNodes = clickedNode ? _this3.state.selectedPeople.concat(clickedNode) : [];
-            selectedNodes = selectedNodes.slice(Math.max(0, selectedNodes.length - 2));
+            var selectedNodes = clickedNode ? prepend(_this3.state.selectedPeople, clickedNode) : [];
+            selectedNodes = selectedNodes.slice(0, 2);
             _this3.setState({
                 selectedPeople: selectedNodes
             });
@@ -173,11 +175,10 @@ var TrojstenGraph = function (_React$Component3) {
                     return React.createElement(RelationshipDetail, {
                         firstPerson: firstPerson,
                         secondPerson: secondPerson,
-                        relationship: relationship,
-                        enums: _this3.props.enums
+                        relationship: relationship
                     });
                 }
-                return React.createElement(PersonDetail, { person: _this3.state.selectedPeople[0] });
+                return React.createElement(PersonDetail, { person: firstPerson });
             }
         };
 
@@ -203,7 +204,7 @@ var TrojstenGraph = function (_React$Component3) {
         value: function componentDidMount() {
             this.canvas = this.refs.canvas;
             this.searchInput = this.refs.search_query;
-            var preprocessor = new GraphDataPreprocessor(this.props.graph, this.props.enums);
+            var preprocessor = new GraphDataPreprocessor(this.props.graph);
             this.renderer = new GraphRenderer(this.props.graph, this.canvas);
             this.simulation = new GraphSimulation(this.props.graph, this.canvas);
             this.simulation.render = this.renderer.renderGraph;
@@ -211,22 +212,22 @@ var TrojstenGraph = function (_React$Component3) {
     }, {
         key: 'render',
         value: function render() {
+            var searchBar = React.createElement(
+                'div',
+                { className: 'search-bar' },
+                React.createElement('input', { ref: 'search_query', type: 'text' }),
+                React.createElement(
+                    'button',
+                    { onClick: this.search },
+                    'Search'
+                )
+            );
             return React.createElement(
                 'div',
                 null,
                 React.createElement('canvas', { tabIndex: '1',
                     ref: 'canvas', width: window.innerWidth, height: window.innerHeight,
                     onClick: this.canvasClick, onMouseMove: this.canvasMouseMove }),
-                React.createElement(
-                    'div',
-                    { className: 'search-bar' },
-                    React.createElement('input', { ref: 'search_query', type: 'text' }),
-                    React.createElement(
-                        'button',
-                        { onClick: this.search },
-                        'Search'
-                    )
-                ),
                 this.getSidebar()
             );
         }
@@ -235,7 +236,6 @@ var TrojstenGraph = function (_React$Component3) {
     return TrojstenGraph;
 }(React.Component);
 
-function initializeGraph(graph, enums) {
-    console.log(enums);
-    ReactDOM.render(React.createElement(TrojstenGraph, { graph: graph, enums: enums }), document.getElementById('container'));
+function initializeGraph(graph) {
+    ReactDOM.render(React.createElement(TrojstenGraph, { graph: graph }), document.getElementById('container'));
 }

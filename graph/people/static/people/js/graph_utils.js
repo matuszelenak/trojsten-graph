@@ -1,20 +1,20 @@
 class GraphDataPreprocessor {
-    constructor(graph, enums) {
+    constructor(graph) {
         this.graph = graph;
 
         this.relationshipColors = {
-            [enums.relationships.bloodRelative]: '#008080',
-            [enums.relationships.sibling]: '#008700',
-            [enums.relationships.parentChild]: '#8080ff',
-            [enums.relationships.married]: '#b70000',
-            [enums.relationships.engaged]: '#ffc000',
-            [enums.relationships.dating]: '#ffffff',
-            [enums.relationships.rumour]: '#ff00ff',
+            [enums.StatusChoices.bloodRelative]: '#008080',
+            [enums.StatusChoices.sibling]: '#008700',
+            [enums.StatusChoices.parentChild]: '#8080ff',
+            [enums.StatusChoices.married]: '#b70000',
+            [enums.StatusChoices.engaged]: '#ffc000',
+            [enums.StatusChoices.dating]: '#ffffff',
+            [enums.StatusChoices.rumour]: '#ff00ff',
         };
         this.seminarColors = {
-            [enums.seminars.KSP]: '#818f3d',
-            [enums.seminars.KMS]: '#4a6fd8',
-            [enums.seminars.FKS]: '#e39f3c',
+            KSP: '#818f3d',
+            KMS: '#4a6fd8',
+            FKS: '#e39f3c',
         };
 
         this.graph.nodes.forEach((node) => {
@@ -215,5 +215,11 @@ class GraphSimulation {
 
 function dateToString(date, now_when_null=true){
     const dateOpt = {year: 'numeric', month: 'numeric', day: 'numeric'};
-    return date ? date.toLocaleString('sk-SK', dateOpt) : (now_when_null ? 'Now' : '')
+    return date ? date.toLocaleString('sk-SK', dateOpt) : (now_when_null ? 'now' : '')
+}
+
+function prepend(arr, value){
+    let newArray = arr.slice();
+    newArray.unshift(value);
+    return newArray
 }

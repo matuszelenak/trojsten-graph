@@ -4,20 +4,15 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from people.utils import snake_to_camel, random_token
+from people.utils import random_token
 
 
-class IntegerEnum(models.IntegerChoices):
-    @classmethod
-    def as_json(cls):
-        return {
-            snake_to_camel(name): value
-            for name, value in zip(cls.names, cls.values)
-        }
+class ExportableEnum:
+    pass
 
 
 class BaseNote(models.Model):
-    class Types(IntegerEnum):
+    class Types(models.IntegerChoices):
         PUBLIC = 1, _('Public note')
         PRIVATE = 2, _('Private note')
 
@@ -82,7 +77,7 @@ class Relationship(models.Model):
 
 class RelationshipStatusNote(BaseNote):
 
-    class Reasons(IntegerEnum):
+    class Reasons(models.IntegerChoices):
         STATUS_START = 1, _('Note on relationship start')
         STATUS_END = 2, _('Note on relationship end')
         OTHER = 3, _('Unspecified reason')
@@ -107,7 +102,7 @@ class RelationshipStatusQuerySet(models.QuerySet):
 
 class RelationshipStatus(models.Model):
 
-    class StatusChoices(IntegerEnum):
+    class StatusChoices(ExportableEnum, models.IntegerChoices):
         BLOOD_RELATIVE = 1, _('Blood relatives')
         SIBLING = 2, _('Siblings')
         PARENT_CHILD = 3, _('Parent-child')
@@ -171,7 +166,7 @@ class PersonQuerySet(models.QuerySet):
 
 
 class Person(models.Model):
-    class Genders(IntegerEnum):
+    class Genders(ExportableEnum, models.IntegerChoices):
         MALE = 1, _('Male')
         FEMALE = 2, _('Female')
         OTHER = 3, _('Other')
@@ -202,7 +197,7 @@ class Person(models.Model):
 
 class Group(models.Model):
 
-    class Categories(IntegerEnum):
+    class Categories(ExportableEnum, models.IntegerChoices):
         ELEMENTARY_SCHOOL = 1, _('Elementary school')
         HIGH_SCHOOL = 2, _('High school')
         UNIVERSITY = 3, _('University')

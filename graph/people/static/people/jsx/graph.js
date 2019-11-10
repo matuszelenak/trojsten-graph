@@ -5,7 +5,7 @@ class PersonDetail extends React.Component {
             <div className='info-sidebar'>
                 <div className="row">
                     <h2>{person.first_name} {person.nickname ? '"' + person.nickname + '"' : ''} {person.last_name}</h2>
-                    <p>{dateToString(new Date(person.birth_date))}</p>
+                    <p>Born on {dateToString(new Date(person.birth_date))}</p>
                 </div>
                 {person.memberships.length > 0 &&
                 <div>
@@ -15,8 +15,7 @@ class PersonDetail extends React.Component {
                             return (
                                 <li key={membership.group_name}>
                                     {membership.group_name}:
-                                    {dateToString(membership.date_started)} -
-                                    {dateToString(membership.date_ended)}
+                                    From {dateToString(membership.date_started)} to {dateToString(membership.date_ended)}
                                 </li>
                             )
                         })}
@@ -38,9 +37,8 @@ class RelationshipDetail extends React.Component {
                     {this.props.relationship.statuses.map((status, i) => {
                         return (
                             <li key={i}>
-                                {status.status}:
-                                {dateToString(status.date_start)}
-                                {dateToString(status.date_end)}
+                                {labels.StatusChoices[status.status]}:
+                                From {dateToString(status.date_start)} to {dateToString(status.date_end)}
                             </li>
                         )
                     })}
@@ -83,7 +81,7 @@ class TrojstenGraph extends React.Component {
     componentDidMount() {
         this.canvas = this.refs.canvas;
         this.searchInput = this.refs.search_query;
-        const preprocessor = new GraphDataPreprocessor(this.props.graph, this.props.enums);
+        const preprocessor = new GraphDataPreprocessor(this.props.graph);
         this.renderer = new GraphRenderer(this.props.graph, this.canvas);
         this.simulation = new GraphSimulation(this.props.graph, this.canvas);
         this.simulation.render = this.renderer.renderGraph
@@ -91,13 +89,17 @@ class TrojstenGraph extends React.Component {
 
     canvasClick = (e) => {
         const clickedNode = this.simulation.nodeOnMousePosition(e.clientX, e.clientY);
-        let selectedNodes = clickedNode ? this.state.selectedPeople.concat(clickedNode) : [];
-        selectedNodes = selectedNodes.slice(Math.max(0, selectedNodes.length - 2));
+        let selectedNodes = clickedNode ? prepend(this.state.selectedPeople, clickedNode) : [];
+        selectedNodes = selectedNodes.slice(0, 2);
         this.setState({
             selectedPeople: selectedNodes
         });
-        this.props.graph.nodes.forEach((node) => {node.displayProps.selected = false});
-        selectedNodes.forEach((node) => {node.displayProps.selected = true});
+        this.props.graph.nodes.forEach((node) => {
+            node.displayProps.selected = false
+        });
+        selectedNodes.forEach((node) => {
+            node.displayProps.selected = true
+        });
         this.simulation.update();
     };
 
@@ -117,41 +119,43 @@ class TrojstenGraph extends React.Component {
     };
 
     getSidebar = () => {
-        let firstPerson = this.state.selectedPeople[0], secondPerson = this.state.selectedPeople[1], relationship;
+        let firstPerson = this.state.selectedPeople[0],
+            secondPerson = this.state.selectedPeople[1],
+            relationship;
         if (firstPerson) {
             if (secondPerson && (relationship = this.getRelationship(firstPerson, secondPerson))) {
                 return <RelationshipDetail
                     firstPerson={firstPerson}
                     secondPerson={secondPerson}
                     relationship={relationship}
-                    enums={this.props.enums}
                 />
             }
-            return <PersonDetail person={this.state.selectedPeople[0]}/>
+            return <PersonDetail person={firstPerson}/>
         }
     };
 
     render() {
+        const searchBar = (
+            <div className='search-bar'>
+                <input ref="search_query" type='text'/>
+                <button onClick={this.search}>Search</button>
+            </div>
+        );
         return (
             <div>
                 <canvas tabIndex="1"
                         ref="canvas" width={window.innerWidth} height={window.innerHeight}
                         onClick={this.canvasClick} onMouseMove={this.canvasMouseMove}>
                 </canvas>
-                <div className='search-bar'>
-                    <input ref="search_query" type='text'/>
-                    <button onClick={this.search}>Search</button>
-                </div>
                 {this.getSidebar()}
             </div>
         )
     }
 }
 
-function initializeGraph(graph, enums) {
-    console.log(enums);
+function initializeGraph(graph) {
     ReactDOM.render(
-        <TrojstenGraph graph={graph} enums={enums}/>,
+        <TrojstenGraph graph={graph}/>,
         document.getElementById('container')
     );
 }

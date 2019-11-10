@@ -33,20 +33,6 @@ class GraphView(TemplateView):
     template_name = 'people/graph.html'
 
 
-class GraphEnumView(View):
-    def get(self, request, *args, **kwargs):
-        enums = {
-            'relationships': RelationshipStatus.StatusChoices.as_json(),
-            'genders': Person.Genders.as_json(),
-            'groups': Group.Categories.as_json(),
-            'seminars': {
-                group.name: group.name
-                for group in Group.objects.filter(category=Group.Categories.SEMINAR)
-            }
-        }
-        return JsonResponse(enums)
-
-
 class GraphDataView(View):
     def get(self, request, *args, **kwargs):
         people = Person.objects.for_graph_serialization()

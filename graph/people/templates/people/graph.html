@@ -4,34 +4,33 @@
 <title>Trojsten Graph</title>
 <link rel="stylesheet" href="{% static 'people/graph.css' %}" type="text/css"/>
 
-<script src="{% static 'people/js/jquery.min.js' %}"></script>
 <script src="{% static 'people/js/d3.v4.min.js' %}"></script>
 <script src="{% static 'people/js/fuse.min.js' %}"></script>
-<script src="{% static 'people/js/react.production.min.js' %}"></script>
-<script src="{% static 'people/js/react-dom.production.min.js' %}"></script>
-{#<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>#}
-{#<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>#}
+
+{% if debug %}
+    <script src="{% static 'people/js/react.development.js' %}"></script>
+    <script src="{% static 'people/js/react-dom.development.js' %}"></script>
+{% else %}
+    <script src="https://unpkg.com/react@16/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" crossorigin></script>
+{% endif %}
+
+<script src="{% static 'people/js/graph_enums.js' %}"></script>
 <script src="{% static 'people/js/graph_utils.js' %}"></script>
 <script src="{% static 'people/js/graph.js' %}"></script>
 
-<script type="text/javascript">
-    const params = new URLSearchParams(window.location.search);
-    const graphJsonUrl = "{% url 'graph_data' %}" + "?" + params.toString(),
-          enumsJsonUrl = "{% url 'enum_data' %}" + "?" + params.toString();
-    $(document).ready(() => {
-        let graph, enums;
-        $.when(
-            $.getJSON(graphJsonUrl, function(data) {
-                graph = data;
-            }),
-            $.getJSON(enumsJsonUrl, function(data) {
-                enums = data;
-            })
-        ).then(() => {
-            initializeGraph(graph, enums);
-        })
-    });
-</script>
 <body>
-    <div id="container"></div>
+<div id="container"></div>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const request = new XMLHttpRequest();
+    request.overrideMimeType("application/json");
+    request.open('GET', "{% url 'graph_data' %}" + "?" + params.toString(), true);
+    request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+            initializeGraph(JSON.parse(request.responseText));
+        }
+    };
+    request.send(null);
+</script>
 </body>
