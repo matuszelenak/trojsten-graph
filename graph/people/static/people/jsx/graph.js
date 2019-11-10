@@ -53,7 +53,9 @@ class TrojstenGraph extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedPeople: []
+            selectedPeople: [],
+            width: window.innerWidth,
+            height: window.innerHeight
         };
 
         const options = {
@@ -79,6 +81,7 @@ class TrojstenGraph extends React.Component {
     };
 
     componentDidMount() {
+        window.addEventListener('resize', this.updateDimensions);
         this.canvas = this.refs.canvas;
         this.searchInput = this.refs.search_query;
         const preprocessor = new GraphDataPreprocessor(this.props.graph);
@@ -87,18 +90,23 @@ class TrojstenGraph extends React.Component {
         this.simulation.render = this.renderer.renderGraph
     }
 
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.updateDimensions);
+    }
+
+    updateDimensions = () => {
+        this.setState({ width: window.innerWidth, height: window.innerHeight });
+        this.simulation.update();
+    };
+
     canvasClick = (e) => {
         const clickedNode = this.simulation.nodeOnMousePosition(e.clientX, e.clientY);
-        let selectedNodes = clickedNode ? prepend(this.state.selectedPeople, clickedNode) : [];
-        selectedNodes = selectedNodes.slice(0, 2);
+        let selectedNodes = clickedNode ? prepend(this.state.selectedPeople, clickedNode).slice(0, 2) : [];
         this.setState({
             selectedPeople: selectedNodes
         });
         this.props.graph.nodes.forEach((node) => {
-            node.displayProps.selected = false
-        });
-        selectedNodes.forEach((node) => {
-            node.displayProps.selected = true
+            node.displayProps.selected = selectedNodes.includes(node)
         });
         this.simulation.update();
     };
@@ -110,12 +118,7 @@ class TrojstenGraph extends React.Component {
     };
 
     canvasMouseMove = (e) => {
-        const node = this.simulation.nodeOnMousePosition(e.clientX, e.clientY);
-        if (node) {
-            this.canvas.style.cursor = 'pointer'
-        } else {
-            this.canvas.style.cursor = 'default'
-        }
+        this.canvas.style.cursor = this.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer': 'default';
     };
 
     getSidebar = () => {
@@ -143,8 +146,7 @@ class TrojstenGraph extends React.Component {
         );
         return (
             <div>
-                <canvas tabIndex="1"
-                        ref="canvas" width={window.innerWidth} height={window.innerHeight}
+                <canvas tabIndex="1" ref="canvas" width={this.state.width} height={this.state.height}
                         onClick={this.canvasClick} onMouseMove={this.canvasMouseMove}>
                 </canvas>
                 {this.getSidebar()}

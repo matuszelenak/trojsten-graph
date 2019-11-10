@@ -137,18 +137,19 @@ var TrojstenGraph = function (_React$Component3) {
             });
         };
 
+        _this3.updateDimensions = function () {
+            _this3.setState({ width: window.innerWidth, height: window.innerHeight });
+            _this3.simulation.update();
+        };
+
         _this3.canvasClick = function (e) {
             var clickedNode = _this3.simulation.nodeOnMousePosition(e.clientX, e.clientY);
-            var selectedNodes = clickedNode ? prepend(_this3.state.selectedPeople, clickedNode) : [];
-            selectedNodes = selectedNodes.slice(0, 2);
+            var selectedNodes = clickedNode ? prepend(_this3.state.selectedPeople, clickedNode).slice(0, 2) : [];
             _this3.setState({
                 selectedPeople: selectedNodes
             });
             _this3.props.graph.nodes.forEach(function (node) {
-                node.displayProps.selected = false;
-            });
-            selectedNodes.forEach(function (node) {
-                node.displayProps.selected = true;
+                node.displayProps.selected = selectedNodes.includes(node);
             });
             _this3.simulation.update();
         };
@@ -158,12 +159,7 @@ var TrojstenGraph = function (_React$Component3) {
         };
 
         _this3.canvasMouseMove = function (e) {
-            var node = _this3.simulation.nodeOnMousePosition(e.clientX, e.clientY);
-            if (node) {
-                _this3.canvas.style.cursor = 'pointer';
-            } else {
-                _this3.canvas.style.cursor = 'default';
-            }
+            _this3.canvas.style.cursor = _this3.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer' : 'default';
         };
 
         _this3.getSidebar = function () {
@@ -183,7 +179,9 @@ var TrojstenGraph = function (_React$Component3) {
         };
 
         _this3.state = {
-            selectedPeople: []
+            selectedPeople: [],
+            width: window.innerWidth,
+            height: window.innerHeight
         };
 
         var options = {
@@ -202,12 +200,18 @@ var TrojstenGraph = function (_React$Component3) {
     _createClass(TrojstenGraph, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
+            window.addEventListener('resize', this.updateDimensions);
             this.canvas = this.refs.canvas;
             this.searchInput = this.refs.search_query;
             var preprocessor = new GraphDataPreprocessor(this.props.graph);
             this.renderer = new GraphRenderer(this.props.graph, this.canvas);
             this.simulation = new GraphSimulation(this.props.graph, this.canvas);
             this.simulation.render = this.renderer.renderGraph;
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            window.removeEventListener('resize', this.updateDimensions);
         }
     }, {
         key: 'render',
@@ -225,8 +229,7 @@ var TrojstenGraph = function (_React$Component3) {
             return React.createElement(
                 'div',
                 null,
-                React.createElement('canvas', { tabIndex: '1',
-                    ref: 'canvas', width: window.innerWidth, height: window.innerHeight,
+                React.createElement('canvas', { tabIndex: '1', ref: 'canvas', width: this.state.width, height: this.state.height,
                     onClick: this.canvasClick, onMouseMove: this.canvasMouseMove }),
                 this.getSidebar()
             );
