@@ -203,7 +203,7 @@ var TrojstenGraph = function (_React$Component3) {
             window.addEventListener('resize', this.updateDimensions);
             this.canvas = this.refs.canvas;
             this.searchInput = this.refs.search_query;
-            var preprocessor = new GraphDataPreprocessor(this.props.graph);
+            preprocessGraph(this.props.graph);
             this.renderer = new GraphRenderer(this.props.graph, this.canvas);
             this.simulation = new GraphSimulation(this.props.graph, this.canvas);
             this.simulation.render = this.renderer.renderGraph;

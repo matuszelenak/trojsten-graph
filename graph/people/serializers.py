@@ -5,34 +5,27 @@ from people.models import Person, Relationship, GroupMembership, RelationshipSta
 
 class GroupMembershipSerializer(serializers.ModelSerializer):
     group_name = serializers.CharField(source='group.name')
-    duration = serializers.IntegerField(source='duration.days')
 
     class Meta:
         model = GroupMembership
-        fields = ('date_started', 'date_ended', 'duration', 'group_name')
+        fields = ('date_started', 'date_ended', 'group_name')
 
 
 class PeopleSerializer(serializers.ModelSerializer):
     memberships = serializers.SerializerMethodField()
-    age = serializers.SerializerMethodField()
-
-    def get_age(self, instance):
-        return instance.age.days / 365
 
     def get_memberships(self, instance):
         return GroupMembershipSerializer(instance.visible_memberships, many=True).data
 
     class Meta:
         model = Person
-        fields = ('id', 'age', 'first_name', 'last_name', 'maiden_name', 'nickname', 'gender', 'birth_date', 'memberships')
+        fields = ('id', 'first_name', 'last_name', 'maiden_name', 'nickname', 'gender', 'birth_date', 'memberships')
 
 
 class RelationshipStatusSerializer(serializers.ModelSerializer):
-    days_together = serializers.IntegerField(source='duration.days')
-
     class Meta:
         model = RelationshipStatus
-        fields = ('status', 'date_start', 'date_end', 'days_together')
+        fields = ('status', 'date_start', 'date_end')
 
 
 class RelationshipSerializer(serializers.ModelSerializer):

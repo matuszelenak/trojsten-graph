@@ -56,7 +56,7 @@ class RelationshipQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'statuses',
-                queryset=RelationshipStatus.objects.with_duration().order_by('relationship', '-date_start'),
+                queryset=RelationshipStatus.objects.order_by('relationship', '-date_start'),
                 to_attr='recent_statuses'
             )
         )
@@ -151,18 +151,13 @@ class PersonQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'memberships',
-                queryset=GroupMembership.objects.select_related('group').filter(group__visible=True).with_duration(),
+                queryset=GroupMembership.objects.select_related('group').filter(group__visible=True),
                 to_attr='visible_memberships'
             )
         )
 
-    def with_age(self):
-        return self.annotate(
-            age=Coalesce(F('death_date'), timezone.localdate()) - Coalesce(F('birth_date'), timezone.localdate())
-        )
-
     def for_graph_serialization(self):
-        return self.filter(visible=True).with_visible_memberships().with_age().order_by('pk')
+        return self.filter(visible=True).with_visible_memberships().order_by('pk')
 
 
 class Person(models.Model):

@@ -1,70 +1,19 @@
-class GraphDataPreprocessor {
-    constructor(graph) {
-        this.graph = graph;
-
-        this.relationshipColors = {
-            [enums.StatusChoices.bloodRelative]: '#008080',
-            [enums.StatusChoices.sibling]: '#008700',
-            [enums.StatusChoices.parentChild]: '#8080ff',
-            [enums.StatusChoices.married]: '#b70000',
-            [enums.StatusChoices.engaged]: '#ffc000',
-            [enums.StatusChoices.dating]: '#ffffff',
-            [enums.StatusChoices.rumour]: '#ff00ff',
-        };
-        this.seminarColors = {
-            KSP: '#818f3d',
-            KMS: '#4a6fd8',
-            FKS: '#e39f3c',
-        };
-
-        this.graph.nodes.forEach((node) => {
-            node.displayProps = {};
-            this.preprocessNode(node);
+function preprocessGraph(graph) {
+    graph.nodes.forEach((node) => {
+        stringsToDates(node, ['birth_date', 'death_date']);
+        node.memberships.forEach((membership) => {
+            stringsToDates(membership, ['date_started', 'date_ended']);
+            membership.duration = timeDelta(membership.date_ended, membership.date_started).days
         });
-        this.graph.edges.forEach((edge) => {
-            edge.displayProps = {};
-            this.preprocessEdge(edge);
+        node.age = timeDelta(node.death_date, node.birth_date).years;
+    });
+    graph.edges.forEach((edge) => {
+        edge.statuses.forEach((status) => {
+            stringsToDates(status, ['date_start', 'date_end']);
+            status.duration = timeDelta(status.date_end, status.date_start).days
         });
-    }
-
-    preprocessNode(node) {
-        node.memberships.map((membership) => {
-            membership.date_started = new Date(membership.date_started);
-            membership.date_ended = membership.date_ended ? new Date(membership.date_ended) : null
-        });
-        node.seminar_memberships = node.memberships.filter((membership) => {
-            return (this.seminarColors.hasOwnProperty(membership.group_name) && (membership.duration > 0))
-        });
-        const cumulativeDuration = node.seminar_memberships.map((m) => m.duration).reduce((acc, val) => acc + val, 0);
-
-        node.displayProps.pie = [];
-        let previousAngleEnd = 0;
-        node.seminar_memberships.forEach((membership) => {
-            const angleEnd = previousAngleEnd + membership.duration / cumulativeDuration * Math.PI * 2;
-            node.displayProps.pie.push({
-                angleStart: previousAngleEnd,
-                angleEnd: angleEnd,
-                color: this.seminarColors[membership.group_name]
-            });
-            previousAngleEnd = angleEnd;
-        });
-
-        node.displayProps.label = node.nickname ? node.nickname : node.first_name + ' ' + node.last_name;
-        node.displayProps.radius = 3 + Math.ceil(Math.sqrt(node.age * 2))
-    }
-
-    preprocessEdge(edge) {
-        const sorted_statuses = edge.statuses.map((status) => {
-            status.date_start = new Date(status.date_start);
-            status.date_end = status.date_end ? new Date(status.date_end): null;
-            return status
-        }).sort((a, b) => a.date_start < b.date_start ? 1 : -1);
-        edge.newest_status = sorted_statuses[0];
-
-        edge.displayProps.dashing = edge.newest_status.date_end ? [2, 2]: [];
-        edge.displayProps.width = edge.newest_status.date_end ? 1: Math.ceil(Math.log(Math.sqrt(edge.newest_status.days_together / 10)));
-        edge.displayProps.color = this.relationshipColors[edge.newest_status.status]
-    }
+        edge.newest_status = edge.statuses[0];
+    });
 }
 
 class GraphRenderer {
@@ -72,7 +21,50 @@ class GraphRenderer {
         this.graph = graph;
         this.canvas = canvas;
         this.context = this.canvas.getContext('2d');
+        this.calculateDisplayProps()
     }
+
+    nodeDisplayProps = (node) => {
+        let props = {};
+        const seminar_memberships = node.memberships.filter((membership) => {
+            return (enums.seminarColors.hasOwnProperty(membership.group_name) && (membership.duration > 0))
+        });
+
+        props.pie = [];
+        const cumulativeDuration = seminar_memberships.map((m) => m.duration).reduce((acc, val) => acc + val, 0);
+        let previousAngleEnd = 0;
+        seminar_memberships.forEach((membership) => {
+            const angleEnd = previousAngleEnd + (membership.duration / cumulativeDuration) * Math.PI * 2;
+            props.pie.push({
+                angleStart: previousAngleEnd,
+                angleEnd: angleEnd,
+                color: enums.seminarColors[membership.group_name]
+            });
+            previousAngleEnd = angleEnd;
+        });
+
+        props.label = node.nickname ? node.nickname : node.first_name + ' ' + node.last_name;
+        props.radius = 3 + Math.ceil(Math.sqrt(node.age * 2));
+
+        return props
+    };
+
+    edgeDisplayProps = (edge) => {
+        return {
+            dashing: edge.newest_status.date_end ? [2, 2] : [],
+            width: edge.newest_status.date_end ? 1 : Math.ceil(Math.log(Math.sqrt(edge.newest_status.duration / 10))),
+            color: enums.relationshipColors[edge.newest_status.status]
+        }
+    };
+
+    calculateDisplayProps = () => {
+        this.graph.nodes.forEach((node) => {
+            node.displayProps = this.nodeDisplayProps(node)
+        });
+        this.graph.edges.forEach((edge) => {
+            edge.displayProps = this.edgeDisplayProps(edge)
+        });
+    };
 
     renderEdge = (edge) => {
         this.context.save();
@@ -91,7 +83,7 @@ class GraphRenderer {
         this.context.beginPath();
         this.context.lineWidth = 2;
         this.context.arc(node.x, node.y, node.displayProps.radius, 0, 2 * Math.PI, true);
-        if (node.displayProps.selected){
+        if (node.displayProps.selected) {
             this.context.strokeStyle = '#fff'
         }
         this.context.stroke();
@@ -99,7 +91,8 @@ class GraphRenderer {
             node.displayProps.pie.forEach((section) => {
                 this.context.beginPath();
                 this.context.moveTo(node.x, node.y);
-                this.context.arc(node.x, node.y, node.displayProps.radius, section.angleStart, section.angleEnd, true);
+                this.context.arc(node.x, node.y, node.displayProps.radius, section.angleEnd, section.angleStart, true);
+                this.context.closePath();
                 this.context.fillStyle = section.color;
                 this.context.fill();
             });
@@ -107,6 +100,7 @@ class GraphRenderer {
             this.context.fillStyle = '#666';
             this.context.fill();
         }
+        this.context.font = "normal normal bold 12px sans-serif";
         this.context.fillStyle = "#FFF";
         this.context.fillText(
             node.displayProps.label,
@@ -118,15 +112,13 @@ class GraphRenderer {
 
     renderGraph = (transform) => {
         this.context.save();
-        this.context.fillStyle = '#222';
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.translate(transform.x, transform.y);
         this.context.scale(transform.k, transform.k);
 
         this.graph.edges.forEach((edge) => {
             this.renderEdge(edge);
         });
-        this.context.font = "normal normal bold 12px sans-serif";
         this.graph.nodes.forEach((node) => {
             this.renderNode(node);
         });
@@ -137,7 +129,7 @@ class GraphRenderer {
 
 
 class GraphSimulation {
-    constructor(graph, canvas){
+    constructor(graph, canvas) {
         this.canvas = canvas;
         this.simulation = d3.forceSimulation()
             .force("center", d3.forceCenter(this.canvas.width / 2, this.canvas.height / 2))
@@ -171,11 +163,11 @@ class GraphSimulation {
 
     nodeOnMousePosition = (mouseX, mouseY) => {
         let i, dx, dy, x = this.transform.invertX(mouseX), y = this.transform.invertY(mouseY);
-        for (i = 0; i < this.graph.nodes.length; ++i){
+        for (i = 0; i < this.graph.nodes.length; ++i) {
             const node = this.graph.nodes[i];
             dx = x - node.x;
             dy = y - node.y;
-            if (dx * dx + dy * dy < node.displayProps.radius * node.displayProps.radius){
+            if (dx * dx + dy * dy < node.displayProps.radius * node.displayProps.radius) {
                 return node
             }
         }
@@ -213,13 +205,47 @@ class GraphSimulation {
     }
 }
 
-function dateToString(date, now_when_null=true){
+function dateToString(date, now_when_null = true) {
     const dateOpt = {year: 'numeric', month: 'numeric', day: 'numeric'};
     return date ? date.toLocaleString('sk-SK', dateOpt) : (now_when_null ? 'now' : '')
 }
 
-function prepend(arr, value){
+function prepend(arr, value) {
     let newArray = arr.slice();
     newArray.unshift(value);
     return newArray
 }
+
+function timeDelta(later, sooner) {
+    const diff = (later ? later : new Date()) - (sooner ? sooner : new Date());
+    const milliseconds_in_days = 1000 * 60 * 60 * 24;
+    return {
+        hours: diff / (milliseconds_in_days / 24),
+        days: diff / milliseconds_in_days,
+        months: diff / (milliseconds_in_days * 30),
+        years: diff / (milliseconds_in_days * 365)
+    }
+}
+
+function stringsToDates(obj, fields) {
+    fields.forEach((field) => {
+        obj[field] = typeof obj[field] == 'string' ? new Date(obj[field]) : obj[field]
+    });
+    return obj
+}
+
+enums['seminarColors'] = {
+    KSP: '#818f3d',
+    KMS: '#4a6fd8',
+    FKS: '#e39f3c',
+};
+
+enums['relationshipColors'] = {
+    [enums.StatusChoices.bloodRelative]: '#008080',
+    [enums.StatusChoices.sibling]: '#008700',
+    [enums.StatusChoices.parentChild]: '#8080ff',
+    [enums.StatusChoices.married]: '#b70000',
+    [enums.StatusChoices.engaged]: '#ffc000',
+    [enums.StatusChoices.dating]: '#ffffff',
+    [enums.StatusChoices.rumour]: '#ff00ff',
+};
