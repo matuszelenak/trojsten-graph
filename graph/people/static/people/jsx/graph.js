@@ -53,9 +53,16 @@ class GraphFilterPanel extends React.Component {
     constructor(props) {
         super(props);
         this.filter = props.filter;
+        this.state = this.filter.getFilterOptions().reduce((acc, option) => {
+            acc[option.name] = option.value;
+            return acc
+        }, {})
     }
 
     handleInputChange = (event) => {
+        this.setState({
+            [event.target.name]: event.target.checked
+        });
         this.filter.updateFilterValue(event.target.name, event.target.checked)
     };
 
@@ -70,7 +77,7 @@ class GraphFilterPanel extends React.Component {
                             <tr key={option.name}>
                                 <td><label>{option.label}</label></td>
 
-                                <td><input key={option.name} type='checkbox'
+                                <td><input key={option.name} type='checkbox' checked={this.state[option.name] === true ? 'checked': ''}
                                            name={option.name} onChange={this.handleInputChange}
                                 /></td>
                             </tr>
@@ -84,8 +91,8 @@ class GraphFilterPanel extends React.Component {
 
     render() {
         return <div className='graph-filter'>
-            {this.inputGroup('People', this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten', 'isolated'))}
-            {this.inputGroup('Relationships', this.filter.getFilterOptions('isSerious', 'isRumour', 'isBloodBound', 'isEnded'))}
+            {this.inputGroup('People', this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten'))}
+            {this.inputGroup('Relationships', this.filter.getFilterOptions('isSerious', 'isRumour', 'isBloodBound'))}
         </div>
     }
 }

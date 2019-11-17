@@ -1,5 +1,7 @@
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -130,6 +132,7 @@ var GraphFilterPanel = function (_React$Component3) {
         var _this3 = _possibleConstructorReturn(this, (GraphFilterPanel.__proto__ || Object.getPrototypeOf(GraphFilterPanel)).call(this, props));
 
         _this3.handleInputChange = function (event) {
+            _this3.setState(_defineProperty({}, event.target.name, event.target.checked));
             _this3.filter.updateFilterValue(event.target.name, event.target.checked);
         };
 
@@ -164,7 +167,7 @@ var GraphFilterPanel = function (_React$Component3) {
                                 React.createElement(
                                     'td',
                                     null,
-                                    React.createElement('input', { key: option.name, type: 'checkbox',
+                                    React.createElement('input', { key: option.name, type: 'checkbox', checked: _this3.state[option.name] === true ? 'checked' : '',
                                         name: option.name, onChange: _this3.handleInputChange
                                     })
                                 )
@@ -176,6 +179,10 @@ var GraphFilterPanel = function (_React$Component3) {
         };
 
         _this3.filter = props.filter;
+        _this3.state = _this3.filter.getFilterOptions().reduce(function (acc, option) {
+            acc[option.name] = option.value;
+            return acc;
+        }, {});
         return _this3;
     }
 
@@ -185,8 +192,8 @@ var GraphFilterPanel = function (_React$Component3) {
             return React.createElement(
                 'div',
                 { className: 'graph-filter' },
-                this.inputGroup('People', this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten', 'isolated')),
-                this.inputGroup('Relationships', this.filter.getFilterOptions('isSerious', 'isRumour', 'isBloodBound', 'isEnded'))
+                this.inputGroup('People', this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten')),
+                this.inputGroup('Relationships', this.filter.getFilterOptions('isSerious', 'isRumour', 'isBloodBound'))
             );
         }
     }]);

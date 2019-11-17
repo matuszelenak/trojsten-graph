@@ -20,12 +20,12 @@ class GraphFilter {
     constructor(graph) {
         this.original = graph;
         this.original.edges.forEach((edge, index) => {
-            edge.ID = index
+            edge.id = index
         });
         this.options = {
             isKSP: {
                 label: 'KSP',
-                value: true
+                value: true,
             },
             isKMS: {
                 label: 'KMS',
@@ -47,6 +47,10 @@ class GraphFilter {
                 label: 'Serious',
                 value: true
             },
+            pastIsSerious: {
+                label: 'Past',
+                value: true
+            },
             isBloodBound: {
                 label: 'Blood bound',
                 value: true
@@ -55,16 +59,19 @@ class GraphFilter {
                 label: 'Rumours',
                 value: true
             },
-            isEnded: {
+            pastIsRumour: {
                 label: 'Past',
                 value: true
-            }
+            },
         };
         this.filterFunctions = {
             isKSP: (p) => this.isSeminarMember(p, 'KSP'),
             isKMS: (p) => this.isSeminarMember(p, 'KMS'),
             isFKS: (p) => this.isSeminarMember(p, 'FKS'),
-            notTrojsten: this.isNotTrojsten
+            notTrojsten: this.isNotTrojsten,
+            isSerious: this.isSerious,
+            isBloodBound: this.isBloodBound,
+            isRumour: this.isRumour,
         };
         this.graph = {
             nodes: [...this.original.nodes],
@@ -78,7 +85,9 @@ class GraphFilter {
     }
 
     getFilterOptions = (...args) => {
-        return Object.entries(this.options).filter(([name, params]) => args.includes(name)).map(([name, params]) => {
+        return Object.entries(this.options).filter(([name, params]) => {
+            return args.length > 1 ? args.includes(name) : true
+        }).map(([name, params]) => {
             params.name = name;
             return params
         })
@@ -97,25 +106,53 @@ class GraphFilter {
         return person.memberships.filter((membership) => ['KMS', 'FKS', 'KSP'].includes(membership.group_name)).length === 0
     };
 
-    filteredNodeIds = () => {
-        // Additive filters
-        let additiveFunctions = Object.keys(this.filterFunctions)
-            .filter((key) => (['isKSP', 'isKMS', 'isFKS', 'notTrojsten'].includes(key) && this.options[key].value === true));
-        additiveFunctions = additiveFunctions.reduce((obj, key) => {
+    isRumour = (edge) => {
+        return edge.newest_status.status === enums.StatusChoices.rumour
+    };
+
+    isSerious = (edge) => {
+        return [enums.StatusChoices.dating, enums.StatusChoices.engaged, enums.StatusChoices.married]
+            .includes(edge.newest_status.status)
+    };
+
+    isBloodBound = (edge) => {
+        return [enums.StatusChoices.bloodRelative, enums.StatusChoices.parentChild, enums.StatusChoices.sibling].includes(edge.newest_status.status)
+    };
+
+    composeFunctions = (...functions) => {
+        return functions.reduce((acc, f) => {
+            return (x) => f(x) || acc(x)
+        }, () => false);
+    };
+
+    getFunctions = (...names) => {
+        return Object.keys(this.filterFunctions)
+            .filter((key) => (names.includes(key) && this.options[key].value === true))
+            .reduce((obj, key) => {
                 obj.push(this.filterFunctions[key]);
                 return obj;
             }, []);
-        const additiveAggregate = additiveFunctions.reduce((acc, f) => {
-            return (x) => f(x) || acc(x)
-        }, () => false);
+    };
 
-        return new Set(this.original.nodes.filter(additiveAggregate).map((person) => person.id))
+    filteredNodeIds = () => {
+        return new Set(this.original.nodes
+            .filter(this.composeFunctions(...this.getFunctions('isKSP', 'isKMS', 'isFKS', 'notTrojsten')))
+            .map((person) => person.id))
+    };
+
+    filteredEdgeIds = () => {
+        return new Set(this.original.edges
+            .filter(this.composeFunctions(...this.getFunctions('isBloodBound', 'isSerious', 'isRumour')))
+            .map((edge) => edge.id)
+        )
     };
 
     filterGraph = () => {
         const nodeIds = [...this.filteredNodeIds()];
         this.graph.nodes = this.original.nodes.filter((node) => nodeIds.includes(node.id));
-        this.graph.edges = this.original.edges.filter((edge) => {
+
+        const edgeIds = [...this.filteredEdgeIds()];
+        this.graph.edges = this.original.edges.filter((edge) => edgeIds.includes(edge.id)).filter((edge) => {
             return nodeIds.includes(edge.source.id) && nodeIds.includes(edge.target.id)
         });
         this.onFilterCallback(this.graph);
@@ -247,9 +284,7 @@ class GraphSimulation {
             .force("x", d3.forceX(this.canvas.width / 2).strength(0.04))
             .force("y", d3.forceY(this.canvas.height / 2).strength(0.04))
             .force("charge", d3.forceManyBody().strength(-200))
-            .force("link", d3.forceLink().strength(0.3).id((node) => node.id))
-            .alphaTarget(0)
-            .alphaDecay(0.05);
+            .force("link", d3.forceLink().strength(0.3).id((node) => node.id));
 
         d3.select(this.canvas)
             .call(d3.drag().subject(this.dragsubject)
@@ -272,7 +307,7 @@ class GraphSimulation {
         this.edges = graph.edges;
         this.simulation.nodes(this.nodes);
         this.simulation.force("link").links(this.edges);
-        this.simulation.alphaTarget(0.3).restart();
+        this.simulation.alphaTarget(0.3).alphaDecay(0.05).restart();
     };
 
     update = () => {
