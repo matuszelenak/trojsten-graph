@@ -16,12 +16,117 @@ function preprocessGraph(graph) {
     });
 }
 
+class GraphFilter {
+    constructor(graph) {
+        this.original = graph;
+        this.original.edges.forEach((edge, index) => {
+            edge.ID = index
+        });
+        this.options = {
+            isKSP: {
+                label: 'KSP',
+                value: true
+            },
+            isKMS: {
+                label: 'KMS',
+                value: true
+            },
+            isFKS: {
+                label: 'FKS',
+                value: true
+            },
+            notTrojsten: {
+                label: 'Non-Trojsten',
+                value: true
+            },
+            isolated: {
+                label: 'Isolated',
+                value: true
+            },
+            isSerious: {
+                label: 'Serious',
+                value: true
+            },
+            isBloodBound: {
+                label: 'Blood bound',
+                value: true
+            },
+            isRumour: {
+                label: 'Rumours',
+                value: true
+            },
+            isEnded: {
+                label: 'Past',
+                value: true
+            }
+        };
+        this.filterFunctions = {
+            isKSP: (p) => this.isSeminarMember(p, 'KSP'),
+            isKMS: (p) => this.isSeminarMember(p, 'KMS'),
+            isFKS: (p) => this.isSeminarMember(p, 'FKS'),
+            notTrojsten: this.isNotTrojsten
+        };
+        this.graph = {
+            nodes: [...this.original.nodes],
+            edges: [...this.original.edges]
+        };
+        this.onFilterCallback = () => {
+        };
+        this.onFilterUpdate = (callback) => {
+            this.onFilterCallback = callback
+        }
+    }
+
+    getFilterOptions = (...args) => {
+        return Object.entries(this.options).filter(([name, params]) => args.includes(name)).map(([name, params]) => {
+            params.name = name;
+            return params
+        })
+    };
+
+    updateFilterValue = (key, value) => {
+        this.options[key].value = value;
+        this.filterGraph();
+    };
+
+    isSeminarMember = (person, seminar_name) => {
+        return person.memberships.filter((membership) => membership.group_name === seminar_name).length > 0
+    };
+
+    isNotTrojsten = (person) => {
+        return person.memberships.filter((membership) => ['KMS', 'FKS', 'KSP'].includes(membership.group_name)).length === 0
+    };
+
+    filteredNodeIds = () => {
+        // Additive filters
+        let additiveFunctions = Object.keys(this.filterFunctions)
+            .filter((key) => (['isKSP', 'isKMS', 'isFKS', 'notTrojsten'].includes(key) && this.options[key].value === true));
+        additiveFunctions = additiveFunctions.reduce((obj, key) => {
+                obj.push(this.filterFunctions[key]);
+                return obj;
+            }, []);
+        const additiveAggregate = additiveFunctions.reduce((acc, f) => {
+            return (x) => f(x) || acc(x)
+        }, () => false);
+
+        return new Set(this.original.nodes.filter(additiveAggregate).map((person) => person.id))
+    };
+
+    filterGraph = () => {
+        const nodeIds = [...this.filteredNodeIds()];
+        this.graph.nodes = this.original.nodes.filter((node) => nodeIds.includes(node.id));
+        this.graph.edges = this.original.edges.filter((edge) => {
+            return nodeIds.includes(edge.source.id) && nodeIds.includes(edge.target.id)
+        });
+        this.onFilterCallback(this.graph);
+    }
+}
+
 class GraphRenderer {
-    constructor(graph, canvas) {
-        this.graph = graph;
+    constructor(canvas) {
+        this.graph = {nodes: [], edges: []};
         this.canvas = canvas;
         this.context = this.canvas.getContext('2d');
-        this.calculateDisplayProps()
     }
 
     nodeDisplayProps = (node) => {
@@ -64,6 +169,11 @@ class GraphRenderer {
         this.graph.edges.forEach((edge) => {
             edge.displayProps = this.edgeDisplayProps(edge)
         });
+    };
+
+    setData = (graph) => {
+        this.graph = graph;
+        this.calculateDisplayProps()
     };
 
     renderEdge = (edge) => {
@@ -129,7 +239,7 @@ class GraphRenderer {
 
 
 class GraphSimulation {
-    constructor(graph, canvas) {
+    constructor(canvas) {
         this.canvas = canvas;
         this.simulation = d3.forceSimulation()
             .force("center", d3.forceCenter(this.canvas.width / 2, this.canvas.height / 2))
@@ -148,14 +258,22 @@ class GraphSimulation {
                 .on("end", this.dragended))
             .call(d3.zoom().scaleExtent([1 / 10, 8]).on("zoom", this.zoomed));
 
-        this.graph = graph;
-        this.simulation.nodes(graph.nodes);
-        this.simulation.force("link").links(graph.edges);
+        this.nodes = [];
+        this.edges = [];
 
-        this.render = () => {};
+        this.render = () => {
+        };
         this.transform = d3.zoomIdentity;
         this.simulation.on("tick", this.update);
     }
+
+    setData = (graph) => {
+        this.nodes = graph.nodes;
+        this.edges = graph.edges;
+        this.simulation.nodes(this.nodes);
+        this.simulation.force("link").links(this.edges);
+        this.simulation.alphaTarget(0.3).restart();
+    };
 
     update = () => {
         this.render(this.transform);
@@ -163,8 +281,8 @@ class GraphSimulation {
 
     nodeOnMousePosition = (mouseX, mouseY) => {
         let i, dx, dy, x = this.transform.invertX(mouseX), y = this.transform.invertY(mouseY);
-        for (i = 0; i < this.graph.nodes.length; ++i) {
-            const node = this.graph.nodes[i];
+        for (i = 0; i < this.nodes.length; ++i) {
+            const node = this.nodes[i];
             dx = x - node.x;
             dy = y - node.y;
             if (dx * dx + dy * dy < node.displayProps.radius * node.displayProps.radius) {
@@ -232,6 +350,20 @@ function stringsToDates(obj, fields) {
         obj[field] = typeof obj[field] == 'string' ? new Date(obj[field]) : obj[field]
     });
     return obj
+}
+
+function inPlaceFilter(condition, arr) {
+    let j = 0;
+
+    arr.forEach((e, i) => {
+        if (condition(e)) {
+            if (i !== j) arr[j] = e;
+            j++;
+        }
+    });
+
+    arr.length = j;
+    return arr;
 }
 
 enums['seminarColors'] = {

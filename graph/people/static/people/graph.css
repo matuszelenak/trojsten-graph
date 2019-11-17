@@ -26,6 +26,14 @@ canvas {
     background-color : rgb(50, 50, 50);
 }
 
+.graph-filter {
+    color: white;
+    width: 300px;
+    float: left;
+    position: relative;
+    background-color: rgb(50, 50, 50);
+}
+
 .search-bar {
     position: absolute;
     top: 0;

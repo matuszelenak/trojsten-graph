@@ -49,6 +49,48 @@ class RelationshipDetail extends React.Component {
 }
 
 
+class GraphFilterPanel extends React.Component {
+    constructor(props) {
+        super(props);
+        this.filter = props.filter;
+    }
+
+    handleInputChange = (event) => {
+        this.filter.updateFilterValue(event.target.name, event.target.checked)
+    };
+
+    inputGroup = (label, options) => {
+        return (
+            <div key={label}>
+                <h2>{label}</h2>
+                <table>
+                    <tbody>
+                    {options.map((option) => {
+                        return (
+                            <tr key={option.name}>
+                                <td><label>{option.label}</label></td>
+
+                                <td><input key={option.name} type='checkbox'
+                                           name={option.name} onChange={this.handleInputChange}
+                                /></td>
+                            </tr>
+                        )
+                    })}
+                    </tbody>
+                </table>
+            </div>
+        )
+    };
+
+    render() {
+        return <div className='graph-filter'>
+            {this.inputGroup('People', this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten', 'isolated'))}
+            {this.inputGroup('Relationships', this.filter.getFilterOptions('isSerious', 'isRumour', 'isBloodBound', 'isEnded'))}
+        </div>
+    }
+}
+
+
 class TrojstenGraph extends React.Component {
     constructor(props) {
         super(props);
@@ -57,6 +99,9 @@ class TrojstenGraph extends React.Component {
             width: window.innerWidth,
             height: window.innerHeight
         };
+
+        preprocessGraph(props.graph);
+        this.filter = new GraphFilter(props.graph);
 
         const options = {
             shouldSort: true,
@@ -80,14 +125,21 @@ class TrojstenGraph extends React.Component {
         })
     };
 
+    setData = (graph) => {
+        this.simulation.setData(graph);
+        this.renderer.setData(graph);
+    };
+
     componentDidMount() {
         window.addEventListener('resize', this.updateDimensions);
         this.canvas = this.refs.canvas;
         this.searchInput = this.refs.search_query;
-        preprocessGraph(this.props.graph);
-        this.renderer = new GraphRenderer(this.props.graph, this.canvas);
-        this.simulation = new GraphSimulation(this.props.graph, this.canvas);
-        this.simulation.render = this.renderer.renderGraph
+        this.renderer = new GraphRenderer(this.canvas);
+        this.simulation = new GraphSimulation(this.canvas);
+        this.simulation.setData(this.props.graph);
+        this.simulation.render = this.renderer.renderGraph;
+        this.filter.onFilterUpdate((graph) => this.setData(graph));
+        this.filter.filterGraph();
     }
 
     componentWillUnmount() {
@@ -95,7 +147,7 @@ class TrojstenGraph extends React.Component {
     }
 
     updateDimensions = () => {
-        this.setState({ width: window.innerWidth, height: window.innerHeight });
+        this.setState({width: window.innerWidth, height: window.innerHeight});
         this.simulation.update();
     };
 
@@ -118,7 +170,7 @@ class TrojstenGraph extends React.Component {
     };
 
     canvasMouseMove = (e) => {
-        this.canvas.style.cursor = this.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer': 'default';
+        this.canvas.style.cursor = this.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer' : 'default';
     };
 
     getSidebar = () => {
@@ -149,6 +201,7 @@ class TrojstenGraph extends React.Component {
                 <canvas tabIndex="1" ref="canvas" width={this.state.width} height={this.state.height}
                         onClick={this.canvasClick} onMouseMove={this.canvasMouseMove}>
                 </canvas>
+                <GraphFilterPanel filter={this.filter}/>
                 {this.getSidebar()}
             </div>
         )
