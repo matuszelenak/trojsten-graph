@@ -238,3 +238,7 @@ class GroupMembership(models.Model):
 class VerificationToken(models.Model):
     token = models.CharField(max_length=128, default=random_token)
     valid_until = models.DateTimeField()
+    note = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f'Verification token #{self.pk}'

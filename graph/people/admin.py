@@ -94,4 +94,5 @@ class RelationshipStatusAdmin(admin.ModelAdmin):
 
 @admin.register(VerificationToken)
 class VerificationTokenAdmin(admin.ModelAdmin):
+    list_display = ('token', 'valid_until', 'note')
     readonly_fields = ('token', )
