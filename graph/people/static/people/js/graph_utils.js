@@ -91,7 +91,7 @@ class GraphFilter {
 
     trojstenFilter = (person) => {
         const memberships = seminarMemberships(person);
-        if (memberships.length === 0 && this.filters.notTrojsten.value){
+        if (memberships.length === 0 && this.filters.notTrojsten.value) {
             return true
         }
         const selectedSeminars = new Set(
@@ -224,47 +224,46 @@ class GraphRenderer {
     };
 
     renderEdge = (edge) => {
-        this.context.save();
         this.context.beginPath();
         this.context.lineWidth = edge.displayProps.width;
         this.context.strokeStyle = edge.displayProps.color;
         this.context.setLineDash(edge.displayProps.dashing);
-        this.context.moveTo(edge.source.x, edge.source.y);
-        this.context.lineTo(edge.target.x, edge.target.y);
+        this.context.moveTo(edge.source.displayX, edge.source.displayY);
+        this.context.lineTo(edge.target.displayX, edge.target.displayY);
         this.context.stroke();
-        this.context.restore();
     };
 
     renderNode = (node) => {
-        this.context.save();
-        this.context.beginPath();
-        this.context.lineWidth = 2;
-        this.context.arc(node.x, node.y, node.displayProps.radius, 0, 2 * Math.PI, true);
         if (node.displayProps.selected) {
-            this.context.strokeStyle = '#fff'
+            this.context.beginPath();
+            this.context.lineWidth = 2;
+            this.context.moveTo(node.displayX, node.displayY);
+            this.context.arc(node.displayX, node.displayY, node.displayProps.radius, 0, 2 * Math.PI, true);
+            this.context.strokeStyle = '#fff';
+            this.context.stroke();
         }
-        this.context.stroke();
+
         if (node.displayProps.pie.length > 0) {
             node.displayProps.pie.forEach((section) => {
                 this.context.beginPath();
-                this.context.moveTo(node.x, node.y);
-                this.context.arc(node.x, node.y, node.displayProps.radius, section.angleEnd, section.angleStart, true);
-                this.context.closePath();
+                this.context.moveTo(node.displayX, node.displayY);
+                this.context.arc(node.displayX, node.displayY, node.displayProps.radius, section.angleEnd, section.angleStart, true);
                 this.context.fillStyle = section.color;
                 this.context.fill();
             });
         } else {
+            this.context.beginPath();
+            this.context.arc(node.displayX, node.displayY, node.displayProps.radius, 0, 2 * Math.PI, true);
             this.context.fillStyle = '#666';
             this.context.fill();
         }
-        this.context.font = "normal normal bold 12px sans-serif";
+
         this.context.fillStyle = "#FFF";
         this.context.fillText(
             node.displayProps.label,
-            node.x - this.context.measureText(node.displayProps.label).width / 2,
-            node.y - node.displayProps.radius - 2
+            node.displayX - this.context.measureText(node.displayProps.label).width / 2,
+            node.displayY - node.displayProps.radius - 2
         );
-        this.context.restore();
     };
 
     renderGraph = (transform) => {
@@ -276,6 +275,8 @@ class GraphRenderer {
         this.graph.edges.forEach((edge) => {
             this.renderEdge(edge);
         });
+
+        this.context.font = "normal normal bold 12px sans-serif";
         this.graph.nodes.forEach((node) => {
             this.renderNode(node);
         });
@@ -293,8 +294,8 @@ class GraphSimulation {
             .force("collide", d3.forceCollide())
             .force("x", d3.forceX(this.canvas.width / 2).strength(0.04))
             .force("y", d3.forceY(this.canvas.height / 2).strength(0.04))
-            .force("charge", d3.forceManyBody().strength(-200))
-            .force("link", d3.forceLink().strength(0.3).id((node) => node.id));
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("link", d3.forceLink().strength(0.2).id((node) => node.id));
 
         d3.select(this.canvas)
             .call(d3.drag().subject(this.dragsubject)
@@ -321,6 +322,10 @@ class GraphSimulation {
     };
 
     update = () => {
+        this.nodes.forEach((node) => {
+            node.displayX = ~~node.x;
+            node.displayY = ~~node.y;
+        });
         this.render(this.transform);
     };
 
