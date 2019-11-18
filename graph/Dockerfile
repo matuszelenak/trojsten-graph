@@ -4,7 +4,7 @@ ENV PYTHONUNBUFFERED=0
 
 ENV DJANGO_SETTINGS_MODULE=graph.settings.development
 
-RUN apk add --no-cache --virtual build-deps curl gcc g++ make postgresql-dev bash
+RUN apk add --no-cache --virtual build-deps curl gcc g++ make postgresql-dev postgresql-client bash
 
 RUN mkdir /graph
 
