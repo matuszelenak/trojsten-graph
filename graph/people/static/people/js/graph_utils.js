@@ -22,10 +22,10 @@ class GraphFilter {
         this.original.edges.forEach((edge, index) => {
             edge.id = index
         });
-        this.options = {
+        this.filters = {
             isKSP: {
                 label: 'KSP',
-                value: true,
+                value: true
             },
             isKMS: {
                 label: 'KMS',
@@ -43,35 +43,26 @@ class GraphFilter {
                 label: 'Isolated',
                 value: true
             },
-            isSerious: {
-                label: 'Serious',
+            isCurrentSerious: {
+                label: 'Current serious',
                 value: true
             },
-            pastIsSerious: {
-                label: 'Past',
+            isOldSerious: {
+                label: 'Old serious',
                 value: true
             },
             isBloodBound: {
                 label: 'Blood bound',
                 value: true
             },
-            isRumour: {
-                label: 'Rumours',
+            isCurrentRumour: {
+                label: 'Current rumours',
                 value: true
             },
-            pastIsRumour: {
-                label: 'Past',
+            isOldRumour: {
+                label: 'Old rumours',
                 value: true
             },
-        };
-        this.filterFunctions = {
-            isKSP: (p) => this.isSeminarMember(p, 'KSP'),
-            isKMS: (p) => this.isSeminarMember(p, 'KMS'),
-            isFKS: (p) => this.isSeminarMember(p, 'FKS'),
-            notTrojsten: this.isNotTrojsten,
-            isSerious: this.isSerious,
-            isBloodBound: this.isBloodBound,
-            isRumour: this.isRumour,
         };
         this.graph = {
             nodes: [...this.original.nodes],
@@ -84,39 +75,67 @@ class GraphFilter {
         }
     }
 
+    updateFilterValue = (key, value) => {
+        this.filters[key].value = value;
+        this.filterGraph();
+    };
+
     getFilterOptions = (...args) => {
-        return Object.entries(this.options).filter(([name, params]) => {
-            return args.length > 1 ? args.includes(name) : true
+        return Object.entries(this.filters).filter(([name, params]) => {
+            return args.length > 0 ? args.includes(name) : true
         }).map(([name, params]) => {
             params.name = name;
             return params
         })
     };
 
-    updateFilterValue = (key, value) => {
-        this.options[key].value = value;
-        this.filterGraph();
+    trojstenFilter = (person) => {
+        const memberships = seminarMemberships(person);
+        if (memberships.length === 0 && this.filters.notTrojsten.value){
+            return true
+        }
+        const selectedSeminars = new Set(
+            Object.keys(this.filters).filter(
+                key => ['isKMS', 'isKSP', 'isFKS'].includes(key) && this.filters[key].value
+            ).map(key => this.filters[key].label)
+        );
+        return seminarMemberships(person).filter(seminar => selectedSeminars.has(seminar)).length > 0;
     };
 
-    isSeminarMember = (person, seminar_name) => {
-        return person.memberships.filter((membership) => membership.group_name === seminar_name).length > 0
-    };
-
-    isNotTrojsten = (person) => {
-        return person.memberships.filter((membership) => ['KMS', 'FKS', 'KSP'].includes(membership.group_name)).length === 0
+    relationshipFilter = (relationship, types, current, old) => {
+        const has_ended = relationship.newest_status.date_end !== null;
+        if (has_ended && !old)
+            return false;
+        if (!has_ended && !current)
+            return false;
+        return types.includes(relationship.newest_status.status)
     };
 
     isRumour = (edge) => {
-        return edge.newest_status.status === enums.StatusChoices.rumour
+        return this.relationshipFilter(
+            edge,
+            [enums.StatusChoices.rumour],
+            this.filters.isCurrentRumour.value,
+            this.filters.isOldRumour.value
+        )
     };
 
     isSerious = (edge) => {
-        return [enums.StatusChoices.dating, enums.StatusChoices.engaged, enums.StatusChoices.married]
-            .includes(edge.newest_status.status)
+        return this.relationshipFilter(
+            edge,
+            [enums.StatusChoices.dating, enums.StatusChoices.engaged, enums.StatusChoices.married],
+            this.filters.isCurrentSerious.value,
+            this.filters.isOldSerious.value
+        )
     };
 
     isBloodBound = (edge) => {
-        return [enums.StatusChoices.bloodRelative, enums.StatusChoices.parentChild, enums.StatusChoices.sibling].includes(edge.newest_status.status)
+        return this.filters.isBloodBound.value === true && this.relationshipFilter(
+            edge,
+            [enums.StatusChoices.bloodRelative, enums.StatusChoices.parentChild, enums.StatusChoices.sibling],
+            true,
+            true
+        )
     };
 
     composeFunctions = (...functions) => {
@@ -125,24 +144,15 @@ class GraphFilter {
         }, () => false);
     };
 
-    getFunctions = (...names) => {
-        return Object.keys(this.filterFunctions)
-            .filter((key) => (names.includes(key) && this.options[key].value === true))
-            .reduce((obj, key) => {
-                obj.push(this.filterFunctions[key]);
-                return obj;
-            }, []);
-    };
-
     filteredNodeIds = () => {
         return new Set(this.original.nodes
-            .filter(this.composeFunctions(...this.getFunctions('isKSP', 'isKMS', 'isFKS', 'notTrojsten')))
+            .filter(this.composeFunctions(this.trojstenFilter))
             .map((person) => person.id))
     };
 
     filteredEdgeIds = () => {
         return new Set(this.original.edges
-            .filter(this.composeFunctions(...this.getFunctions('isBloodBound', 'isSerious', 'isRumour')))
+            .filter(this.composeFunctions(this.isSerious, this.isBloodBound, this.isRumour))
             .map((edge) => edge.id)
         )
     };
@@ -387,18 +397,9 @@ function stringsToDates(obj, fields) {
     return obj
 }
 
-function inPlaceFilter(condition, arr) {
-    let j = 0;
-
-    arr.forEach((e, i) => {
-        if (condition(e)) {
-            if (i !== j) arr[j] = e;
-            j++;
-        }
-    });
-
-    arr.length = j;
-    return arr;
+function seminarMemberships(person) {
+    return person.memberships.filter((membership) => ['KSP', 'KMS', 'FKS'].includes(membership.group_name))
+        .map((membership) => membership.group_name)
 }
 
 enums['seminarColors'] = {

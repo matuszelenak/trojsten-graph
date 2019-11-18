@@ -136,7 +136,7 @@ var GraphFilterPanel = function (_React$Component3) {
             _this3.filter.updateFilterValue(event.target.name, event.target.checked);
         };
 
-        _this3.inputGroup = function (label, options) {
+        _this3.inputGroup = function (label, optionGroup) {
             return React.createElement(
                 'div',
                 { key: label },
@@ -151,26 +151,24 @@ var GraphFilterPanel = function (_React$Component3) {
                     React.createElement(
                         'tbody',
                         null,
-                        options.map(function (option) {
+                        optionGroup.map(function (options, i) {
                             return React.createElement(
                                 'tr',
-                                { key: option.name },
-                                React.createElement(
-                                    'td',
-                                    null,
-                                    React.createElement(
-                                        'label',
-                                        null,
-                                        option.label
-                                    )
-                                ),
-                                React.createElement(
-                                    'td',
-                                    null,
-                                    React.createElement('input', { key: option.name, type: 'checkbox', checked: _this3.state[option.name] === true ? 'checked' : '',
-                                        name: option.name, onChange: _this3.handleInputChange
-                                    })
-                                )
+                                { key: i },
+                                options.map(function (option) {
+                                    return React.createElement(
+                                        'td',
+                                        { key: option.name },
+                                        React.createElement('input', { key: option.name, type: 'checkbox', checked: _this3.state[option.name] === true ? 'checked' : '',
+                                            name: option.name, onChange: _this3.handleInputChange, id: option.name
+                                        }),
+                                        React.createElement(
+                                            'label',
+                                            { htmlFor: option.name },
+                                            option.label
+                                        )
+                                    );
+                                })
                             );
                         })
                     )
@@ -189,11 +187,15 @@ var GraphFilterPanel = function (_React$Component3) {
     _createClass(GraphFilterPanel, [{
         key: 'render',
         value: function render() {
+            var peopleFilters = this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten').map(function (arr) {
+                return [arr];
+            });
+            var relationshipFilters = [this.filter.getFilterOptions('isCurrentSerious', 'isOldSerious'), this.filter.getFilterOptions('isCurrentRumour', 'isOldRumour'), this.filter.getFilterOptions('isBloodBound')];
             return React.createElement(
                 'div',
                 { className: 'graph-filter' },
-                this.inputGroup('People', this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten')),
-                this.inputGroup('Relationships', this.filter.getFilterOptions('isSerious', 'isRumour', 'isBloodBound'))
+                this.inputGroup('People', peopleFilters),
+                this.inputGroup('Relationships', relationshipFilters)
             );
         }
     }]);

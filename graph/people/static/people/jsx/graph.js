@@ -48,7 +48,6 @@ class RelationshipDetail extends React.Component {
     }
 }
 
-
 class GraphFilterPanel extends React.Component {
     constructor(props) {
         super(props);
@@ -66,33 +65,37 @@ class GraphFilterPanel extends React.Component {
         this.filter.updateFilterValue(event.target.name, event.target.checked)
     };
 
-    inputGroup = (label, options) => {
-        return (
-            <div key={label}>
-                <h2>{label}</h2>
-                <table>
-                    <tbody>
-                    {options.map((option) => {
-                        return (
-                            <tr key={option.name}>
-                                <td><label>{option.label}</label></td>
-
-                                <td><input key={option.name} type='checkbox' checked={this.state[option.name] === true ? 'checked': ''}
-                                           name={option.name} onChange={this.handleInputChange}
-                                /></td>
-                            </tr>
-                        )
-                    })}
-                    </tbody>
-                </table>
-            </div>
-        )
-    };
+    inputGroup = (label, optionGroup) =>
+        <div key={label}>
+            <h2>{label}</h2>
+            <table>
+                <tbody>
+                {optionGroup.map((options, i) =>
+                    <tr key={i}>
+                        {options.map((option) =>
+                            <td key={option.name}>
+                                <input key={option.name} type='checkbox' checked={this.state[option.name] === true ? 'checked': ''}
+                                       name={option.name} onChange={this.handleInputChange} id={option.name}
+                                />
+                                <label htmlFor={option.name}>{option.label}</label>
+                            </td>
+                        )}
+                    </tr>
+                )}
+                </tbody>
+            </table>
+        </div>;
 
     render() {
+        const peopleFilters = this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten').map(arr => [arr]);
+        const relationshipFilters = [
+            this.filter.getFilterOptions('isCurrentSerious', 'isOldSerious'),
+            this.filter.getFilterOptions('isCurrentRumour', 'isOldRumour'),
+            this.filter.getFilterOptions('isBloodBound'),
+        ];
         return <div className='graph-filter'>
-            {this.inputGroup('People', this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten'))}
-            {this.inputGroup('Relationships', this.filter.getFilterOptions('isSerious', 'isRumour', 'isBloodBound'))}
+            {this.inputGroup('People', peopleFilters)}
+            {this.inputGroup('Relationships', relationshipFilters)}
         </div>
     }
 }

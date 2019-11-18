@@ -42,6 +42,10 @@ canvas {
     height: 30px;
 }
 
+td {
+    color: white;
+}
+
 li {
     margin-bottom: 10px;
 }
