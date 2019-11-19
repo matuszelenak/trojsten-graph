@@ -11,14 +11,12 @@ class PersonDetail extends React.Component {
                 <div>
                     <h3>Member of groups</h3>
                     <ul>
-                        {person.memberships.map((membership) => {
-                            return (
-                                <li key={membership.group_name}>
-                                    {membership.group_name}:
-                                    From {dateToString(membership.date_started)} to {dateToString(membership.date_ended)}
-                                </li>
-                            )
-                        })}
+                        {person.memberships.map((membership) =>
+                            <li key={membership.group_name}>
+                                {membership.group_name}:
+                                From {dateToString(membership.date_started)} to {dateToString(membership.date_ended)}
+                            </li>
+                        )}
                     </ul>
                 </div>
                 }
@@ -34,14 +32,12 @@ class RelationshipDetail extends React.Component {
                 <h2>{this.props.firstPerson.displayProps.label} & {this.props.secondPerson.displayProps.label}</h2>
                 <h3>Relationship history</h3>
                 <ul>
-                    {this.props.relationship.statuses.map((status, i) => {
-                        return (
-                            <li key={i}>
-                                {labels.StatusChoices[status.status]}:
-                                From {dateToString(status.date_start)} to {dateToString(status.date_end)}
-                            </li>
-                        )
-                    })}
+                    {this.props.relationship.statuses.map((status, i) =>
+                        <li key={i}>
+                            {labels.StatusChoices[status.status]}:
+                            From {dateToString(status.date_start)} to {dateToString(status.date_end)}
+                        </li>
+                    )}
                 </ul>
             </div>
         )
@@ -101,6 +97,55 @@ class GraphFilterPanel extends React.Component {
 }
 
 
+class GraphTimelinePanel extends React.Component {
+    constructor(props){
+        super(props)
+    }
+
+    componentDidMount () {
+        const slider = document.getElementById('time-setter');
+        let event_dates =
+            this.props.graph.edges.map((edge) => edge.statuses.map(status => [status.date_start, status.date_end])).flat(2)
+        event_dates = [...new Set(event_dates)].filter(x => x !== null).sort((a, b) => a - b);
+
+        let ranges = {};
+        let min_date = event_dates[0].getTime(), max_date = event_dates[event_dates.length -1].getTime();
+        if (event_dates.length > 2){
+            event_dates.slice(1, -1).reduce((ranges, date) => {
+                const percentage = ((date - min_date) / (max_date - min_date)) * 100;
+                ranges[percentage + '%'] = date.getTime();
+                return ranges
+            }, ranges);
+        }
+        ranges['min'] = min_date;
+        ranges['max'] = max_date;
+        noUiSlider.create(slider, {
+            start: max_date,
+            snap: true,
+            connect: 'lower',
+            tooltips: {
+                from: Number,
+                to: (ts) => dateToString(new Date(+ts))
+            },
+            range: ranges,
+        });
+        const self = this;
+        slider.noUiSlider.on('update', function(values, handle) {
+            self.props.onChange(new Date(+values[handle]));
+        });
+
+    }
+
+    render () {
+        return (
+            <div className='timeline-panel'>
+                <div id='time-setter'></div>
+            </div>
+        )
+    }
+}
+
+
 class TrojstenGraph extends React.Component {
     constructor(props) {
         super(props);
@@ -110,7 +155,6 @@ class TrojstenGraph extends React.Component {
             height: window.innerHeight
         };
 
-        preprocessGraph(props.graph);
         this.filter = new GraphFilter(props.graph);
 
         const options = {
@@ -128,11 +172,9 @@ class TrojstenGraph extends React.Component {
     }
 
     getRelationship = (firstPerson, secondPerson) => {
-        return this.props.graph.edges.find((edge) => {
-            if ((edge.source === firstPerson && edge.target === secondPerson) || (edge.source === secondPerson && edge.target === firstPerson)) {
-                return true
-            }
-        })
+        return this.props.graph.edges.find((edge) =>
+            (edge.source === firstPerson && edge.target === secondPerson) || (edge.source === secondPerson && edge.target === firstPerson)
+        )
     };
 
     setData = (graph) => {
@@ -146,10 +188,9 @@ class TrojstenGraph extends React.Component {
         this.searchInput = this.refs.search_query;
         this.renderer = new GraphRenderer(this.canvas);
         this.simulation = new GraphSimulation(this.canvas);
-        this.simulation.setData(this.props.graph);
         this.simulation.render = this.renderer.renderGraph;
         this.filter.onFilterUpdate((graph) => this.setData(graph));
-        this.filter.filterGraph();
+        this.filter.setCurrentTime(new Date())
     }
 
     componentWillUnmount() {
@@ -212,6 +253,7 @@ class TrojstenGraph extends React.Component {
                         onClick={this.canvasClick} onMouseMove={this.canvasMouseMove}>
                 </canvas>
                 <GraphFilterPanel filter={this.filter}/>
+                <GraphTimelinePanel graph={this.props.graph} onChange={(e) => {this.filter.setCurrentTime(e)}}/>
                 {this.getSidebar()}
             </div>
         )
@@ -219,6 +261,7 @@ class TrojstenGraph extends React.Component {
 }
 
 function initializeGraph(graph) {
+    preprocessGraph(graph);
     ReactDOM.render(
         <TrojstenGraph graph={graph}/>,
         document.getElementById('container')

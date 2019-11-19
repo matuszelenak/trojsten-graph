@@ -1,5 +1,7 @@
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -203,58 +205,123 @@ var GraphFilterPanel = function (_React$Component3) {
     return GraphFilterPanel;
 }(React.Component);
 
-var TrojstenGraph = function (_React$Component4) {
-    _inherits(TrojstenGraph, _React$Component4);
+var GraphTimelinePanel = function (_React$Component4) {
+    _inherits(GraphTimelinePanel, _React$Component4);
+
+    function GraphTimelinePanel(props) {
+        _classCallCheck(this, GraphTimelinePanel);
+
+        return _possibleConstructorReturn(this, (GraphTimelinePanel.__proto__ || Object.getPrototypeOf(GraphTimelinePanel)).call(this, props));
+    }
+
+    _createClass(GraphTimelinePanel, [{
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            var slider = document.getElementById('time-setter');
+            var event_dates = this.props.graph.edges.map(function (edge) {
+                return edge.statuses.map(function (status) {
+                    return [status.date_start, status.date_end];
+                });
+            }).flat(2);
+            event_dates = [].concat(_toConsumableArray(new Set(event_dates))).filter(function (x) {
+                return x !== null;
+            }).sort(function (a, b) {
+                return a - b;
+            });
+
+            var ranges = {};
+            var min_date = event_dates[0].getTime(),
+                max_date = event_dates[event_dates.length - 1].getTime();
+            if (event_dates.length > 2) {
+                event_dates.slice(1, -1).reduce(function (ranges, date) {
+                    var percentage = (date - min_date) / (max_date - min_date) * 100;
+                    ranges[percentage + '%'] = date.getTime();
+                    return ranges;
+                }, ranges);
+            }
+            ranges['min'] = min_date;
+            ranges['max'] = max_date;
+            noUiSlider.create(slider, {
+                start: max_date,
+                snap: true,
+                connect: 'lower',
+                tooltips: {
+                    from: Number,
+                    to: function to(ts) {
+                        return dateToString(new Date(+ts));
+                    }
+                },
+                range: ranges
+            });
+            var self = this;
+            slider.noUiSlider.on('update', function (values, handle) {
+                self.props.onChange(new Date(+values[handle]));
+            });
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            return React.createElement(
+                'div',
+                { className: 'timeline-panel' },
+                React.createElement('div', { id: 'time-setter' })
+            );
+        }
+    }]);
+
+    return GraphTimelinePanel;
+}(React.Component);
+
+var TrojstenGraph = function (_React$Component5) {
+    _inherits(TrojstenGraph, _React$Component5);
 
     function TrojstenGraph(props) {
         _classCallCheck(this, TrojstenGraph);
 
-        var _this4 = _possibleConstructorReturn(this, (TrojstenGraph.__proto__ || Object.getPrototypeOf(TrojstenGraph)).call(this, props));
+        var _this5 = _possibleConstructorReturn(this, (TrojstenGraph.__proto__ || Object.getPrototypeOf(TrojstenGraph)).call(this, props));
 
-        _this4.getRelationship = function (firstPerson, secondPerson) {
-            return _this4.props.graph.edges.find(function (edge) {
-                if (edge.source === firstPerson && edge.target === secondPerson || edge.source === secondPerson && edge.target === firstPerson) {
-                    return true;
-                }
+        _this5.getRelationship = function (firstPerson, secondPerson) {
+            return _this5.props.graph.edges.find(function (edge) {
+                return edge.source === firstPerson && edge.target === secondPerson || edge.source === secondPerson && edge.target === firstPerson;
             });
         };
 
-        _this4.setData = function (graph) {
-            _this4.simulation.setData(graph);
-            _this4.renderer.setData(graph);
+        _this5.setData = function (graph) {
+            _this5.simulation.setData(graph);
+            _this5.renderer.setData(graph);
         };
 
-        _this4.updateDimensions = function () {
-            _this4.setState({ width: window.innerWidth, height: window.innerHeight });
-            _this4.simulation.update();
+        _this5.updateDimensions = function () {
+            _this5.setState({ width: window.innerWidth, height: window.innerHeight });
+            _this5.simulation.update();
         };
 
-        _this4.canvasClick = function (e) {
-            var clickedNode = _this4.simulation.nodeOnMousePosition(e.clientX, e.clientY);
-            var selectedNodes = clickedNode ? prepend(_this4.state.selectedPeople, clickedNode).slice(0, 2) : [];
-            _this4.setState({
+        _this5.canvasClick = function (e) {
+            var clickedNode = _this5.simulation.nodeOnMousePosition(e.clientX, e.clientY);
+            var selectedNodes = clickedNode ? prepend(_this5.state.selectedPeople, clickedNode).slice(0, 2) : [];
+            _this5.setState({
                 selectedPeople: selectedNodes
             });
-            _this4.props.graph.nodes.forEach(function (node) {
+            _this5.props.graph.nodes.forEach(function (node) {
                 node.displayProps.selected = selectedNodes.includes(node);
             });
-            _this4.simulation.update();
+            _this5.simulation.update();
         };
 
-        _this4.search = function (e) {
-            _this4.props.graph.nodes.forEach(function (node) {});
+        _this5.search = function (e) {
+            _this5.props.graph.nodes.forEach(function (node) {});
         };
 
-        _this4.canvasMouseMove = function (e) {
-            _this4.canvas.style.cursor = _this4.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer' : 'default';
+        _this5.canvasMouseMove = function (e) {
+            _this5.canvas.style.cursor = _this5.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer' : 'default';
         };
 
-        _this4.getSidebar = function () {
-            var firstPerson = _this4.state.selectedPeople[0],
-                secondPerson = _this4.state.selectedPeople[1],
+        _this5.getSidebar = function () {
+            var firstPerson = _this5.state.selectedPeople[0],
+                secondPerson = _this5.state.selectedPeople[1],
                 relationship = void 0;
             if (firstPerson) {
-                if (secondPerson && (relationship = _this4.getRelationship(firstPerson, secondPerson))) {
+                if (secondPerson && (relationship = _this5.getRelationship(firstPerson, secondPerson))) {
                     return React.createElement(RelationshipDetail, {
                         firstPerson: firstPerson,
                         secondPerson: secondPerson,
@@ -265,14 +332,13 @@ var TrojstenGraph = function (_React$Component4) {
             }
         };
 
-        _this4.state = {
+        _this5.state = {
             selectedPeople: [],
             width: window.innerWidth,
             height: window.innerHeight
         };
 
-        preprocessGraph(props.graph);
-        _this4.filter = new GraphFilter(props.graph);
+        _this5.filter = new GraphFilter(props.graph);
 
         var options = {
             shouldSort: true,
@@ -283,26 +349,25 @@ var TrojstenGraph = function (_React$Component4) {
             minMatchCharLength: 1,
             keys: ['first_name', 'last_name', 'nickname', 'maiden_name']
         };
-        _this4.fuse = new Fuse(props.graph.nodes, options);
-        return _this4;
+        _this5.fuse = new Fuse(props.graph.nodes, options);
+        return _this5;
     }
 
     _createClass(TrojstenGraph, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
-            var _this5 = this;
+            var _this6 = this;
 
             window.addEventListener('resize', this.updateDimensions);
             this.canvas = this.refs.canvas;
             this.searchInput = this.refs.search_query;
             this.renderer = new GraphRenderer(this.canvas);
             this.simulation = new GraphSimulation(this.canvas);
-            this.simulation.setData(this.props.graph);
             this.simulation.render = this.renderer.renderGraph;
             this.filter.onFilterUpdate(function (graph) {
-                return _this5.setData(graph);
+                return _this6.setData(graph);
             });
-            this.filter.filterGraph();
+            this.filter.setCurrentTime(new Date());
         }
     }, {
         key: 'componentWillUnmount',
@@ -312,6 +377,8 @@ var TrojstenGraph = function (_React$Component4) {
     }, {
         key: 'render',
         value: function render() {
+            var _this7 = this;
+
             var searchBar = React.createElement(
                 'div',
                 { className: 'search-bar' },
@@ -328,6 +395,9 @@ var TrojstenGraph = function (_React$Component4) {
                 React.createElement('canvas', { tabIndex: '1', ref: 'canvas', width: this.state.width, height: this.state.height,
                     onClick: this.canvasClick, onMouseMove: this.canvasMouseMove }),
                 React.createElement(GraphFilterPanel, { filter: this.filter }),
+                React.createElement(GraphTimelinePanel, { graph: this.props.graph, onChange: function onChange(e) {
+                        _this7.filter.setCurrentTime(e);
+                    } }),
                 this.getSidebar()
             );
         }
@@ -337,5 +407,6 @@ var TrojstenGraph = function (_React$Component4) {
 }(React.Component);
 
 function initializeGraph(graph) {
+    preprocessGraph(graph);
     ReactDOM.render(React.createElement(TrojstenGraph, { graph: graph }), document.getElementById('container'));
 }

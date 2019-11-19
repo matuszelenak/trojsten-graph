@@ -3,25 +3,53 @@ function preprocessGraph(graph) {
         stringsToDates(node, ['birth_date', 'death_date']);
         node.memberships.forEach((membership) => {
             stringsToDates(membership, ['date_started', 'date_ended']);
-            membership.duration = timeDelta(membership.date_ended, membership.date_started).days
         });
-        node.age = timeDelta(node.death_date, node.birth_date).years;
+    });
+    graph.edges.forEach((edge, index) => {
+        edge.id = index;
+        edge.sourceId = edge.source;
+        edge.targetId = edge.target;
+        edge.statuses.forEach((status) => {
+            stringsToDates(status, ['date_start', 'date_end']);
+        });
+    });
+}
+
+function computeExtraGraphData(graph, currentTime){
+    graph.nodes.forEach((node) => {
+        node.memberships.forEach((membership) => {
+            membership.duration = timeDelta(
+                membership.date_ended !== null ? Math.min(membership.date_ended, currentTime) : null,
+                membership.date_started
+            ).days
+        });
+        node.age = timeDelta(
+            node.death_date !== null ? Math.min(node.death_date, currentTime) : null,
+            node.birth_date
+        ).years;
     });
     graph.edges.forEach((edge) => {
         edge.statuses.forEach((status) => {
-            stringsToDates(status, ['date_start', 'date_end']);
-            status.duration = timeDelta(status.date_end, status.date_start).days
+            status.duration = timeDelta(
+                status.date_end !== null ? Math.min(status.date_end, currentTime) : null,
+                status.date_start
+            ).days
         });
-        edge.newest_status = edge.statuses[0];
-    });
+        let current = null;
+        const statuses = edge.statuses
+            .sort((a, b) => a.date_start < b.date_start ? 1 : -1)
+            .filter((status) => status.date_start < currentTime);
+        if (statuses.length > 0){
+            statuses[0].isEnded = statuses[0].date_end === null ? false : (statuses[0].date_end < currentTime);
+            current = statuses[0]
+        }
+        edge.currentStatus = current
+    })
 }
 
 class GraphFilter {
     constructor(graph) {
         this.original = graph;
-        this.original.edges.forEach((edge, index) => {
-            edge.id = index
-        });
         this.filters = {
             isKSP: {
                 label: 'KSP',
@@ -68,15 +96,20 @@ class GraphFilter {
             nodes: [...this.original.nodes],
             edges: [...this.original.edges]
         };
-        this.onFilterCallback = () => {
-        };
+        this.onFilterCallback = () => {};
         this.onFilterUpdate = (callback) => {
             this.onFilterCallback = callback
-        }
+        };
     }
 
     updateFilterValue = (key, value) => {
         this.filters[key].value = value;
+        this.filterGraph();
+    };
+
+    setCurrentTime = (time) => {
+        this.currentTime = time;
+        computeExtraGraphData(this.original, this.currentTime);
         this.filterGraph();
     };
 
@@ -103,12 +136,11 @@ class GraphFilter {
     };
 
     relationshipFilter = (relationship, types, current, old) => {
-        const has_ended = relationship.newest_status.date_end !== null;
-        if (has_ended && !old)
+        if (relationship.currentStatus.isEnded && !old)
             return false;
-        if (!has_ended && !current)
+        if (!relationship.currentStatus.isEnded && !current)
             return false;
-        return types.includes(relationship.newest_status.status)
+        return types.includes(relationship.currentStatus.status)
     };
 
     isRumour = (edge) => {
@@ -147,11 +179,13 @@ class GraphFilter {
     filteredNodeIds = () => {
         return new Set(this.original.nodes
             .filter(this.composeFunctions(this.trojstenFilter))
+            .filter((person) => person.birth_date < this.currentTime)
             .map((person) => person.id))
     };
 
     filteredEdgeIds = () => {
         return new Set(this.original.edges
+            .filter((relationship) => relationship.currentStatus !== null)
             .filter(this.composeFunctions(this.isSerious, this.isBloodBound, this.isRumour))
             .map((edge) => edge.id)
         )
@@ -163,7 +197,7 @@ class GraphFilter {
 
         const edgeIds = [...this.filteredEdgeIds()];
         this.graph.edges = this.original.edges.filter((edge) => edgeIds.includes(edge.id)).filter((edge) => {
-            return nodeIds.includes(edge.source.id) && nodeIds.includes(edge.target.id)
+            return nodeIds.includes(edge.sourceId) && nodeIds.includes(edge.targetId)
         });
         this.onFilterCallback(this.graph);
     }
@@ -203,9 +237,9 @@ class GraphRenderer {
 
     edgeDisplayProps = (edge) => {
         return {
-            dashing: edge.newest_status.date_end ? [2, 2] : [],
-            width: edge.newest_status.date_end ? 1 : Math.ceil(Math.log(Math.sqrt(edge.newest_status.duration / 10))),
-            color: enums.relationshipColors[edge.newest_status.status]
+            dashing: edge.currentStatus.isEnded ? [2, 2] : [],
+            width: edge.currentStatus.isEnded ? 1 : Math.ceil(Math.log(Math.sqrt(edge.currentStatus.duration / 10))),
+            color: enums.relationshipColors[edge.currentStatus.status]
         }
     };
 
