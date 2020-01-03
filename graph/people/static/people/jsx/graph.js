@@ -170,8 +170,8 @@ class GraphTimelinePanel extends React.Component {
 
     componentDidMount() {
         const slider = document.getElementById('time-setter');
-        let event_dates =
-            this.props.graph.edges.map((edge) => edge.statuses.map(status => [status.date_start, status.date_end])).flat(2)
+        let event_dates = this.props.graph.edges.map((edge) => edge.statuses.map(status => [status.date_start, status.date_end])).flat(2);
+        event_dates.push(new Date());
         event_dates = [...new Set(event_dates)].filter(x => x !== null).sort((a, b) => a - b);
 
         let ranges = {};

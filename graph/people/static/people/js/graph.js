@@ -351,6 +351,7 @@ var GraphTimelinePanel = function (_React$Component5) {
                     return [status.date_start, status.date_end];
                 });
             }).flat(2);
+            event_dates.push(new Date());
             event_dates = [].concat(_toConsumableArray(new Set(event_dates))).filter(function (x) {
                 return x !== null;
             }).sort(function (a, b) {
