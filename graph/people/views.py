@@ -1,7 +1,10 @@
 from functools import wraps
 
+from django.contrib.auth import logout
 from django.core.exceptions import PermissionDenied
-from django.http import JsonResponse
+from django.contrib.auth.views import LoginView as Login
+from django.http import JsonResponse, HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
@@ -27,6 +30,16 @@ class TokenAuth:
 
 
 token_auth = TokenAuth()
+
+
+class LoginView(Login):
+    template_name = 'people/login.html'
+
+
+class LogoutView(View):
+    def get(self, request, *args, **kwargs):
+        logout(request)
+        return HttpResponseRedirect(reverse('login'))
 
 
 class GraphView(TemplateView):
