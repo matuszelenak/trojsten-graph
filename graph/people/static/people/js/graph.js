@@ -191,7 +191,7 @@ var GraphFilterPanel = function (_React$Component3) {
         _this3.inputGroup = function (label, optionGroup) {
             return React.createElement(
                 'div',
-                { key: label },
+                { key: label, className: 'filter-group' },
                 React.createElement(
                     'h4',
                     null,
@@ -250,7 +250,12 @@ var GraphFilterPanel = function (_React$Component3) {
             var relationshipFilters = [this.filter.getFilterOptions('isCurrentSerious', 'isOldSerious'), this.filter.getFilterOptions('isCurrentRumour', 'isOldRumour'), this.filter.getFilterOptions('isBloodBound')];
             return React.createElement(
                 'div',
-                { className: 'graph-filter' },
+                null,
+                React.createElement(
+                    'h3',
+                    null,
+                    'Filters'
+                ),
                 this.inputGroup('People', peopleFilters),
                 this.inputGroup('Relationships', relationshipFilters)
             );
@@ -260,8 +265,76 @@ var GraphFilterPanel = function (_React$Component3) {
     return GraphFilterPanel;
 }(React.Component);
 
-var GraphTimelinePanel = function (_React$Component4) {
-    _inherits(GraphTimelinePanel, _React$Component4);
+var GraphSearch = function (_React$Component4) {
+    _inherits(GraphSearch, _React$Component4);
+
+    function GraphSearch(props) {
+        _classCallCheck(this, GraphSearch);
+
+        var _this4 = _possibleConstructorReturn(this, (GraphSearch.__proto__ || Object.getPrototypeOf(GraphSearch)).call(this, props));
+
+        _this4.search = function (e) {
+            var simulation = _this4.props.parent.simulation;
+            var fuse = new Fuse(simulation.nodes, _this4.options);
+            simulation.nodes.forEach(function (node) {
+                node.isSearchResult = false;
+            });
+            fuse.search(normalizeString(_this4.refs.search_query.value)).forEach(function (node) {
+                node.isSearchResult = true;
+            });
+            var start = Date.now();
+            function pulseSearchResults() {
+                simulation.update();
+                if (Date.now() - start < 3000) {
+                    requestAnimationFrame(pulseSearchResults);
+                } else {
+                    simulation.nodes.forEach(function (node) {
+                        node.isSearchResult = false;
+                    });
+                    simulation.update();
+                }
+            }
+            pulseSearchResults();
+        };
+
+        _this4.options = {
+            shouldSort: true,
+            threshold: 0.1,
+            location: 0,
+            distance: 100,
+            maxPatternLength: 32,
+            minMatchCharLength: 1,
+            keys: ['searchAttributes.first_name', 'searchAttributes.last_name', 'searchAttributes.nickname', 'searchAttributes.maiden_name']
+        };
+        return _this4;
+    }
+
+    _createClass(GraphSearch, [{
+        key: 'render',
+        value: function render() {
+            return React.createElement(
+                'div',
+                null,
+                React.createElement(
+                    'h3',
+                    null,
+                    'Search'
+                ),
+                React.createElement('input', { ref: 'search_query', type: 'text', className: 'input-lg' }),
+                React.createElement(
+                    'button',
+                    { onClick: this.search, className: 'btn btn-default' },
+                    'Find'
+                )
+            );
+        }
+    }]);
+
+    return GraphSearch;
+}(React.Component);
+
+var GraphTimelinePanel = function (_React$Component5) {
+    _inherits(GraphTimelinePanel, _React$Component5);
 
     function GraphTimelinePanel(props) {
         _classCallCheck(this, GraphTimelinePanel);
@@ -327,51 +400,51 @@ var GraphTimelinePanel = function (_React$Component4) {
     return GraphTimelinePanel;
 }(React.Component);
 
-var TrojstenGraph = function (_React$Component5) {
-    _inherits(TrojstenGraph, _React$Component5);
+var TrojstenGraph = function (_React$Component6) {
+    _inherits(TrojstenGraph, _React$Component6);
 
     function TrojstenGraph(props) {
         _classCallCheck(this, TrojstenGraph);
 
-        var _this5 = _possibleConstructorReturn(this, (TrojstenGraph.__proto__ || Object.getPrototypeOf(TrojstenGraph)).call(this, props));
+        var _this6 = _possibleConstructorReturn(this, (TrojstenGraph.__proto__ || Object.getPrototypeOf(TrojstenGraph)).call(this, props));
 
-        _this5.getRelationship = function (firstPerson, secondPerson) {
-            return _this5.props.graph.edges.find(function (edge) {
+        _this6.getRelationship = function (firstPerson, secondPerson) {
+            return _this6.props.graph.edges.find(function (edge) {
                 return edge.source === firstPerson && edge.target === secondPerson || edge.source === secondPerson && edge.target === firstPerson;
             });
         };
 
-        _this5.setData = function (graph) {
-            _this5.simulation.setData(graph);
-            _this5.renderer.setData(graph);
+        _this6.setData = function (graph) {
+            _this6.simulation.setData(graph);
+            _this6.renderer.setData(graph);
         };
 
-        _this5.updateDimensions = function () {
-            _this5.setState({ width: window.innerWidth, height: window.innerHeight });
-            _this5.simulation.update();
+        _this6.updateDimensions = function () {
+            _this6.setState({ width: window.innerWidth, height: window.innerHeight });
+            _this6.simulation.update();
         };
 
-        _this5.canvasClick = function (e) {
-            var clickedNode = _this5.simulation.nodeOnMousePosition(e.clientX, e.clientY);
-            var selectedNodes = clickedNode ? prepend(_this5.state.selectedPeople, clickedNode).slice(0, 2) : [];
-            _this5.setState({
+        _this6.canvasClick = function (e) {
+            var clickedNode = _this6.simulation.nodeOnMousePosition(e.clientX, e.clientY);
+            var selectedNodes = clickedNode ? prepend(_this6.state.selectedPeople, clickedNode).slice(0, 2) : [];
+            _this6.setState({
                 selectedPeople: selectedNodes
             });
-            _this5.props.graph.nodes.forEach(function (node) {
+            _this6.props.graph.nodes.forEach(function (node) {
                 node.displayProps.selected = selectedNodes.includes(node);
             });
-            _this5.simulation.update();
+            _this6.simulation.update();
         };
 
-        _this5.search = function (e) {
-            _this5.props.graph.nodes.forEach(function (node) {
+        _this6.search = function (e) {
+            _this6.props.graph.nodes.forEach(function (node) {
                 node.isSearchResult = false;
             });
-            _this5.fuse.search(_this5.searchInput.value).forEach(function (node) {
+            _this6.fuse.search(_this6.searchInput.value.normalize('NFD')).forEach(function (node) {
                 node.isSearchResult = true;
             });
             var start = Date.now();
-            var self = _this5;
+            var self = _this6;
             function pulseSearchResults() {
                 self.simulation.update();
                 if (Date.now() - start < 3000) {
@@ -386,16 +459,16 @@ var TrojstenGraph = function (_React$Component5) {
             pulseSearchResults();
         };
 
-        _this5.canvasMouseMove = function (e) {
-            _this5.canvas.style.cursor = _this5.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer' : 'default';
+        _this6.canvasMouseMove = function (e) {
+            _this6.canvas.style.cursor = _this6.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer' : 'default';
         };
 
-        _this5.getSidebar = function () {
-            var firstPerson = _this5.state.selectedPeople[0],
-                secondPerson = _this5.state.selectedPeople[1],
+        _this6.getSidebar = function () {
+            var firstPerson = _this6.state.selectedPeople[0],
+                secondPerson = _this6.state.selectedPeople[1],
                 relationship = void 0;
             if (firstPerson) {
-                if (secondPerson && (relationship = _this5.getRelationship(firstPerson, secondPerson))) {
+                if (secondPerson && (relationship = _this6.getRelationship(firstPerson, secondPerson))) {
                     return React.createElement(RelationshipDetail, {
                         firstPerson: firstPerson,
                         secondPerson: secondPerson,
@@ -406,31 +479,20 @@ var TrojstenGraph = function (_React$Component5) {
             }
         };
 
-        _this5.state = {
+        _this6.state = {
             selectedPeople: [],
             width: window.innerWidth,
             height: window.innerHeight
         };
 
-        _this5.filter = new GraphFilter(props.graph);
-
-        var options = {
-            shouldSort: true,
-            threshold: 0.1,
-            location: 0,
-            distance: 100,
-            maxPatternLength: 32,
-            minMatchCharLength: 1,
-            keys: ['first_name', 'last_name', 'nickname', 'maiden_name']
-        };
-        _this5.fuse = new Fuse(props.graph.nodes, options);
-        return _this5;
+        _this6.filter = new GraphFilter(props.graph);
+        return _this6;
     }
 
     _createClass(TrojstenGraph, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
-            var _this6 = this;
+            var _this7 = this;
 
             window.addEventListener('resize', this.updateDimensions);
             this.canvas = this.refs.canvas;
@@ -439,7 +501,7 @@ var TrojstenGraph = function (_React$Component5) {
             this.simulation = new GraphSimulation(this.canvas);
             this.simulation.render = this.renderer.renderGraph;
             this.filter.onFilterUpdate(function (graph) {
-                return _this6.setData(graph);
+                return _this7.setData(graph);
             });
             this.filter.setCurrentTime(new Date());
         }
@@ -451,35 +513,26 @@ var TrojstenGraph = function (_React$Component5) {
     }, {
         key: 'render',
         value: function render() {
-            var _this7 = this;
+            var _this8 = this;
 
-            var searchBar = React.createElement(
-                'div',
-                { className: 'search-bar row' },
-                React.createElement(
-                    'div',
-                    { className: 'col' },
-                    React.createElement('input', { ref: 'search_query', type: 'text', className: 'input-lg' })
-                ),
-                React.createElement(
-                    'div',
-                    { className: 'col' },
-                    React.createElement(
-                        'button',
-                        { onClick: this.search, className: 'btn btn-success' },
-                        'Search'
-                    )
-                )
-            );
             return React.createElement(
                 'div',
                 null,
                 React.createElement('canvas', { tabIndex: '1', ref: 'canvas', width: this.state.width, height: this.state.height,
                     onClick: this.canvasClick, onMouseMove: this.canvasMouseMove }),
-                React.createElement(GraphFilterPanel, { filter: this.filter }),
-                searchBar,
+                React.createElement(
+                    'div',
+                    { className: 'graph-toolbar' },
+                    React.createElement(GraphFilterPanel, { filter: this.filter }),
+                    React.createElement(GraphSearch, { parent: this }),
+                    React.createElement(
+                        'a',
+                        { href: window.location.origin + '/logout/', className: 'btn btn-danger' },
+                        'Log out'
+                    )
+                ),
                 React.createElement(GraphTimelinePanel, { graph: this.props.graph, onChange: function onChange(e) {
-                        _this7.filter.setCurrentTime(e);
+                        _this8.filter.setCurrentTime(e);
                     } }),
                 this.getSidebar()
             );

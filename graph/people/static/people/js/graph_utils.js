@@ -27,6 +27,12 @@ function computeExtraGraphData(graph, currentTime){
             node.death_date !== null ? Math.min(node.death_date, currentTime) : null,
             node.birth_date
         ).years;
+        node.searchAttributes = {
+            first_name: normalizeString(node.first_name),
+            last_name: normalizeString(node.last_name),
+            nickname: node.nickname ? normalizeString(node.nickname): '',
+            maiden_name: node.maiden_name ? normalizeString(node.maiden_name) : ''
+        }
     });
     graph.edges.forEach((edge) => {
         edge.statuses.forEach((status) => {
@@ -450,6 +456,10 @@ function stringsToDates(obj, fields) {
 function seminarMemberships(person) {
     return person.memberships.filter((membership) => ['KSP', 'KMS', 'FKS'].includes(membership.group_name))
         .map((membership) => membership.group_name)
+}
+
+function normalizeString(str){
+    return str.normalize('NFKD').replace(/[\u0300-\u036F]/g, '')
 }
 
 enums['seminarColors'] = {

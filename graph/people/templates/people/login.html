@@ -1,1 +1,23 @@
-<a href="{% url 'social:begin' 'google-oauth2' %}">Login with Google</a><br>
+{% load static %}
+
+<meta charset="utf-8">
+<title>Login to Trojsten Graph</title>
+
+<link rel="stylesheet" href="{% static 'people/css/bootstrap.min.css' %}" type="text/css"/>
+<link rel="stylesheet" href="{% static 'people/css/graph.css' %}" type="text/css"/>
+
+
+<body>
+<div class="container">
+    <h2>Login</h2>
+    <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-info">Login</button>
+    </form>
+    <br>
+    <p><strong>-- OR --</strong></p>
+
+    <a href="{% url 'social:begin' 'google-oauth2' %}">Login with Google (Trojsten only)</a><br>
+</div>
+</body>

@@ -25,19 +25,20 @@ canvas {
     background-color : rgba(50, 50, 50, 0.9);
 }
 
-.graph-filter {
+.graph-toolbar {
+    text-align: center;
     padding: 10px;
     float: left;
     position: relative;
     background-color : rgba(50, 50, 50, 0.9);
 }
 
-.search-bar {
-    position: absolute;
-    top: 0;
-    left: 40%;
-    width: 20%;
-    padding: 5px;
+.graph-toolbar > * {
+    margin: 0 0 50px 0;
+}
+
+.filter-group {
+    text-align: left;
 }
 
 .timeline-panel {
@@ -54,10 +55,4 @@ li {
 
 .wrapper {
     display: block;
-}
-
-.logout-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px
 }

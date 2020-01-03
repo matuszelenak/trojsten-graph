@@ -75,7 +75,7 @@ class GraphFilterPanel extends React.Component {
     };
 
     inputGroup = (label, optionGroup) =>
-        <div key={label}>
+        <div key={label} className='filter-group'>
             <h4>{label}</h4>
             <table className='table-borderless'>
                 <tbody>
@@ -103,10 +103,62 @@ class GraphFilterPanel extends React.Component {
             this.filter.getFilterOptions('isCurrentRumour', 'isOldRumour'),
             this.filter.getFilterOptions('isBloodBound'),
         ];
-        return <div className='graph-filter'>
+        return <div>
+            <h3>Filters</h3>
             {this.inputGroup('People', peopleFilters)}
             {this.inputGroup('Relationships', relationshipFilters)}
         </div>
+    }
+}
+
+class GraphSearch extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.options = {
+            shouldSort: true,
+            threshold: 0.1,
+            location: 0,
+            distance: 100,
+            maxPatternLength: 32,
+            minMatchCharLength: 1,
+            keys: [
+                'searchAttributes.first_name',
+                'searchAttributes.last_name',
+                'searchAttributes.nickname',
+                'searchAttributes.maiden_name'
+            ]
+        };
+    }
+
+    search = (e) => {
+        const simulation = this.props.parent.simulation;
+        const fuse = new Fuse(simulation.nodes, this.options);
+        simulation.nodes.forEach((node) => {node.isSearchResult = false});
+        fuse.search(normalizeString(this.refs.search_query.value)).forEach((node) => {node.isSearchResult = true});
+        const start = Date.now();
+        function pulseSearchResults() {
+            simulation.update();
+            if (Date.now() - start < 3000) {
+                requestAnimationFrame(pulseSearchResults);
+            } else {
+                simulation.nodes.forEach((node) => {
+                    node.isSearchResult = false;
+                });
+                simulation.update();
+            }
+        }
+        pulseSearchResults();
+    };
+
+    render() {
+        return (
+            <div>
+                <h3>Search</h3>
+                <input ref="search_query" type='text' className='input-lg'/>
+                <button onClick={this.search} className='btn btn-default'>Find</button>
+            </div>
+        )
     }
 }
 
@@ -170,19 +222,6 @@ class TrojstenGraph extends React.Component {
         };
 
         this.filter = new GraphFilter(props.graph);
-
-        const options = {
-            shouldSort: true,
-            threshold: 0.1,
-            location: 0,
-            distance: 100,
-            maxPatternLength: 32,
-            minMatchCharLength: 1,
-            keys: [
-                'first_name', 'last_name', 'nickname', 'maiden_name'
-            ]
-        };
-        this.fuse = new Fuse(props.graph.nodes, options);
     }
 
     getRelationship = (firstPerson, secondPerson) => {
@@ -230,7 +269,7 @@ class TrojstenGraph extends React.Component {
 
     search = (e) => {
         this.props.graph.nodes.forEach((node) => {node.isSearchResult = false});
-        this.fuse.search(this.searchInput.value).forEach((node) => {node.isSearchResult = true});
+        this.fuse.search(this.searchInput.value.normalize('NFD')).forEach((node) => {node.isSearchResult = true});
         const start = Date.now();
         const self = this;
         function pulseSearchResults() {
@@ -268,19 +307,17 @@ class TrojstenGraph extends React.Component {
     };
 
     render() {
-        const searchBar = (
-            <div className='search-bar row'>
-                <div className='col'><input ref="search_query" type='text' className='input-lg'/></div>
-                <div className='col'><button onClick={this.search} className='btn btn-success'>Search</button></div>
-            </div>
-        );
         return (
             <div>
                 <canvas tabIndex="1" ref="canvas" width={this.state.width} height={this.state.height}
                         onClick={this.canvasClick} onMouseMove={this.canvasMouseMove}>
                 </canvas>
-                <GraphFilterPanel filter={this.filter}/>
-                {searchBar}
+                <div className='graph-toolbar'>
+                    <GraphFilterPanel filter={this.filter}/>
+                    <GraphSearch parent={this}/>
+                    <a href={window.location.origin + '/logout/'} className='btn btn-danger'>Log out</a>
+                </div>
+
                 <GraphTimelinePanel graph={this.props.graph} onChange={(e) => {
                     this.filter.setCurrentTime(e)
                 }}/>

@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
 
-from people.models import Person, Relationship, VerificationToken, RelationshipStatus, Group
+from people.models import Person, Relationship, VerificationToken
 from people.serializers import PeopleSerializer, RelationshipSerializer
 
 
