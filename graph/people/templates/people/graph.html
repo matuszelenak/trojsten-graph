@@ -2,20 +2,26 @@
 
 <meta charset="utf-8">
 <title>Trojsten Graph</title>
-<link rel="stylesheet" href="{% static 'people/graph.css' %}" type="text/css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.0.2/nouislider.css" type="text/css"/>
 
-<script src="{% static 'people/js/fuse.min.js' %}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.0.2/nouislider.js"></script>
+<link rel="stylesheet" href="{% static 'people/css/bootstrap.min.css' %}" type="text/css"/>
+<link rel="stylesheet" href="{% static 'people/css/graph.css' %}" type="text/css"/>
 
 {% if debug %}
-    <script src="{% static 'people/js/d3.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'people/css/nouislider.css' %}" type="text/css"/>
+
     <script src="{% static 'people/js/react.development.js' %}"></script>
     <script src="{% static 'people/js/react-dom.development.js' %}"></script>
+    <script src="{% static 'people/js/d3.js' %}"></script>
+    <script src="{% static 'people/js/nouislider.js' %}"></script>
+    <script src="{% static 'people/js/fuse.min.js' %}"></script>
 {% else %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.12.0/d3.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.0.2/nouislider.css" type="text/css"/>
+
     <script src="https://unpkg.com/react@16/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.12.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.0.2/nouislider.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.4.6/fuse.min.js"></script>
 {% endif %}
 
 <script src="{% static 'people/js/graph_enums.js' %}"></script>

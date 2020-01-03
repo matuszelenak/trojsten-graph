@@ -5,10 +5,11 @@ from people.models import Person, Relationship, GroupMembership, RelationshipSta
 
 class GroupMembershipSerializer(serializers.ModelSerializer):
     group_name = serializers.CharField(source='group.name')
+    group_category = serializers.IntegerField(source='group.category')
 
     class Meta:
         model = GroupMembership
-        fields = ('date_started', 'date_ended', 'group_name')
+        fields = ('date_started', 'date_ended', 'group_name', 'group_category')
 
 
 class PeopleSerializer(serializers.ModelSerializer):

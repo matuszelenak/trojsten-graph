@@ -14,61 +14,108 @@ var PersonDetail = function (_React$Component) {
     _inherits(PersonDetail, _React$Component);
 
     function PersonDetail() {
+        var _ref;
+
+        var _temp, _this, _ret;
+
         _classCallCheck(this, PersonDetail);
 
-        return _possibleConstructorReturn(this, (PersonDetail.__proto__ || Object.getPrototypeOf(PersonDetail)).apply(this, arguments));
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        }
+
+        return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = PersonDetail.__proto__ || Object.getPrototypeOf(PersonDetail)).call.apply(_ref, [this].concat(args))), _this), _this.listMemberships = function (name, memberships) {
+            return React.createElement(
+                'div',
+                null,
+                React.createElement(
+                    'h4',
+                    null,
+                    name
+                ),
+                React.createElement(
+                    'ul',
+                    null,
+                    memberships.map(function (membership) {
+                        return React.createElement(
+                            'li',
+                            { key: membership.group_name },
+                            React.createElement(
+                                'b',
+                                null,
+                                membership.group_name,
+                                ' from ',
+                                dateToString(membership.date_started),
+                                ' to ',
+                                dateToString(membership.date_ended)
+                            )
+                        );
+                    })
+                )
+            );
+        }, _temp), _possibleConstructorReturn(_this, _ret);
     }
 
     _createClass(PersonDetail, [{
         key: 'render',
         value: function render() {
             var person = this.props.person;
+
+            var school_categories = [enums.Categories.elementarySchool, enums.Categories.highSchool, enums.Categories.university];
+            var school_memberships = person.memberships.filter(function (membership) {
+                return school_categories.includes(membership.group_category);
+            });
+            var seminar_memberships = person.memberships.filter(function (membership) {
+                return membership.group_category === enums.Categories.seminar;
+            });
+            var other_memberships = person.memberships.filter(function (membership) {
+                return membership.group_category === enums.Categories.other;
+            });
             return React.createElement(
                 'div',
                 { className: 'info-sidebar' },
                 React.createElement(
                     'div',
-                    { className: 'row' },
+                    null,
                     React.createElement(
                         'h2',
                         null,
                         person.first_name,
                         ' ',
-                        person.nickname ? '"' + person.nickname + '"' : '',
-                        ' ',
                         person.last_name
-                    ),
-                    React.createElement(
-                        'p',
-                        null,
-                        'Born on ',
-                        dateToString(new Date(person.birth_date))
                     )
                 ),
-                person.memberships.length > 0 && React.createElement(
+                React.createElement(
                     'div',
                     null,
                     React.createElement(
-                        'h3',
-                        null,
-                        'Member of groups'
-                    ),
-                    React.createElement(
                         'ul',
                         null,
-                        person.memberships.map(function (membership) {
-                            return React.createElement(
-                                'li',
-                                { key: membership.group_name },
-                                membership.group_name,
-                                ': From ',
-                                dateToString(membership.date_started),
-                                ' to ',
-                                dateToString(membership.date_ended)
-                            );
-                        })
+                        person.nickname && React.createElement(
+                            'li',
+                            null,
+                            React.createElement(
+                                'b',
+                                null,
+                                'Nickname: ',
+                                person.nickname
+                            )
+                        ),
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(
+                                'b',
+                                null,
+                                'Born on ',
+                                dateToString(new Date(person.birth_date))
+                            )
+                        )
                     )
-                )
+                ),
+                seminar_memberships.length > 0 && this.listMemberships('Seminar memberships', seminar_memberships),
+                school_memberships.length > 0 && this.listMemberships('School memberships', school_memberships),
+                other_memberships.length > 0 && this.listMemberships('Other memberships', other_memberships)
             );
         }
     }]);
@@ -99,24 +146,27 @@ var RelationshipDetail = function (_React$Component2) {
                     this.props.secondPerson.displayProps.label
                 ),
                 React.createElement(
-                    'h3',
+                    'div',
                     null,
-                    'Relationship history'
-                ),
-                React.createElement(
-                    'ul',
-                    null,
-                    this.props.relationship.statuses.map(function (status, i) {
-                        return React.createElement(
-                            'li',
-                            { key: i },
-                            labels.StatusChoices[status.status],
-                            ': From ',
-                            dateToString(status.date_start),
-                            ' to ',
-                            dateToString(status.date_end)
-                        );
-                    })
+                    React.createElement(
+                        'ul',
+                        null,
+                        this.props.relationship.statuses.map(function (status, i) {
+                            return React.createElement(
+                                'li',
+                                { key: i },
+                                React.createElement(
+                                    'b',
+                                    null,
+                                    labels.StatusChoices[status.status],
+                                    ' from ',
+                                    dateToString(status.date_start),
+                                    ' to ',
+                                    dateToString(status.date_end)
+                                )
+                            );
+                        })
+                    )
                 )
             );
         }
@@ -143,13 +193,13 @@ var GraphFilterPanel = function (_React$Component3) {
                 'div',
                 { key: label },
                 React.createElement(
-                    'h2',
+                    'h4',
                     null,
                     label
                 ),
                 React.createElement(
                     'table',
-                    null,
+                    { className: 'table-borderless' },
                     React.createElement(
                         'tbody',
                         null,
@@ -161,13 +211,18 @@ var GraphFilterPanel = function (_React$Component3) {
                                     return React.createElement(
                                         'td',
                                         { key: option.name },
-                                        React.createElement('input', { key: option.name, type: 'checkbox', checked: _this3.state[option.name] === true ? 'checked' : '',
+                                        React.createElement('input', { key: option.name, type: 'checkbox',
+                                            checked: _this3.state[option.name] === true ? 'checked' : '',
                                             name: option.name, onChange: _this3.handleInputChange, id: option.name
                                         }),
                                         React.createElement(
                                             'label',
                                             { htmlFor: option.name },
-                                            option.label
+                                            React.createElement(
+                                                'b',
+                                                null,
+                                                option.label
+                                            )
                                         )
                                     );
                                 })
@@ -309,7 +364,26 @@ var TrojstenGraph = function (_React$Component5) {
         };
 
         _this5.search = function (e) {
-            _this5.props.graph.nodes.forEach(function (node) {});
+            _this5.props.graph.nodes.forEach(function (node) {
+                node.isSearchResult = false;
+            });
+            _this5.fuse.search(_this5.searchInput.value).forEach(function (node) {
+                node.isSearchResult = true;
+            });
+            var start = Date.now();
+            var self = _this5;
+            function pulseSearchResults() {
+                self.simulation.update();
+                if (Date.now() - start < 3000) {
+                    requestAnimationFrame(pulseSearchResults);
+                } else {
+                    self.props.graph.nodes.forEach(function (node) {
+                        node.isSearchResult = false;
+                    });
+                    self.simulation.update();
+                }
+            }
+            pulseSearchResults();
         };
 
         _this5.canvasMouseMove = function (e) {
@@ -381,12 +455,20 @@ var TrojstenGraph = function (_React$Component5) {
 
             var searchBar = React.createElement(
                 'div',
-                { className: 'search-bar' },
-                React.createElement('input', { ref: 'search_query', type: 'text' }),
+                { className: 'search-bar row' },
                 React.createElement(
-                    'button',
-                    { onClick: this.search },
-                    'Search'
+                    'div',
+                    { className: 'col' },
+                    React.createElement('input', { ref: 'search_query', type: 'text', className: 'input-lg' })
+                ),
+                React.createElement(
+                    'div',
+                    { className: 'col' },
+                    React.createElement(
+                        'button',
+                        { onClick: this.search, className: 'btn btn-success' },
+                        'Search'
+                    )
                 )
             );
             return React.createElement(
@@ -395,6 +477,7 @@ var TrojstenGraph = function (_React$Component5) {
                 React.createElement('canvas', { tabIndex: '1', ref: 'canvas', width: this.state.width, height: this.state.height,
                     onClick: this.canvasClick, onMouseMove: this.canvasMouseMove }),
                 React.createElement(GraphFilterPanel, { filter: this.filter }),
+                searchBar,
                 React.createElement(GraphTimelinePanel, { graph: this.props.graph, onChange: function onChange(e) {
                         _this7.filter.setCurrentTime(e);
                     } }),

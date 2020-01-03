@@ -1,25 +1,38 @@
 class PersonDetail extends React.Component {
+
+    listMemberships = (name, memberships) =>
+        <div>
+            <h4>{name}</h4>
+            <ul>
+                {memberships.map((membership) =>
+                    <li key={membership.group_name}>
+                        <b>{membership.group_name} from {dateToString(membership.date_started)} to {dateToString(membership.date_ended)}</b>
+                    </li>
+                )}
+            </ul>
+        </div>;
+
     render() {
         const person = this.props.person;
+
+        const school_categories = [enums.Categories.elementarySchool, enums.Categories.highSchool, enums.Categories.university];
+        const school_memberships = person.memberships.filter((membership) => school_categories.includes(membership.group_category));
+        const seminar_memberships = person.memberships.filter((membership) => membership.group_category === enums.Categories.seminar);
+        const other_memberships = person.memberships.filter((membership) => membership.group_category === enums.Categories.other);
         return (
             <div className='info-sidebar'>
-                <div className="row">
-                    <h2>{person.first_name} {person.nickname ? '"' + person.nickname + '"' : ''} {person.last_name}</h2>
-                    <p>Born on {dateToString(new Date(person.birth_date))}</p>
-                </div>
-                {person.memberships.length > 0 &&
                 <div>
-                    <h3>Member of groups</h3>
+                    <h2>{person.first_name} {person.last_name}</h2>
+                </div>
+                <div>
                     <ul>
-                        {person.memberships.map((membership) =>
-                            <li key={membership.group_name}>
-                                {membership.group_name}:
-                                From {dateToString(membership.date_started)} to {dateToString(membership.date_ended)}
-                            </li>
-                        )}
+                        {person.nickname && <li><b>Nickname: {person.nickname}</b></li>}
+                        <li><b>Born on {dateToString(new Date(person.birth_date))}</b></li>
                     </ul>
                 </div>
-                }
+                {seminar_memberships.length > 0 && this.listMemberships('Seminar memberships', seminar_memberships)}
+                {school_memberships.length > 0 && this.listMemberships('School memberships', school_memberships)}
+                {other_memberships.length > 0 && this.listMemberships('Other memberships', other_memberships)}
             </div>
         )
     }
@@ -30,15 +43,15 @@ class RelationshipDetail extends React.Component {
         return (
             <div className='info-sidebar'>
                 <h2>{this.props.firstPerson.displayProps.label} & {this.props.secondPerson.displayProps.label}</h2>
-                <h3>Relationship history</h3>
-                <ul>
-                    {this.props.relationship.statuses.map((status, i) =>
-                        <li key={i}>
-                            {labels.StatusChoices[status.status]}:
-                            From {dateToString(status.date_start)} to {dateToString(status.date_end)}
-                        </li>
-                    )}
-                </ul>
+                <div>
+                    <ul>
+                        {this.props.relationship.statuses.map((status, i) =>
+                            <li key={i}>
+                                <b>{labels.StatusChoices[status.status]} from {dateToString(status.date_start)} to {dateToString(status.date_end)}</b>
+                            </li>
+                        )}
+                    </ul>
+                </div>
             </div>
         )
     }
@@ -63,17 +76,18 @@ class GraphFilterPanel extends React.Component {
 
     inputGroup = (label, optionGroup) =>
         <div key={label}>
-            <h2>{label}</h2>
-            <table>
+            <h4>{label}</h4>
+            <table className='table-borderless'>
                 <tbody>
                 {optionGroup.map((options, i) =>
                     <tr key={i}>
                         {options.map((option) =>
                             <td key={option.name}>
-                                <input key={option.name} type='checkbox' checked={this.state[option.name] === true ? 'checked': ''}
+                                <input key={option.name} type='checkbox'
+                                       checked={this.state[option.name] === true ? 'checked' : ''}
                                        name={option.name} onChange={this.handleInputChange} id={option.name}
                                 />
-                                <label htmlFor={option.name}>{option.label}</label>
+                                <label htmlFor={option.name}><b>{option.label}</b></label>
                             </td>
                         )}
                     </tr>
@@ -98,19 +112,19 @@ class GraphFilterPanel extends React.Component {
 
 
 class GraphTimelinePanel extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props)
     }
 
-    componentDidMount () {
+    componentDidMount() {
         const slider = document.getElementById('time-setter');
         let event_dates =
             this.props.graph.edges.map((edge) => edge.statuses.map(status => [status.date_start, status.date_end])).flat(2)
         event_dates = [...new Set(event_dates)].filter(x => x !== null).sort((a, b) => a - b);
 
         let ranges = {};
-        let min_date = event_dates[0].getTime(), max_date = event_dates[event_dates.length -1].getTime();
-        if (event_dates.length > 2){
+        let min_date = event_dates[0].getTime(), max_date = event_dates[event_dates.length - 1].getTime();
+        if (event_dates.length > 2) {
             event_dates.slice(1, -1).reduce((ranges, date) => {
                 const percentage = ((date - min_date) / (max_date - min_date)) * 100;
                 ranges[percentage + '%'] = date.getTime();
@@ -130,13 +144,13 @@ class GraphTimelinePanel extends React.Component {
             range: ranges,
         });
         const self = this;
-        slider.noUiSlider.on('update', function(values, handle) {
+        slider.noUiSlider.on('update', function (values, handle) {
             self.props.onChange(new Date(+values[handle]));
         });
 
     }
 
-    render () {
+    render() {
         return (
             <div className='timeline-panel'>
                 <div id='time-setter'></div>
@@ -215,9 +229,22 @@ class TrojstenGraph extends React.Component {
     };
 
     search = (e) => {
-        this.props.graph.nodes.forEach((node) => {
-
-        });
+        this.props.graph.nodes.forEach((node) => {node.isSearchResult = false});
+        this.fuse.search(this.searchInput.value).forEach((node) => {node.isSearchResult = true});
+        const start = Date.now();
+        const self = this;
+        function pulseSearchResults() {
+            self.simulation.update();
+            if (Date.now() - start < 3000) {
+                requestAnimationFrame(pulseSearchResults);
+            } else {
+                self.props.graph.nodes.forEach((node) => {
+                    node.isSearchResult = false;
+                });
+                self.simulation.update();
+            }
+        }
+        pulseSearchResults();
     };
 
     canvasMouseMove = (e) => {
@@ -242,9 +269,9 @@ class TrojstenGraph extends React.Component {
 
     render() {
         const searchBar = (
-            <div className='search-bar'>
-                <input ref="search_query" type='text'/>
-                <button onClick={this.search}>Search</button>
+            <div className='search-bar row'>
+                <div className='col'><input ref="search_query" type='text' className='input-lg'/></div>
+                <div className='col'><button onClick={this.search} className='btn btn-success'>Search</button></div>
             </div>
         );
         return (
@@ -253,7 +280,10 @@ class TrojstenGraph extends React.Component {
                         onClick={this.canvasClick} onMouseMove={this.canvasMouseMove}>
                 </canvas>
                 <GraphFilterPanel filter={this.filter}/>
-                <GraphTimelinePanel graph={this.props.graph} onChange={(e) => {this.filter.setCurrentTime(e)}}/>
+                {searchBar}
+                <GraphTimelinePanel graph={this.props.graph} onChange={(e) => {
+                    this.filter.setCurrentTime(e)
+                }}/>
                 {this.getSidebar()}
             </div>
         )

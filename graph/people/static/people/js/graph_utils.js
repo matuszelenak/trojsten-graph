@@ -231,6 +231,7 @@ class GraphRenderer {
 
         props.label = node.nickname ? node.nickname : node.first_name + ' ' + node.last_name;
         props.radius = 3 + Math.ceil(Math.sqrt(node.age * 2));
+        props.pulseRadius = 0;
 
         return props
     };
@@ -298,6 +299,16 @@ class GraphRenderer {
             node.displayX - this.context.measureText(node.displayProps.label).width / 2,
             node.displayY - node.displayProps.radius - 2
         );
+
+        if (node.isSearchResult){
+            this.context.beginPath();
+            this.context.arc(node.displayX, node.displayY, node.displayProps.pulseRadius, 0, 2 * Math.PI, false);
+            this.context.strokeStyle = '#ff000077';
+            this.context.fillStyle = '#ff000077';
+            this.context.fill();
+            this.context.stroke();
+            node.displayProps.pulseRadius = node.displayProps.radius + (node.displayProps.pulseRadius + 1) % 200;
+        }
     };
 
     renderGraph = (transform) => {
