@@ -7,7 +7,15 @@ from django.core.management import BaseCommand
 
 from people import models
 from people.models import ExportableEnum
-from people.utils import snake_to_camel
+
+
+def snake_to_camel(s):
+    def capitalizer(words):
+        yield words[0].lower()
+        for word in words[1:]:
+            yield word.lower().capitalize()
+
+    return ''.join(capitalizer(s.split('_')))
 
 
 def enum_values_to_json(cls):

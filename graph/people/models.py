@@ -4,8 +4,6 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from people.utils import random_token
-
 
 class ExportableEnum:
     pass
@@ -233,12 +231,3 @@ class GroupMembership(models.Model):
     class Meta:
         unique_together = ('person', 'group')
         ordering = ('-date_started',)
-
-
-class VerificationToken(models.Model):
-    token = models.CharField(max_length=128, default=random_token)
-    valid_until = models.DateTimeField()
-    note = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return f'Verification token #{self.pk}'

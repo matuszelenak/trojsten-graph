@@ -1,35 +1,12 @@
-from functools import wraps
-
 from django.contrib.auth import logout
-from django.core.exceptions import PermissionDenied
 from django.contrib.auth.views import LoginView as Login
 from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse
-from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
 
-from people.models import Person, Relationship, VerificationToken
+from people.models import Person, Relationship
 from people.serializers import PeopleSerializer, RelationshipSerializer
-
-
-class TokenAuth:
-    def __call__(self, view_func):
-        @wraps(view_func)
-        def _dispatch_method(request, *args, **kwargs):
-            if request.user and request.user.is_staff:
-                return view_func(request, *args, **kwargs)
-
-            token = request.GET.get('token')
-            if token and VerificationToken.objects.filter(valid_until__gt=timezone.localtime(), token=token).exists():
-                return view_func(request, *args, **kwargs)
-
-            raise PermissionDenied
-
-        return _dispatch_method
-
-
-token_auth = TokenAuth()
 
 
 class LoginView(Login):

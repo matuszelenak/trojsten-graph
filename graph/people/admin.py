@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 
-from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, GroupMembership, VerificationToken
+from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, GroupMembership
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -90,9 +90,3 @@ class RelationshipStatusAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('relationship__first_person', 'relationship__second_person')
-
-
-@admin.register(VerificationToken)
-class VerificationTokenAdmin(admin.ModelAdmin):
-    list_display = ('token', 'valid_until', 'note')
-    readonly_fields = ('token', )
