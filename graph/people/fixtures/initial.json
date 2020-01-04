@@ -1,38 +1,20 @@
 [
-  {
-    "model": "auth.user",
-    "pk": 1,
-    "fields": {
-      "password": "pbkdf2_sha256$150000$SGRNRXo2flDm$gDgy36/I7OfhbZ62OFsrgBMryWN0kFKAlcVaRQddWCQ=",
-      "last_login": "2019-10-31T19:14:14.060Z",
-      "is_superuser": true,
-      "username": "matus",
-      "first_name": "",
-      "last_name": "",
-      "email": "matus@ksp.sk",
-      "is_staff": true,
-      "is_active": true,
-      "date_joined": "2019-10-26T21:37:24.876Z",
-      "groups": [],
-      "user_permissions": []
+    {
+        "model": "auth.user",
+        "pk": 1,
+        "fields": {
+            "password": "pbkdf2_sha256$150000$SGRNRXo2flDm$gDgy36/I7OfhbZ62OFsrgBMryWN0kFKAlcVaRQddWCQ=",
+            "last_login": "2019-10-31T19:14:14.060Z",
+            "is_superuser": true,
+            "username": "matus",
+            "first_name": "",
+            "last_name": "",
+            "email": "matus@ksp.sk",
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2019-10-26T21:37:24.876Z",
+            "groups": [],
+            "user_permissions": []
+        }
     }
-  },
-  {
-    "model": "auth.user",
-    "pk": 2,
-    "fields": {
-      "password": "!N9BIBzAoKTwkrnBgfpRCNZURiDY9rS8eU11Bh7wk",
-      "last_login": "2020-01-03T16:54:09.361Z",
-      "is_superuser": true,
-      "username": "matus.zelenak",
-      "first_name": "Mat\u00fa\u0161",
-      "last_name": "Zele\u0148\u00e1k",
-      "email": "matus.zelenak@trojsten.sk",
-      "is_staff": true,
-      "is_active": true,
-      "date_joined": "2020-01-03T15:03:30.728Z",
-      "groups": [],
-      "user_permissions": []
-    }
-  }
 ]

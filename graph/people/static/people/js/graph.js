@@ -527,9 +527,22 @@ var TrojstenGraph = function (_React$Component6) {
                     React.createElement(GraphFilterPanel, { filter: this.filter }),
                     React.createElement(GraphSearch, { parent: this }),
                     React.createElement(
-                        'a',
-                        { href: window.location.origin + '/logout/', className: 'btn btn-danger' },
-                        'Log out'
+                        'div',
+                        null,
+                        React.createElement(
+                            'a',
+                            { href: window.location.origin + '/suggestion/', className: 'btn btn-info' },
+                            'Submit a suggestion'
+                        )
+                    ),
+                    React.createElement(
+                        'div',
+                        null,
+                        React.createElement(
+                            'a',
+                            { href: window.location.origin + '/logout/', className: 'btn btn-danger' },
+                            'Log out'
+                        )
                     )
                 ),
                 React.createElement(GraphTimelinePanel, { graph: this.props.graph, onChange: function onChange(e) {

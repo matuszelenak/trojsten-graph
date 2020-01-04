@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^graph-data/$', login_required(views.GraphDataView.as_view()), name='graph_data'),
     url(r'^login/$', views.LoginView.as_view(), name='login'),
     url(r'^logout/$', views.LogoutView.as_view(), name='logout'),
+    url(r'^suggestion/$', views.ContentSuggestionSubmitView.as_view(), name='suggestion_submit')
 ]

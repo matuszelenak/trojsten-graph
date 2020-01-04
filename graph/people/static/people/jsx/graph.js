@@ -315,7 +315,12 @@ class TrojstenGraph extends React.Component {
                 <div className='graph-toolbar'>
                     <GraphFilterPanel filter={this.filter}/>
                     <GraphSearch parent={this}/>
-                    <a href={window.location.origin + '/logout/'} className='btn btn-danger'>Log out</a>
+                    <div>
+                        <a href={window.location.origin + '/suggestion/'} className='btn btn-info'>Submit a suggestion</a>
+                    </div>
+                    <div>
+                        <a href={window.location.origin + '/logout/'} className='btn btn-danger'>Log out</a>
+                    </div>
                 </div>
 
                 <GraphTimelinePanel graph={this.props.graph} onChange={(e) => {
