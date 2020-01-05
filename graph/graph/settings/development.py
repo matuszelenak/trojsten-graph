@@ -33,3 +33,5 @@ credentials_data = json.load(open(os.path.join(BASE_DIR, 'credentials.json')))
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = credentials_data.get('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = credentials_data.get('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
+EMAIL_HOST_PASSWORD = credentials_data.get('EMAIL_PASSWORD')

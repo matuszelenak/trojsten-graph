@@ -1,3 +1,6 @@
+import random
+import string
+
 from django.db import models
 from django.db.models import Prefetch, Q, F, Exists, OuterRef
 from django.db.models.functions import Coalesce
@@ -245,3 +248,26 @@ class ContentSuggestion(models.Model):
 
     date_created = models.DateTimeField(auto_now_add=True)
     date_resolved = models.DateTimeField(null=True, blank=True)
+
+
+class Token(models.Model):
+    class Types(models.IntegerChoices):
+        ACCOUNT_ACTIVATION = 1, 'Account activation'
+        PASSWORD_RESET = 2, 'Password reset'
+
+    type = models.IntegerField(choices=Types.choices, default=Types.ACCOUNT_ACTIVATION)
+    token = models.CharField(max_length=50)
+    user = models.ForeignKey('auth.User', related_name='token', on_delete=models.CASCADE)
+    valid = models.BooleanField(default=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    @staticmethod
+    def get_random_token():
+        return ''.join(random.sample(string.ascii_uppercase + string.ascii_lowercase + string.digits, 50))
+
+    @classmethod
+    def create_for_user(cls, user):
+        return cls(
+            token=cls.get_random_token(),
+            user=user,
+        )

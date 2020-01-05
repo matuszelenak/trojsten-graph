@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import re
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -131,3 +133,16 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'graph'
+
+ALLOWED_MAIL_PATTERNS = list(map(re.compile, [
+    r'.*@ksp\.sk$',
+    r'.*@fks\.sk$',
+    r'.*@kms\.sk$',
+    r'.*@trojsten.sk'
+]))
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'matus.zelenak@trojsten.sk'
