@@ -25,7 +25,7 @@ services:
       - ./graph/:/usr/src/graph/
     depends_on:
       - db
-    command: gunicorn graph.wsgi:application --bind 0.0.0.0:8000 --reload --log-level DEBUG --access-logfile - --log-file -
+    command: python manage.py runserver 0.0.0.0:8000
 
 volumes:
   postgres_data:

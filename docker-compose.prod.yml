@@ -22,18 +22,19 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=graph.settings.production
     ports:
-      - "80:8000"
+      - "80:8042"
     volumes:
       - ./graph/:/usr/src/graph/
     depends_on:
       - db
-    command: gunicorn graph.wsgi:application --bind 0.0.0.0:8000 --reload --log-level DEBUG --access-logfile - --log-file -
-  nginx:
-    build: ./nginx
-    ports:
-      - "80:80"
-    depends_on:
-      - web
+    command: gunicorn graph.wsgi:application --bind 0.0.0.0:8000 --reload --access-logfile - --log-file -
+# Keby si si to s tym nginx rozmyslel
+#  nginx:
+#    build: ./nginx
+#    ports:
+#      - "80:80"
+#    depends_on:
+#      - web
 
 volumes:
   postgres_data:
