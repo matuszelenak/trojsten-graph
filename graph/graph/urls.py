@@ -16,13 +16,13 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
-from django.urls import path
-from django.urls import include, path  # For django versions from 2.0 and up
+from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^auth/', include('social_django.urls', namespace='social')),
-    url(r'^', include('people.urls'))
+    url(r'^', include('people.urls')),
+    url(r'^', include('users.urls'))
 ]
 
 if settings.DEBUG:

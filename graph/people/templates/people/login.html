@@ -3,6 +3,9 @@
 
 {% block content %}
     <div class="container">
+        {% block messages %}
+            {{ block.super }}
+        {% endblock %}
         <div class="row text-white">
             <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
                 <h2>Trojsten Graph</h2>
@@ -16,8 +19,7 @@
                             <label class="col-sm-3 col-form-label"
                                    for="{{ form.username.id_for_label }}">Username</label>
                             <div class="col-sm-9">
-                                <input type="text" class="form-control" name="{{ form.username.html_name }}"
-                                       id="{{ form.username.id_for_label }}"/>
+                                {{ form.username }}
                             </div>
                         </div>
                         {{ form.password.errors }}
@@ -25,8 +27,7 @@
                             <label class="col-sm-3 col-form-label"
                                    for="{{ form.password.id_for_label }}">Password</label>
                             <div class="col-sm-9">
-                                <input type="password" class="form-control" name="{{ form.password.html_name }}"
-                                       id="{{ form.password.id_for_label }}" autocomplete="current-password"/>
+                                {{ form.password }}
                             </div>
                         </div>
                         <div class="row">

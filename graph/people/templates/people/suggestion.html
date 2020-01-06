@@ -6,12 +6,8 @@
             <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
                 <h2>Suggestion submit</h2>
                 {% block messages %}
-                    {% if messages %}
-                        <ul class="messagelist">{% for message in messages %}
-                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
-                        {% endfor %}</ul>
-                    {% endif %}
-                {% endblock messages %}
+                    {{ block.super }}
+                {% endblock %}
                 <div class="px-2">
                     <form action="" class="justify-content-center" method="post">
                         {% csrf_token %}

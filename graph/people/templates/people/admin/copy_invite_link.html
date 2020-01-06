@@ -1,0 +1,13 @@
+<script type="text/javascript">
+    function copy_email() {
+        const el = document.createElement('textarea');
+        el.value = "{{ link }}";
+        el.style.position = 'absolute';
+        el.style.left = '-9999px';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+    }
+</script>
+<button class="btn btn-default" type="button" onclick="copy_email()">Copy invite link</button>

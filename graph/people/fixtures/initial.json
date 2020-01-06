@@ -1,20 +1,48 @@
 [
-    {
-        "model": "auth.user",
-        "pk": 1,
-        "fields": {
-            "password": "pbkdf2_sha256$150000$SGRNRXo2flDm$gDgy36/I7OfhbZ62OFsrgBMryWN0kFKAlcVaRQddWCQ=",
-            "last_login": "2019-10-31T19:14:14.060Z",
-            "is_superuser": true,
-            "username": "matus",
-            "first_name": "",
-            "last_name": "",
-            "email": "matus@ksp.sk",
-            "is_staff": true,
-            "is_active": true,
-            "date_joined": "2019-10-26T21:37:24.876Z",
-            "groups": [],
-            "user_permissions": []
-        }
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$150000$SGRNRXo2flDm$gDgy36/I7OfhbZ62OFsrgBMryWN0kFKAlcVaRQddWCQ=",
+      "last_login": "2019-10-31T19:14:14.060Z",
+      "is_superuser": true,
+      "username": "matus",
+      "first_name": "",
+      "last_name": "",
+      "email": "matus@ksp.sk",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2019-10-26T21:37:24.876Z",
+      "groups": [],
+      "user_permissions": []
     }
+  },
+  {
+    "model": "users.emailpatternwhitelist",
+    "pk": 1,
+    "fields": {
+      "pattern": ".*@ksp\\.sk$"
+    }
+  },
+  {
+    "model": "users.emailpatternwhitelist",
+    "pk": 2,
+    "fields": {
+      "pattern": ".*@fks\\.sk$"
+    }
+  },
+  {
+    "model": "users.emailpatternwhitelist",
+    "pk": 3,
+    "fields": {
+      "pattern": ".*@kms\\.sk$"
+    }
+  },
+  {
+    "model": "users.emailpatternwhitelist",
+    "pk": 4,
+    "fields": {
+      "pattern": ".*@trojsten\\.sk$"
+    }
+  }
 ]

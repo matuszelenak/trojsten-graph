@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'people',
+    'users',
     'social_django',
 ]
 
@@ -133,13 +134,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'graph'
-
-ALLOWED_MAIL_PATTERNS = list(map(re.compile, [
-    r'.*@ksp\.sk$',
-    r'.*@fks\.sk$',
-    r'.*@kms\.sk$',
-    r'.*@trojsten.sk'
-]))
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

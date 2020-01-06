@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 
-from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, GroupMembership, ContentSuggestion
+from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, GroupMembership
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -90,8 +90,3 @@ class RelationshipStatusAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('relationship__first_person', 'relationship__second_person')
-
-
-@admin.register(ContentSuggestion)
-class ContentSuggestionAdmin(admin.ModelAdmin):
-    readonly_fields = ('suggestion', 'submitted_by', 'date_created')
