@@ -10,8 +10,8 @@ services:
       - POSTGRES_DB=graph
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
+    expose:
+      - 8000
   web:
     build: ./graph
     image: trojsten-graph
