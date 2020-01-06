@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import re
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -27,7 +26,7 @@ SECRET_KEY = '5l7t%9d==wwy$=8_+r32(kytqwhu^&ks_%9q5-b*q&9=n-&vv4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
 
 # Application definition
@@ -44,6 +43,17 @@ INSTALLED_APPS = [
     'users',
     'social_django',
 ]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('POSTGRES_DB', 'graph'),
+        'USER': os.environ.get('POSTGRES_USER', 'graph'),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "graph"),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', 5432)
+    }
+}
 
 INTERNAL_IPS = [
     '127.0.0.1',
@@ -132,6 +142,9 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
 
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'graph'
 
@@ -140,3 +153,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'matus.zelenak@trojsten.sk'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')

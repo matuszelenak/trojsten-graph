@@ -1,0 +1,39 @@
+version: '3'
+services:
+  db:
+    image: postgres:10-alpine
+    env_file:
+      - .envfile
+    environment:
+      - POSTGRES_USER=graph
+      - POSTGRES_PASSWORD=graph
+      - POSTGRES_DB=graph
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+  web:
+    build:
+      context: ./graph
+      dockerfile: Dockerfile.prod
+    image: trojsten-graph
+    env_file:
+      - .envfile
+    environment:
+      - DJANGO_SETTINGS_MODULE=graph.settings.production
+    ports:
+      - "80:8000"
+    volumes:
+      - ./graph/:/usr/src/graph/
+    depends_on:
+      - db
+    command: gunicorn graph.wsgi:application --bind 0.0.0.0:8000 --reload --log-level DEBUG --access-logfile - --log-file -
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:

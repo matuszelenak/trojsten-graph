@@ -2,7 +2,7 @@ FROM python:3.7-alpine
 
 ENV PYTHONUNBUFFERED=0
 
-ENV DJANGO_SETTINGS_MODULE=graph.settings.production
+ENV DJANGO_SETTINGS_MODULE=graph.settings.heroku
 
 RUN apk add --no-cache --virtual build-deps curl gcc g++ make postgresql-dev bash
 

@@ -34,6 +34,7 @@ class InviteCodeAdmin(admin.ModelAdmin):
         return False
 
     def changelist_view(self, request, extra_context=None):
+        print(request.META['SERVER_PORT'])
         self.request = request
         if request.method == 'POST' and 'generate_invites' in request.POST:
             form = InviteCodeForm(request.POST)

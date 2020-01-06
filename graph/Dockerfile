@@ -1,18 +1,16 @@
-FROM python:3.7-alpine
+FROM python:3.8.0-alpine
 
-ENV PYTHONUNBUFFERED=0
+WORKDIR /usr/src/graph
 
-ENV DJANGO_SETTINGS_MODULE=graph.settings.development
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE 1
 
 RUN apk add --no-cache --virtual build-deps curl gcc g++ make postgresql-dev postgresql-client bash
 
-RUN mkdir /graph
+RUN pip install --upgrade pip
+COPY ./requirements.txt /usr/src/graph/requirements.txt
+RUN pip install -r requirements.txt
 
-WORKDIR /graph
+COPY . /usr/src/graph/
 
-ADD . /graph
-
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-EXPOSE 8000
+ENTRYPOINT ["/usr/src/graph/entrypoint.sh"]
