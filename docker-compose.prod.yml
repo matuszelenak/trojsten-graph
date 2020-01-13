@@ -15,7 +15,7 @@ services:
   web:
     build:
       context: ./graph
-      dockerfile: Dockerfile.prod
+      dockerfile: graph/production.Dockerfile
     image: trojsten-graph
     env_file:
       - .envfile
