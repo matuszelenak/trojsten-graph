@@ -13,7 +13,9 @@ services:
     expose:
       - 8000
   web:
-    build: ./graph
+    build:
+      context: ./graph
+      dockerfile: graph/development.Dockerfile
     image: trojsten-graph
     env_file:
       - .envfile
