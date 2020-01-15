@@ -1,0 +1,25 @@
+runtime: python
+
+entrypoint: gunicorn -c gunicorn.conf.py -b :$PORT graph.wsgi --env DJANGO_SETTINGS_MODULE=graph.settings.production_appengine --log-level INFO --access-logfile - --log-file -
+env: flex
+
+manual_scaling:
+  instances: 1
+
+includes:
+  - .envfile.yaml
+
+handlers:
+- url: /.*
+  script: auto
+  secure: always
+  redirect_http_response_code: 301
+
+- url: /static
+  static_dir: static
+
+beta_settings:
+  cloud_sql_instances: trojsten-graph:europe-west3:trojsten-graph-db
+
+runtime_config:
+  python_version: 3.7
