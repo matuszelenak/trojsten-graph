@@ -32,7 +32,8 @@ function computeExtraGraphData(graph, currentTime){
             last_name: normalizeString(node.last_name),
             nickname: node.nickname ? normalizeString(node.nickname): '',
             maiden_name: node.maiden_name ? normalizeString(node.maiden_name) : ''
-        }
+        };
+        node.isHighlighted = false;
     });
     graph.edges.forEach((edge) => {
         edge.statuses.forEach((status) => {
@@ -214,7 +215,23 @@ class GraphRenderer {
         this.graph = {nodes: [], edges: []};
         this.canvas = canvas;
         this.context = this.canvas.getContext('2d');
+
+        this.pulseRadius = 0;
+        this.pulseVelocity = 20;
     }
+
+    pulseSearchResults = () => {
+        if (this.pulseVelocity < 0.1 ){
+            this.resetPulse();
+        }
+        this.pulseRadius = this.pulseRadius + this.pulseVelocity;
+        this.pulseVelocity *= 0.9;
+    };
+
+    resetPulse = () => {
+        this.pulseVelocity = 20;
+        this.pulseRadius = 0;
+    };
 
     nodeDisplayProps = (node) => {
         let props = {};
@@ -235,9 +252,10 @@ class GraphRenderer {
             previousAngleEnd = angleEnd;
         });
 
-        props.label = node.nickname ? node.nickname : node.first_name + ' ' + node.last_name;
+        if (node.isHighlighted){
+            props.label = node.first_name + ' ' + node.last_name;
+        } else props.label = node.nickname ? node.nickname : node.first_name + ' ' + node.last_name;
         props.radius = 3 + Math.ceil(Math.sqrt(node.age * 2));
-        props.pulseRadius = 0;
 
         return props
     };
@@ -262,6 +280,13 @@ class GraphRenderer {
     setData = (graph) => {
         this.graph = graph;
         this.calculateDisplayProps()
+    };
+
+    highlightNode = (target) => {
+        this.graph.nodes.forEach((node) => {node.isHighlighted = node === target});
+        this.graph.nodes.forEach((node) => {
+            node.displayProps = this.nodeDisplayProps(node)
+        });
     };
 
     renderEdge = (edge) => {
@@ -308,12 +333,11 @@ class GraphRenderer {
 
         if (node.isSearchResult){
             this.context.beginPath();
-            this.context.arc(node.displayX, node.displayY, node.displayProps.pulseRadius, 0, 2 * Math.PI, false);
-            this.context.strokeStyle = '#ff000077';
-            this.context.fillStyle = '#ff000077';
+            this.context.arc(node.displayX, node.displayY, this.pulseRadius, 0, 2 * Math.PI, false);
+            this.context.strokeStyle = '#ff000055';
+            this.context.fillStyle = '#ff000055';
             this.context.fill();
             this.context.stroke();
-            node.displayProps.pulseRadius = node.displayProps.radius + (node.displayProps.pulseRadius + 1) % 200;
         }
     };
 
