@@ -274,27 +274,32 @@ var GraphSearch = function (_React$Component4) {
         var _this4 = _possibleConstructorReturn(this, (GraphSearch.__proto__ || Object.getPrototypeOf(GraphSearch)).call(this, props));
 
         _this4.search = function (e) {
-            var simulation = _this4.props.parent.simulation;
-            var fuse = new Fuse(simulation.nodes, _this4.options);
-            simulation.nodes.forEach(function (node) {
-                node.isSearchResult = false;
-            });
-            fuse.search(normalizeString(_this4.refs.search_query.value)).forEach(function (node) {
-                node.isSearchResult = true;
-            });
-            var start = Date.now();
-            function pulseSearchResults() {
-                simulation.update();
-                if (Date.now() - start < 3000) {
-                    requestAnimationFrame(pulseSearchResults);
-                } else {
-                    simulation.nodes.forEach(function (node) {
-                        node.isSearchResult = false;
-                    });
+            if (e.key === 'Enter') {
+                var simulation = _this4.props.parent.simulation;
+                var renderer = _this4.props.parent.renderer;
+                var results = new Fuse(simulation.nodes, _this4.options).search(normalizeString(_this4.refs.search_query.value));
+                if (results.length === 0) return;
+                simulation.nodes.forEach(function (node) {
+                    node.isSearchResult = false;
+                });
+                results.forEach(function (node) {
+                    node.isSearchResult = true;
+                });
+
+                clearInterval(_this4.pulse);
+                clearTimeout(_this4.pulseTimeout);
+                renderer.resetPulse();
+
+                _this4.pulse = setInterval(function () {
+                    renderer.pulseSearchResults();
                     simulation.update();
-                }
+                }, 30);
+                _this4.pulseTimeout = setTimeout(function () {
+                    clearInterval(_this4.pulse);
+                    renderer.resetPulse();
+                    simulation.update();
+                }, 5000);
             }
-            pulseSearchResults();
         };
 
         _this4.options = {
@@ -306,6 +311,8 @@ var GraphSearch = function (_React$Component4) {
             minMatchCharLength: 1,
             keys: ['searchAttributes.first_name', 'searchAttributes.last_name', 'searchAttributes.nickname', 'searchAttributes.maiden_name']
         };
+        _this4.pulse = null;
+        _this4.pulseTimeout = null;
         return _this4;
     }
 
@@ -318,14 +325,9 @@ var GraphSearch = function (_React$Component4) {
                 React.createElement(
                     'h3',
                     null,
-                    'Search'
+                    'Find in graph'
                 ),
-                React.createElement('input', { ref: 'search_query', type: 'text', className: 'input-lg' }),
-                React.createElement(
-                    'button',
-                    { onClick: this.search, className: 'btn btn-default' },
-                    'Find'
-                )
+                React.createElement('input', { ref: 'search_query', type: 'text', onKeyDown: this.search })
             );
         }
     }]);
@@ -446,6 +448,7 @@ var TrojstenGraph = function (_React$Component6) {
             });
             var start = Date.now();
             var self = _this6;
+
             function pulseSearchResults() {
                 self.simulation.update();
                 if (Date.now() - start < 3000) {
@@ -457,27 +460,67 @@ var TrojstenGraph = function (_React$Component6) {
                     self.simulation.update();
                 }
             }
+
             pulseSearchResults();
         };
 
         _this6.canvasMouseMove = function (e) {
-            _this6.canvas.style.cursor = _this6.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer' : 'default';
+            var target = _this6.simulation.nodeOnMousePosition(e.clientX, e.clientY);
+            if (target) {
+                _this6.renderer.highlightNode(target);
+                _this6.canvas.style.cursor = 'pointer';
+            } else {
+                _this6.renderer.highlightNode(target);
+                _this6.canvas.style.cursor = 'default';
+            }
+            _this6.simulation.update();
         };
 
         _this6.getSidebar = function () {
-            var firstPerson = _this6.state.selectedPeople[0],
-                secondPerson = _this6.state.selectedPeople[1],
-                relationship = void 0;
-            if (firstPerson) {
-                if (secondPerson && (relationship = _this6.getRelationship(firstPerson, secondPerson))) {
-                    return React.createElement(RelationshipDetail, {
-                        firstPerson: firstPerson,
-                        secondPerson: secondPerson,
-                        relationship: relationship
-                    });
+            var sidebarContent = function sidebarContent() {
+                var firstPerson = _this6.state.selectedPeople[0],
+                    secondPerson = _this6.state.selectedPeople[1],
+                    relationship = void 0;
+                if (firstPerson) {
+                    if (secondPerson && (relationship = _this6.getRelationship(firstPerson, secondPerson))) {
+                        return React.createElement(RelationshipDetail, {
+                            firstPerson: firstPerson,
+                            secondPerson: secondPerson,
+                            relationship: relationship
+                        });
+                    }
+                    return React.createElement(PersonDetail, { person: firstPerson });
                 }
-                return React.createElement(PersonDetail, { person: firstPerson });
+            };
+            var content = sidebarContent();
+            if (content) {
+                return React.createElement(
+                    'div',
+                    { className: 'row h-100 info-sidebar' },
+                    React.createElement(
+                        'div',
+                        { className: 'col-sm-12 my-auto sidebar-container' },
+                        sidebarContent()
+                    )
+                );
             }
+        };
+
+        _this6.getToolbar = function () {
+            return React.createElement(
+                'div',
+                { className: 'row h-100 graph-toolbar' },
+                React.createElement(
+                    'div',
+                    { className: 'col-sm-12 my-auto' },
+                    React.createElement(
+                        'div',
+                        { className: 'tool-container' },
+                        React.createElement(GraphSearch, { parent: _this6 }),
+                        React.createElement(GraphFilterPanel, { filter: _this6.filter })
+                    )
+                )
+            );
         };
 
         _this6.state = {
@@ -521,30 +564,7 @@ var TrojstenGraph = function (_React$Component6) {
                 null,
                 React.createElement('canvas', { tabIndex: '1', ref: 'canvas', width: this.state.width, height: this.state.height,
                     onClick: this.canvasClick, onMouseMove: this.canvasMouseMove }),
-                React.createElement(
-                    'div',
-                    { className: 'graph-toolbar' },
-                    React.createElement(GraphFilterPanel, { filter: this.filter }),
-                    React.createElement(GraphSearch, { parent: this }),
-                    React.createElement(
-                        'div',
-                        null,
-                        React.createElement(
-                            'a',
-                            { href: window.location.origin + '/suggestion/', className: 'btn btn-info' },
-                            'Submit a suggestion'
-                        )
-                    ),
-                    React.createElement(
-                        'div',
-                        null,
-                        React.createElement(
-                            'a',
-                            { href: window.location.origin + '/logout/', className: 'btn btn-danger' },
-                            'Log out'
-                        )
-                    )
-                ),
+                this.getToolbar(),
                 React.createElement(GraphTimelinePanel, { graph: this.props.graph, onChange: function onChange(e) {
                         _this8.filter.setCurrentTime(e);
                     } }),

@@ -129,34 +129,44 @@ class GraphSearch extends React.Component {
                 'searchAttributes.maiden_name'
             ]
         };
+        this.pulse = null;
+        this.pulseTimeout = null;
     }
 
     search = (e) => {
-        const simulation = this.props.parent.simulation;
-        const fuse = new Fuse(simulation.nodes, this.options);
-        simulation.nodes.forEach((node) => {node.isSearchResult = false});
-        fuse.search(normalizeString(this.refs.search_query.value)).forEach((node) => {node.isSearchResult = true});
-        const start = Date.now();
-        function pulseSearchResults() {
-            simulation.update();
-            if (Date.now() - start < 3000) {
-                requestAnimationFrame(pulseSearchResults);
-            } else {
-                simulation.nodes.forEach((node) => {
-                    node.isSearchResult = false;
-                });
-                simulation.update();
-            }
+        if (e.key === 'Enter') {
+            const simulation = this.props.parent.simulation;
+            const renderer = this.props.parent.renderer;
+            const results = new Fuse(simulation.nodes, this.options).search(normalizeString(this.refs.search_query.value));
+            if (results.length === 0) return;
+            simulation.nodes.forEach((node) => {
+                node.isSearchResult = false
+            });
+            results.forEach((node) => {
+                node.isSearchResult = true
+            });
+
+            clearInterval(this.pulse);
+            clearTimeout(this.pulseTimeout);
+            renderer.resetPulse();
+
+            this.pulse = setInterval(() => {
+                renderer.pulseSearchResults();
+                simulation.update()
+            }, 30);
+            this.pulseTimeout = setTimeout(() => {
+                clearInterval(this.pulse);
+                renderer.resetPulse();
+                simulation.update()
+            }, 5000)
         }
-        pulseSearchResults();
     };
 
     render() {
         return (
             <div>
-                <h3>Search</h3>
-                <input ref="search_query" type='text' className='input-lg'/>
-                <button onClick={this.search} className='btn btn-default'>Find</button>
+                <h3>Find in graph</h3>
+                <input ref="search_query" type='text' onKeyDown={this.search}/>
             </div>
         )
     }
@@ -218,7 +228,7 @@ class TrojstenGraph extends React.Component {
         this.state = {
             selectedPeople: [],
             width: window.innerWidth,
-            height: window.innerHeight
+            height: window.innerHeight,
         };
 
         this.filter = new GraphFilter(props.graph);
@@ -268,10 +278,15 @@ class TrojstenGraph extends React.Component {
     };
 
     search = (e) => {
-        this.props.graph.nodes.forEach((node) => {node.isSearchResult = false});
-        this.fuse.search(this.searchInput.value.normalize('NFD')).forEach((node) => {node.isSearchResult = true});
+        this.props.graph.nodes.forEach((node) => {
+            node.isSearchResult = false
+        });
+        this.fuse.search(this.searchInput.value.normalize('NFD')).forEach((node) => {
+            node.isSearchResult = true
+        });
         const start = Date.now();
         const self = this;
+
         function pulseSearchResults() {
             self.simulation.update();
             if (Date.now() - start < 3000) {
@@ -283,27 +298,61 @@ class TrojstenGraph extends React.Component {
                 self.simulation.update();
             }
         }
+
         pulseSearchResults();
     };
 
     canvasMouseMove = (e) => {
-        this.canvas.style.cursor = this.simulation.nodeOnMousePosition(e.clientX, e.clientY) ? 'pointer' : 'default';
+        const target = this.simulation.nodeOnMousePosition(e.clientX, e.clientY);
+        if (target) {
+            this.renderer.highlightNode(target);
+            this.canvas.style.cursor = 'pointer'
+        } else {
+            this.renderer.highlightNode(target);
+            this.canvas.style.cursor = 'default'
+        }
+        this.simulation.update();
     };
 
     getSidebar = () => {
-        let firstPerson = this.state.selectedPeople[0],
-            secondPerson = this.state.selectedPeople[1],
-            relationship;
-        if (firstPerson) {
-            if (secondPerson && (relationship = this.getRelationship(firstPerson, secondPerson))) {
-                return <RelationshipDetail
-                    firstPerson={firstPerson}
-                    secondPerson={secondPerson}
-                    relationship={relationship}
-                />
+        let sidebarContent = () => {
+            let firstPerson = this.state.selectedPeople[0],
+                secondPerson = this.state.selectedPeople[1],
+                relationship;
+            if (firstPerson) {
+                if (secondPerson && (relationship = this.getRelationship(firstPerson, secondPerson))) {
+                    return <RelationshipDetail
+                        firstPerson={firstPerson}
+                        secondPerson={secondPerson}
+                        relationship={relationship}
+                    />
+                }
+                return <PersonDetail person={firstPerson}/>
             }
-            return <PersonDetail person={firstPerson}/>
+        };
+        const content = sidebarContent();
+        if (content) {
+            return (
+                <div className="row h-100 info-sidebar">
+                    <div className="col-sm-12 my-auto sidebar-container">
+                        {sidebarContent()}
+                    </div>
+                </div>
+            )
         }
+    };
+
+    getToolbar = () => {
+        return (
+            <div className="row h-100 graph-toolbar">
+                <div className="col-sm-12 my-auto">
+                    <div className='tool-container'>
+                        <GraphSearch parent={this}/>
+                        <GraphFilterPanel filter={this.filter}/>
+                    </div>
+                </div>
+            </div>
+        )
     };
 
     render() {
@@ -312,17 +361,7 @@ class TrojstenGraph extends React.Component {
                 <canvas tabIndex="1" ref="canvas" width={this.state.width} height={this.state.height}
                         onClick={this.canvasClick} onMouseMove={this.canvasMouseMove}>
                 </canvas>
-                <div className='graph-toolbar'>
-                    <GraphFilterPanel filter={this.filter}/>
-                    <GraphSearch parent={this}/>
-                    <div>
-                        <a href={window.location.origin + '/suggestion/'} className='btn btn-info'>Submit a suggestion</a>
-                    </div>
-                    <div>
-                        <a href={window.location.origin + '/logout/'} className='btn btn-danger'>Log out</a>
-                    </div>
-                </div>
-
+                {this.getToolbar()}
                 <GraphTimelinePanel graph={this.props.graph} onChange={(e) => {
                     this.filter.setCurrentTime(e)
                 }}/>
