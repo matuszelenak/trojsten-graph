@@ -17,7 +17,7 @@ RUN pip install --upgrade pip && \
 
 EXPOSE 8000
 
-COPY ./deployment.sh /usr/local/bin/deployment.sh
+COPY heroku.deployment.sh /usr/local/bin/deployment.sh
 
 RUN chmod 777 /usr/local/bin/deployment.sh
 

@@ -1,4 +1,2 @@
-.envfile
-.staticfiles
-app.yaml
+.envfile.yaml
 static
