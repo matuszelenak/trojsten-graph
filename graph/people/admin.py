@@ -45,7 +45,7 @@ class GroupMembershipInline(admin.TabularInline):
 class PersonAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'nickname', 'birth_date')
     search_fields = ('first_name', 'last_name', 'nickname', )
-    list_filter = ('visible', 'memberships__group__name')
+    list_filter = ('visible', 'memberships__group')
     inlines = (PersonNoteInline, GroupMembershipInline)
     exclude = ('notes',)
 
@@ -55,6 +55,7 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'parent')
     list_filter = ('category', 'visible')
     search_fields = ('name',)
+    inlines = (GroupMembershipInline, )
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('parent')
@@ -81,12 +82,31 @@ class RelationshipStatusNoteInline(BaseNoteInline):
     model = RelationshipStatusNote
 
 
+class RelationshipStatusCurrentFilter(admin.SimpleListFilter):
+    title = 'Current'
+    parameter_name = 'current'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No')
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(date_end__isnull=True)
+        if self.value() == 'no':
+            return queryset.filter(date_end__isnull=False)
+        return queryset
+
+
 @admin.register(RelationshipStatus)
 class RelationshipStatusAdmin(admin.ModelAdmin):
     raw_id_fields = ('relationship',)
     search_fields = [f'relationship__{person}__{field}' for person in ('first_person', 'second_person') for field in PersonAdmin.search_fields]
-    list_filter = ('status', 'visible')
+    list_display = ('relationship', 'status', 'date_start', 'date_end', 'visible')
     inlines = (RelationshipStatusNoteInline, )
+    list_filter = (RelationshipStatusCurrentFilter, 'status', 'visible')
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('relationship__first_person', 'relationship__second_person')

@@ -41,7 +41,8 @@ class RelationshipQuerySet(models.QuerySet):
             Q(first_person__in=people_pks) | Q(second_person__in=people_pks)
         )
 
-    def with_status_for_date(self, date=timezone.localdate()):
+    def with_status_for_date(self, date=None):
+        date = date or timezone.localdate()
         return self.prefetch_related(
             Prefetch(
                 'statuses',
@@ -119,9 +120,6 @@ class RelationshipStatus(models.Model):
 
     objects = RelationshipStatusQuerySet.as_manager()
 
-    def __str__(self):
-        return f'{self.relationship} : {self.get_status_display()} from {self.date_start}' + (f' to {self.date_end}' if self.date_end else '')
-
     class Meta:
         verbose_name_plural = "relationship statuses"
         get_latest_by = ('date_end', 'date_start')
@@ -180,7 +178,11 @@ class Person(models.Model):
     objects = PersonQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.nickname or (self.first_name + " " + self.last_name)}'
+        if self.first_name and self.last_name:
+            return f'{self.first_name} {self.last_name}'
+        if self.nickname:
+            return self.nickname
+        return super().__str__()
 
     class Meta:
         verbose_name_plural = "people"

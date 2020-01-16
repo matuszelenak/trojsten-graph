@@ -9,7 +9,14 @@ from users.models import ContentSuggestion, EmailPatternWhitelist, InviteCode
 
 @admin.register(ContentSuggestion)
 class ContentSuggestionAdmin(admin.ModelAdmin):
+    list_display = ('short_suggestion', 'status', 'submitted_by', 'date_created', 'date_resolved')
     readonly_fields = ('suggestion', 'submitted_by', 'date_created')
+    list_filter = ['status', 'submitted_by']
+
+    def short_suggestion(self, obj):
+        if len(obj.suggestion) >= 80:
+            return f'{obj.suggestion[:77]}...'
+        return obj.suggestion
 
 
 @admin.register(EmailPatternWhitelist)
@@ -23,7 +30,7 @@ class InviteCodeForm(forms.Form):
 
 @admin.register(InviteCode)
 class InviteCodeAdmin(admin.ModelAdmin):
-    list_display = ('code', 'copy_button', 'user')
+    list_display = ('code', 'copy_to_clipboard', 'user')
     change_list_template = 'people/admin/invite_code_changelist.html'
     ordering = ['-user']
 
@@ -34,7 +41,6 @@ class InviteCodeAdmin(admin.ModelAdmin):
         return False
 
     def changelist_view(self, request, extra_context=None):
-        print(request.META['SERVER_PORT'])
         self.request = request
         if request.method == 'POST' and 'generate_invites' in request.POST:
             form = InviteCodeForm(request.POST)
@@ -45,7 +51,7 @@ class InviteCodeAdmin(admin.ModelAdmin):
 
         return super().changelist_view(request, extra_context=extra_context)
 
-    def copy_button(self, obj):
+    def copy_to_clipboard(self, obj):
         if not obj.user:
             link = f'{self.request.scheme}://{self.request.get_host()}' + reverse('registration') + f'?code={obj.code}'
             return get_template('people/admin/copy_invite_link.html').render({'link': link})
