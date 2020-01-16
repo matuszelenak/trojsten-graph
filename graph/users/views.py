@@ -14,7 +14,7 @@ from django.urls import reverse_lazy, reverse
 from django.views import View
 from django.views.generic import FormView
 
-from users.models import InviteCode, Token, EmailPatternWhitelist, ContentSuggestion
+from users.models import InviteCode, Token, EmailPatternWhitelist, ContentUpdateRequest
 
 
 class LoginForm(AuthenticationForm):
@@ -37,24 +37,24 @@ class LogoutView(View):
         return HttpResponseRedirect(reverse('login'))
 
 
-class ContentSuggestionSubmitForm(forms.ModelForm):
+class ContentUpdateRequestForm(forms.ModelForm):
     class Meta:
-        model = ContentSuggestion
-        fields = ('suggestion',)
+        model = ContentUpdateRequest
+        fields = ('content',)
 
 
-class ContentSuggestionSubmitView(FormView):
-    form_class = ContentSuggestionSubmitForm
-    template_name = 'people/suggestion.html'
-    success_url = reverse_lazy('suggestion_submit')
+class ContentUpdateRequestView(FormView):
+    form_class = ContentUpdateRequestForm
+    template_name = 'people/content_update.html'
+    success_url = reverse_lazy('content_update_submit')
 
     @transaction.atomic
     def form_valid(self, form):
-        suggestion = form.save(commit=False)
-        suggestion.submitted_by = self.request.user
-        suggestion.save()
+        update_request = form.save(commit=False)
+        update_request.submitted_by = self.request.user
+        update_request.save()
 
-        messages.success(self.request, 'Your suggestion has been submitted for review')
+        messages.success(self.request, 'Your content has been submitted for review')
 
         return super().form_valid(form)
 

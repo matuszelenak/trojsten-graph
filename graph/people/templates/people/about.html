@@ -1,0 +1,60 @@
+{% extends "people/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        {% block messages %}
+            {{ block.super }}
+        {% endblock %}
+        <div class="row text-white mt-4">
+            <div class="col-md-11">
+                <h3>About</h3>
+                <p>
+                    Trojsten Graph is the latest in the history of various graphs that documented the dating scene in
+                    Trojsten. What originated as a static page with rendered graph image of KSP people has evolved
+                    into...well, you can see for yourself.
+                </p>
+                <p>
+                    This project is obviously not official, and is in no way supported by Trojsten o.z.
+                    The source code is open, <a href="https://github.com/matuszelenak/trojsten-graph/"> with Github
+                    repository here</a>
+                </p>
+
+                <h3 class="mt-4">Features</h3>
+                <div>
+                    <div class="row mb-4">
+                        <div class="col-md-5 text-center">
+                            <h5>Details</h5>
+                            <img src="{% static 'people/img/detail.gif' %}">
+                        </div>
+                        <div class="col-md-5 text-center offset-md-2">
+                            <h5>Filtering</h5>
+                            <img src="{% static 'people/img/filter.gif' %}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-5 text-center">
+                            <h5>Search</h5>
+                            <img src="{% static 'people/img/search.gif' %}">
+                        </div>
+                        <div class="col-md-5 text-center offset-md-2">
+                            <h5>Timeline</h5>
+                            <img src="{% static 'people/img/timeline.gif' %}">
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="mt-4">Contact</h3>
+                <p>
+                    On topic of technical problems/suggestions, please contact the author of the Graph at <a
+                        href="mailto:matus.zelenak@trojsten.sk" target="_top">matus.zelenak@trojsten</a>.
+                </p>
+                <p>
+                    If you have any issues with the actual content (say, you want to be removed from the Graph), or want
+                    access to the Graph even though you are
+                    not a Trojsten organizer, contact the Graph admin at <a href="mailto:nina@ksp.sk" target="_top">nina@ksp.sk</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

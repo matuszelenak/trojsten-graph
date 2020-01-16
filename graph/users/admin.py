@@ -4,19 +4,19 @@ from django.http import HttpResponseRedirect
 from django.template.loader import get_template
 from django.urls import reverse
 
-from users.models import ContentSuggestion, EmailPatternWhitelist, InviteCode
+from users.models import ContentUpdateRequest, EmailPatternWhitelist, InviteCode
 
 
-@admin.register(ContentSuggestion)
-class ContentSuggestionAdmin(admin.ModelAdmin):
-    list_display = ('short_suggestion', 'status', 'submitted_by', 'date_created', 'date_resolved')
-    readonly_fields = ('suggestion', 'submitted_by', 'date_created')
+@admin.register(ContentUpdateRequest)
+class ContentUpdateRequestAdmin(admin.ModelAdmin):
+    list_display = ('short_content', 'status', 'submitted_by', 'date_created', 'date_resolved')
+    readonly_fields = ('content', 'submitted_by', 'date_created')
     list_filter = ['status', 'submitted_by']
 
-    def short_suggestion(self, obj):
-        if len(obj.suggestion) >= 80:
-            return f'{obj.suggestion[:77]}...'
-        return obj.suggestion
+    def short_content(self, obj):
+        if len(obj.content) >= 80:
+            return f'{obj.content[:77]}...'
+        return obj.content
 
 
 @admin.register(EmailPatternWhitelist)

@@ -23,7 +23,8 @@
                             <div class="form-group row">
                                 <label class="col-sm-4 col-form-label">Invite code</label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control readonly" value="{{ invite_code.code }}" readonly/>
+                                    <input type="text" class="form-control readonly" value="{{ invite_code.code }}"
+                                           readonly/>
                                 </div>
                             </div>
                         {% endif %}
@@ -64,11 +65,24 @@
                             <label class="col-sm-4 col-form-label"
                                    for="{{ form.last_name.id_for_label }}">Last name</label>
                             <div class="col-sm-8">
-                                {{form.last_name}}
+                                {{ form.last_name }}
                             </div>
                         </div>
                         <button type="submit" class="btn btn-trojsten btn-lg">Register</button>
                     </form>
+                </div>
+                <br><br>
+                <div>
+                    <p>
+                        Note: registration is by default possible only for holders of @ksp.sk, @kms.sk, @fks.sk and
+                        @trojsten.sk email addresses.
+                    </p>
+                    <p>
+                        If you do not own any of those but are convinced that you should be able to access the Graph,
+                        contact the administrator
+                        at <a href="mailto:nina@ksp.sk" target="_top">nina@ksp.sk</a> and you might receive an invite
+                        link.
+                    </p>
                 </div>
             </div>
         </div>

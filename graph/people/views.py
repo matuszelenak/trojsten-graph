@@ -18,3 +18,7 @@ class GraphDataView(View):
             'edges': RelationshipSerializer(Relationship.objects.for_graph_serialization(people), many=True).data
         }
         return JsonResponse(response_data)
+
+
+class AboutView(TemplateView):
+    template_name = 'people/about.html'

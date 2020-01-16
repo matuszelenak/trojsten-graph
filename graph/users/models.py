@@ -4,15 +4,15 @@ import string
 from django.db import models
 
 
-class ContentSuggestion(models.Model):
+class ContentUpdateRequest(models.Model):
     class Statuses(models.IntegerChoices):
         REQUEST = 1, 'Request'
         ACCEPTED = 2, 'Accepted'
         REJECTED = 3, 'Rejected'
 
-    submitted_by = models.ForeignKey('auth.User', related_name='content_suggestions', on_delete=models.SET_NULL, null=True)
+    submitted_by = models.ForeignKey('auth.User', related_name='content_update_requests', on_delete=models.SET_NULL, null=True)
     status = models.IntegerField(choices=Statuses.choices, default=Statuses.REQUEST)
-    suggestion = models.TextField()
+    content = models.TextField()
 
     date_created = models.DateTimeField(auto_now_add=True)
     date_resolved = models.DateTimeField(null=True, blank=True)
