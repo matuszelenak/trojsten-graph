@@ -176,8 +176,9 @@ def import_relationships(events, people):
         sorted_events = sorted(events, key=lambda x: x['date'])
 
         cutoff = 0
-        for i, event_type in enumerate([x['type'] for x in sorted_events]):
-            if not event_type_to_new_status(event_type):
+        for i, event in enumerate(sorted_events):
+            if not event_type_to_new_status(event['type']):
+                print(f'Skipping event {event} for {first} {second}')
                 cutoff += 1
             else:
                 break
@@ -261,7 +262,7 @@ def import_relationships(events, people):
 class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **kwargs):
-        j = json.load(open('dump.json'))
+        j = json.load(open('data_16_01_2020_rano.data'))
 
         people = import_people([x for x in j if x['model'] == 'graph.person'])
         groups = import_groups([x for x in j if x['model'] == 'graph.group'])
