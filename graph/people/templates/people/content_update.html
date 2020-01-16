@@ -1,0 +1,37 @@
+{% extends "people/base.html" %}
+
+{% block content %}
+    <a class="btn btn-trojsten" href="{% url 'graph' %}" style="position: absolute; top: 15px; left: 15px">Back to graph</a>
+    <div class="container">
+        <div class="row text-white">
+            <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
+                <h2>Content update request</h2>
+                {% block messages %}
+                    {{ block.super }}
+                {% endblock %}
+                <div>
+                    <form action="" class="justify-content-center" method="post">
+                        {% csrf_token %}
+                        {{ form.content.errors }}
+                        <div class="form-group row">
+                            <div class="col-sm-12">
+                                <textarea type="text" class="form-control input-lg" rows="10" name="{{ form.content.html_name }}"
+                                          id="{{ form.content.id_for_label }}" placeholder="Write your update here"></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-trojsten btn-lg">Submit</button>
+                    </form>
+                </div>
+                <div>
+                    <br><br>
+                    <h4>Content update guidelines</h4>
+                    <ul>
+                        <li>When updating a new person, specify their first name, last name, date of birth and a nickname if they have any</li>
+                        <li>For relationship, specify the type, the two people involved and a date when the relationship started (and ended, if it did so)</li>
+                        <li>For group memberships, specify the group name and the person along with the membership start (and end) date</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
