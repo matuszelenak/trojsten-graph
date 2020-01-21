@@ -71,7 +71,6 @@ class RelationshipStatusInline(admin.TabularInline):
 @admin.register(Relationship)
 class RelationshipAdmin(admin.ModelAdmin):
     search_fields = [f'{person}__{field}' for person in ('first_person', 'second_person') for field in PersonAdmin.search_fields]
-    readonly_fields = ('first_person', 'second_person')
     inlines = (RelationshipStatusInline, )
 
     def get_queryset(self, request):
