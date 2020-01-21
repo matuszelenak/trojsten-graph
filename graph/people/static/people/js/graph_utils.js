@@ -1,3 +1,6 @@
+import * as d3 from "d3";
+import {enums} from "./graph_enums";
+
 function preprocessGraph(graph) {
     graph.nodes.forEach((node) => {
         stringsToDates(node, ['birth_date', 'death_date']);
@@ -501,3 +504,5 @@ enums['relationshipColors'] = {
     [enums.StatusChoices.dating]: '#ffffff',
     [enums.StatusChoices.rumour]: '#ff00ff',
 };
+
+export {preprocessGraph, GraphFilter, GraphRenderer, GraphSimulation, dateToString, prepend, normalizeString};
