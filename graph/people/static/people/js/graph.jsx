@@ -1,3 +1,10 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Fuse from 'fuse.js';
+import noUiSlider from './nouislider.min';
+import { enums, labels } from "./graph_enums";
+import { preprocessGraph, GraphFilter, GraphRenderer, GraphSimulation, dateToString, prepend, normalizeString } from './graph_utils';
+
 class PersonDetail extends React.Component {
 
     listMemberships = (name, memberships) =>
@@ -378,3 +385,13 @@ function initializeGraph(graph) {
         document.getElementById('container')
     );
 }
+
+const request = new XMLHttpRequest();
+request.overrideMimeType("application/json");
+request.open('GET', graph_data_url, true);
+request.onreadystatechange = function () {
+    if (request.readyState === 4 && request.status === 200) {
+        initializeGraph(JSON.parse(request.responseText));
+    }
+};
+request.send(null);
