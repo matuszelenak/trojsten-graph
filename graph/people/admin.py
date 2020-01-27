@@ -70,6 +70,7 @@ class RelationshipStatusInline(admin.TabularInline):
 
 @admin.register(Relationship)
 class RelationshipAdmin(admin.ModelAdmin):
+    raw_id_fields = ('first_person', 'second_person')
     search_fields = [f'{person}__{field}' for person in ('first_person', 'second_person') for field in PersonAdmin.search_fields]
     inlines = (RelationshipStatusInline, )
 
