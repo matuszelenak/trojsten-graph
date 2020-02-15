@@ -32,6 +32,7 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", 'localhost').split(" ")
 # Application definition
 
 INSTALLED_APPS = [
+    'django_hosts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,6 +61,7 @@ INTERNAL_IPS = [
 ]
 
 MIDDLEWARE = [
+    'django_hosts.middleware.HostsRequestMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -70,6 +72,11 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'graph.urls'
+ROOT_HOSTCONF = 'graph.hosts'
+DEFAULT_HOST = 'www'
+
+HOST_SCHEME = 'http://'
+PARENT_HOST = 'graph.trojsten.top:8000'
 
 TEMPLATES = [
     {

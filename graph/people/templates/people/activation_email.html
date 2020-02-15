@@ -1,5 +1,7 @@
+{% load hosts %}
+
 Activate your account by clicking the link below
 
-{{ request.scheme }}://{{ request.get_host }}{% url 'activation' token=token %}
+{% host_url 'activation' token=token host 'www' %}
 
 Please do not reply to this email

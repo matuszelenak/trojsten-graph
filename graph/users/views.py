@@ -143,7 +143,7 @@ class RegistrationView(FormView):
 
             user.email_user(
                 'Trojsten Graph - registration confirmation',
-                get_template('people/activation_email.html').render({'token': token.token, 'request': self.request})
+                get_template('people/activation_email.html').render({'token': token.token})
             )
             messages.success(self.request, 'Activation link has been sent to your email')
         return super().form_valid(form)

@@ -8,8 +8,15 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
-MIDDLEWARE = [
+ALLOWED_HOSTS += ['graph.trojsten.top']
+
+MIDDLEWARE = list(MIDDLEWARE)
+MIDDLEWARE.remove('django_hosts.middleware.HostsRequestMiddleware')
+MIDDLEWARE = tuple(MIDDLEWARE)
+
+MIDDLEWARE = (
+    'django_hosts.middleware.HostsRequestMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-] + MIDDLEWARE
+) + MIDDLEWARE
 
 INSTALLED_APPS += ['debug_toolbar']
