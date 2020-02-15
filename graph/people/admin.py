@@ -1,5 +1,9 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
+from django.contrib.admin.sites import site
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 
 from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, GroupMembership
 
@@ -110,3 +114,39 @@ class RelationshipStatusAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('relationship__first_person', 'relationship__second_person')
+
+
+site.unregister(User)
+
+
+@admin.register(User)
+class CustomerUserAdmin(UserAdmin):
+    list_display = UserAdmin.list_display + ('is_superuser', 'date_joined', 'last_login', )
+    ordering = ('-date_joined', )
+
+
+@admin.register(LogEntry)
+class LogEntryAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+
+        if obj and obj.user == request.user:
+            return True
+
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        if request.user.is_superuser:
+            return super().get_queryset(request)
+
+        return super().get_queryset(request).filter(user=request.user)
