@@ -17,6 +17,9 @@ class ContentUpdateRequest(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_resolved = models.DateTimeField(null=True, blank=True)
 
+    def __str__(self):
+        return f'{self.submitted_by}: {self.content[:100]}'
+
 
 class InviteCodeQuerySet(models.QuerySet):
     def bulk_generate(self, number=1):
@@ -29,9 +32,15 @@ class InviteCode(models.Model):
 
     objects = InviteCodeQuerySet.as_manager()
 
+    def __str__(self):
+        return f'{self.code} {self.user or ""}'
+
 
 class EmailPatternWhitelist(models.Model):
     pattern = models.CharField(max_length=256)
+
+    def __str__(self):
+        return f'Pattern {self.pattern}'
 
 
 class Token(models.Model):
@@ -55,3 +64,6 @@ class Token(models.Model):
             token=cls.get_random_token(),
             user=user,
         )
+
+    def __str__(self):
+        return f'{self.get_type_display()} token {self.token} for {self.user}'

@@ -117,6 +117,7 @@ class RelationshipStatusAdmin(admin.ModelAdmin):
 
 
 site.unregister(User)
+site.login_template = 'people/admin/login.html'
 
 
 @admin.register(User)
@@ -127,6 +128,8 @@ class CustomerUserAdmin(UserAdmin):
 
 @admin.register(LogEntry)
 class LogEntryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'action_time', 'content_type', 'object_repr', 'change_message')
+
     def has_add_permission(self, request):
         return False
 

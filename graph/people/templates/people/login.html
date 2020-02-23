@@ -41,7 +41,7 @@
                                 <a href="{% url 'registration' %}" class="btn btn-trojsten">Register</a>
                             </div>
                             <div class="col-sm-6">
-                                <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-trojsten google-login">
+                                <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}" class="btn btn-trojsten google-login">
                                     <img src="{% static 'people/img/google.svg' %}" width="24">
                                     Login
                                 </a>

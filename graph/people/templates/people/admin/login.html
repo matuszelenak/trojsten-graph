@@ -1,0 +1,13 @@
+{% extends 'admin/login.html' %}
+{% load i18n static %}
+
+{% block content %}
+    <div class="submit-row">
+        <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}" class="btn btn-trojsten google-login">
+            <img src="{% static 'people/img/google.svg' %}" width="24">
+            Login
+        </a>
+    </div>
+    {{ block.super }}
+
+{% endblock %}

@@ -120,6 +120,9 @@ class RelationshipStatus(models.Model):
 
     objects = RelationshipStatusQuerySet.as_manager()
 
+    def __str__(self):
+        return f'{self.relationship} - {self.get_status_display()}'
+
     class Meta:
         verbose_name_plural = "relationship statuses"
         get_latest_by = ('date_end', 'date_start')
