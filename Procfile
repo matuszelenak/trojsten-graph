@@ -1,1 +1,1 @@
-web: sh -c 'cd ./graph/' && gunicorn graph.wsgi --log-level INFO --access-logfile - --log-file -
+web: gunicorn --pythonpath graph graph.wsgi --log-level INFO --access-logfile - --log-file -
