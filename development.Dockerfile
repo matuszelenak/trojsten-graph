@@ -11,6 +11,6 @@ RUN pip install --upgrade pip
 COPY ./requirements.txt /usr/src/graph/requirements.txt
 RUN pip install -r requirements.txt
 
-COPY . /usr/src/graph/
+COPY /graph /usr/src/graph/
 
 ENTRYPOINT ["/usr/src/graph/entrypoint.sh"]
