@@ -1,3 +1,5 @@
+import dj_database_url
+
 from .production import *
 
 SECURE_SSL_REDIRECT = True
@@ -22,3 +24,5 @@ INSTALLED_APPS += ['whitenoise']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ADMINS = [('Matus Zelenak', 'matus.zelenak@trojsten.com')]
+
+DATABASES = {'default': dj_database_url.config(default='postgres://localhost')}
