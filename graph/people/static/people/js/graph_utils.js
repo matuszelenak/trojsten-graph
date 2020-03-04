@@ -18,7 +18,7 @@ function preprocessGraph(graph) {
     });
 }
 
-function computeExtraGraphData(graph, currentTime){
+function computeExtraGraphData(graph, currentTime) {
     graph.nodes.forEach((node) => {
         node.memberships.forEach((membership) => {
             membership.duration = timeDelta(
@@ -33,7 +33,7 @@ function computeExtraGraphData(graph, currentTime){
         node.searchAttributes = {
             first_name: normalizeString(node.first_name),
             last_name: normalizeString(node.last_name),
-            nickname: node.nickname ? normalizeString(node.nickname): '',
+            nickname: node.nickname ? normalizeString(node.nickname) : '',
             maiden_name: node.maiden_name ? normalizeString(node.maiden_name) : ''
         };
         node.isHighlighted = false;
@@ -49,7 +49,7 @@ function computeExtraGraphData(graph, currentTime){
         const statuses = edge.statuses
             .sort((a, b) => a.date_start < b.date_start ? 1 : -1)
             .filter((status) => status.date_start < currentTime);
-        if (statuses.length > 0){
+        if (statuses.length > 0) {
             statuses[0].isEnded = statuses[0].date_end === null ? false : (statuses[0].date_end < currentTime);
             current = statuses[0]
         }
@@ -106,7 +106,8 @@ class GraphFilter {
             nodes: [...this.original.nodes],
             edges: [...this.original.edges]
         };
-        this.onFilterCallback = () => {};
+        this.onFilterCallback = () => {
+        };
         this.onFilterUpdate = (callback) => {
             this.onFilterCallback = callback
         };
@@ -224,7 +225,7 @@ class GraphRenderer {
     }
 
     pulseSearchResults = () => {
-        if (this.pulseVelocity < 0.1 ){
+        if (this.pulseVelocity < 0.1) {
             this.resetPulse();
         }
         this.pulseRadius = this.pulseRadius + this.pulseVelocity;
@@ -255,7 +256,7 @@ class GraphRenderer {
             previousAngleEnd = angleEnd;
         });
 
-        if (node.isHighlighted){
+        if (node.isHighlighted) {
             props.label = node.first_name + ' ' + node.last_name;
         } else props.label = node.nickname ? node.nickname : node.first_name + ' ' + node.last_name;
         props.radius = 3 + Math.ceil(Math.sqrt(node.age * 2));
@@ -286,7 +287,9 @@ class GraphRenderer {
     };
 
     highlightNode = (target) => {
-        this.graph.nodes.forEach((node) => {node.isHighlighted = node === target});
+        this.graph.nodes.forEach((node) => {
+            node.isHighlighted = node === target
+        });
         this.graph.nodes.forEach((node) => {
             node.displayProps = this.nodeDisplayProps(node)
         });
@@ -334,13 +337,32 @@ class GraphRenderer {
             node.displayY - node.displayProps.radius - 2
         );
 
-        if (node.isSearchResult){
+        if (node.isSearchResult) {
             this.context.beginPath();
             this.context.arc(node.displayX, node.displayY, this.pulseRadius, 0, 2 * Math.PI, false);
             this.context.strokeStyle = '#ff000055';
             this.context.fillStyle = '#ff000055';
             this.context.fill();
             this.context.stroke();
+        }
+
+
+        if (node.death_date) {
+            this.context.save();
+
+            this.context.beginPath();
+            this.context.arc(node.displayX, node.displayY, node.displayProps.radius, 0, 2 * Math.PI);
+            this.context.closePath();
+            this.context.clip();
+            this.context.beginPath();
+            this.context.strokeStyle = '#000000';
+            this.context.lineWidth = 3;
+            this.context.moveTo(node.displayX - node.displayProps.radius * 0.75, node.displayY + node.displayProps.radius * 1.5);
+            this.context.lineTo(node.displayX + node.displayProps.radius * 1.5, node.displayY - node.displayProps.radius * 0.75);
+            this.context.closePath();
+            this.context.stroke();
+
+            this.context.restore();
         }
     };
 
@@ -485,7 +507,7 @@ function seminarMemberships(person) {
         .map((membership) => membership.group_name)
 }
 
-function normalizeString(str){
+function normalizeString(str) {
     return str.normalize('NFKD').replace(/[\u0300-\u036F]/g, '')
 }
 

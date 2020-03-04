@@ -35,6 +35,7 @@ class PersonDetail extends React.Component {
                     <ul>
                         {person.nickname && <li><b>Nickname: {person.nickname}</b></li>}
                         <li><b>Born on {dateToString(new Date(person.birth_date))}</b></li>
+                        { person.death_date && <li><b>Died on {dateToString(new Date(person.death_date))}</b></li>}
                     </ul>
                 </div>
                 {seminar_memberships.length > 0 && this.listMemberships('Seminar memberships', seminar_memberships)}

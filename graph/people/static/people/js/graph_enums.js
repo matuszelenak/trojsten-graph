@@ -1,4 +1,4 @@
-enums = {
+const enums = {
     "Categories": {
         "elementarySchool": 1,
         "highSchool": 2,
@@ -21,7 +21,7 @@ enums = {
         "rumour": 7
     }
 };
-labels = {
+const labels = {
     "Categories": {
         "1": "Elementary school",
         "2": "High school",
@@ -44,3 +44,5 @@ labels = {
         "7": "Rumour"
     }
 };
+
+export {enums, labels};

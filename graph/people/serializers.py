@@ -20,7 +20,7 @@ class PeopleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Person
-        fields = ('id', 'first_name', 'last_name', 'maiden_name', 'nickname', 'gender', 'birth_date', 'memberships')
+        fields = ('id', 'first_name', 'last_name', 'maiden_name', 'nickname', 'gender', 'birth_date', 'death_date', 'memberships')
 
 
 class RelationshipStatusSerializer(serializers.ModelSerializer):
