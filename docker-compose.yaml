@@ -14,7 +14,7 @@ services:
       - "5432:5432"
   web:
     build:
-      context: ./graph
+      context: .
       dockerfile: development.Dockerfile
     image: trojsten-graph
     env_file:

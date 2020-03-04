@@ -1,0 +1,1 @@
+web: gunicorn --pythonpath graph graph.wsgi --log-level DEBUG --access-logfile - --log-file -
