@@ -1,3 +1,6 @@
+from typing import List, Optional
+
+from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.db.models import Prefetch, Q, F, Exists, OuterRef
 from django.db.models.functions import Coalesce
@@ -75,7 +78,6 @@ class Relationship(models.Model):
 
 
 class RelationshipStatusNote(BaseNote):
-
     class Reasons(models.IntegerChoices):
         STATUS_START = 1, _('Note on relationship start')
         STATUS_END = 2, _('Note on relationship end')
@@ -86,11 +88,18 @@ class RelationshipStatusNote(BaseNote):
 
 
 class RelationshipStatusQuerySet(models.QuerySet):
+    def subquery_for_person(self):
+        return self.filter(Q(relationship__first_person=OuterRef('pk')) | Q(relationship__second_person=OuterRef('pk')))
+
     def for_date(self, date):
+        return self.filter(date_start__lte=date).exclude(date_end__lt=date)
+
+    def current(self):
+        return self.for_date(timezone.localdate())
+
+    def romantic(self):
         return self.filter(
-            date_start__lte=date
-        ).exclude(
-            date_end__lt=date
+            Q(status=RelationshipStatus.StatusChoices.DATING) | Q(status=RelationshipStatus.StatusChoices.ENGAGED) | Q(status=RelationshipStatus.StatusChoices.MARRIED)
         )
 
     def with_duration(self):
@@ -100,7 +109,6 @@ class RelationshipStatusQuerySet(models.QuerySet):
 
 
 class RelationshipStatus(models.Model):
-
     class StatusChoices(ExportableEnum, models.IntegerChoices):
         BLOOD_RELATIVE = 1, _('Blood relatives')
         SIBLING = 2, _('Siblings')
@@ -126,7 +134,7 @@ class RelationshipStatus(models.Model):
     class Meta:
         verbose_name_plural = "relationship statuses"
         get_latest_by = ('date_end', 'date_start')
-        ordering = ('-date_start', )
+        ordering = ('-date_start',)
 
 
 class PersonNote(BaseNote):
@@ -144,6 +152,29 @@ class PersonQuerySet(models.QuerySet):
             queryset=Relationship.objects.with_status_for_date(),
             to_attr='current_relationships_2'
         ))
+        return qs
+
+    def single(self):
+        return self.exclude(Exists(RelationshipStatus.objects.subquery_for_person().romantic().current()))
+
+    def in_romantic_relationship(self):
+        return self.filter(Exists(RelationshipStatus.objects.subquery_for_person().romantic().current()))
+
+    def female(self):
+        return self.filter(gender=Person.Genders.FEMALE)
+
+    def male(self):
+        return self.filter(gender=Person.Genders.MALE)
+
+    def has_relationship_status(self, statuses: List[int]):
+        return self.filter(Exists(RelationshipStatus.objects.subquery_for_person().current().filter(status__in=statuses)))
+
+    def in_age_range(self, age_years_from: Optional[int] = None, age_years_to: Optional[int] = None):
+        qs = self
+        if age_years_from:
+            qs = qs.filter(birth_date__lte=timezone.localdate() - relativedelta(years=age_years_from))
+        if age_years_to:
+            qs = qs.filter(birth_date__gte=timezone.localdate() - relativedelta(years=age_years_to))
         return qs
 
     def with_visible_memberships(self):
@@ -180,9 +211,13 @@ class Person(models.Model):
 
     objects = PersonQuerySet.as_manager()
 
+    @property
+    def name(self):
+        return f'{self.first_name} {self.last_name}'
+
     def __str__(self):
         if self.first_name and self.last_name:
-            return f'{self.first_name} {self.last_name}'
+            return self.name
         if self.nickname:
             return self.nickname
         return super().__str__()
@@ -194,7 +229,6 @@ class Person(models.Model):
 
 
 class Group(models.Model):
-
     class Categories(ExportableEnum, models.IntegerChoices):
         ELEMENTARY_SCHOOL = 1, _('Elementary school')
         HIGH_SCHOOL = 2, _('High school')

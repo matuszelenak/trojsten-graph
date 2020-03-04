@@ -1,3 +1,5 @@
+import abc
+
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
@@ -45,11 +47,64 @@ class GroupMembershipInline(admin.TabularInline):
         return qs
 
 
+class PersonAgeFilter(admin.SimpleListFilter):
+    template = 'people/admin/age_filter.html'
+    title = 'In age range'
+    parameter_name = 'age_range'
+
+    def lookups(self, request, model_admin):
+        return (None, None),
+
+    @staticmethod
+    def get_age(value):
+        try:
+            return max(int(value), 0)
+        except ValueError:
+            return None
+
+    def queryset(self, request, queryset):
+        if self.value():
+            age_from, age_to = [self.get_age(x) for x in self.value().split('_')]
+            return queryset.in_age_range(age_from, age_to)
+        return queryset
+
+
+class PersonCurrentStatusFilter(admin.SimpleListFilter):
+    title = 'Has current relationship with status'
+    parameter_name = 'current_status'
+
+    def lookups(self, request, model_admin):
+        return RelationshipStatus.StatusChoices.choices
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.has_relationship_status([self.value()])
+        return queryset
+
+
+class PersonDatingStatusFilter(admin.SimpleListFilter):
+    title = 'Current dating status'
+    parameter_name = 'dating_status'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('single', 'Single'),
+            ('romantic', 'In a romantic relationship')
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'single':
+            return queryset.single()
+        if self.value() == 'romantic':
+            return queryset.in_romantic_relationship()
+        return queryset
+
+
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'nickname', 'birth_date')
     search_fields = ('first_name', 'last_name', 'nickname', )
-    list_filter = ('visible', 'memberships__group')
+    list_filter = (PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group')
     inlines = (PersonNoteInline, GroupMembershipInline)
     exclude = ('notes',)
 

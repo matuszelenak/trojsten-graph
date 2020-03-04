@@ -1,0 +1,33 @@
+{% load i18n %}
+
+<h3>{{ title }}</h3>
+<ul>
+    <li>
+        <table>
+            <tbody>
+                <tr>
+                    <td><label for="age_from">Age from</label></td>
+                    <td><input type="number" id="age_from" value="0" style="width: 50%"></td>
+                </tr>
+                <tr>
+                    <td><label for="age_to">Age to</label></td>
+                    <td><input type="number" id="age_to" value="0" style="width: 50%"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="button" id="age_submit" onclick="submit()">Filter</button>
+        <script type="application/javascript">
+            function submit() {
+                let url = new URL(window.location.href);
+                url.searchParams.delete('{{ spec.parameter_name }}');
+                url.searchParams.append('{{ spec.parameter_name }}', document.getElementById('age_from').value + '_' + document.getElementById('age_to').value);
+
+                window.location.href = url.href
+            }
+
+            let range = '{{ spec.value }}'.split('_');
+            document.getElementById('age_from').value = range[0];
+            document.getElementById('age_to').value = range[1];
+        </script>
+    </li>
+</ul>
