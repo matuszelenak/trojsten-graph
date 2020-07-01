@@ -209,6 +209,8 @@ class Person(models.Model):
 
     visible = models.BooleanField(default=True)
 
+    account = models.OneToOneField('auth.User', null=True, on_delete=models.SET_NULL, related_name='person')
+
     objects = PersonQuerySet.as_manager()
 
     @property
