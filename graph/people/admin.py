@@ -103,7 +103,7 @@ class PersonDatingStatusFilter(admin.SimpleListFilter):
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
     raw_id_fields = ('account', )
-    list_display = ('first_name', 'last_name', 'nickname', 'birth_date')
+    list_display = ('first_name', 'last_name', 'nickname', 'birth_date', 'account')
     search_fields = ('first_name', 'last_name', 'nickname', )
     list_filter = (PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group')
     inlines = (PersonNoteInline, GroupMembershipInline)
