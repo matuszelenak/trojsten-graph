@@ -184,28 +184,14 @@ class CustomerUserAdmin(UserAdmin):
 
 @admin.register(LogEntry)
 class LogEntryAdmin(admin.ModelAdmin):
+    list_filter = ('user',)
     list_display = ('user', 'action_time', 'content_type', 'object_repr', 'change_message')
 
     def has_add_permission(self, request):
-        return False
+        return request.user.is_superuser
 
     def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_view_permission(self, request, obj=None):
-        if request.user.is_superuser:
-            return True
-
-        if obj and obj.user == request.user:
-            return True
-
-        return False
+        return request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
-        return False
-
-    def get_queryset(self, request):
-        if request.user.is_superuser:
-            return super().get_queryset(request)
-
-        return super().get_queryset(request).filter(user=request.user)
+        return request.user.is_superuser
