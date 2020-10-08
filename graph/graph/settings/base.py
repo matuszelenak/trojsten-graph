@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'people',
     'users',
-    'social_django',
+    'social_django'
 ]
 
 DATABASES = {

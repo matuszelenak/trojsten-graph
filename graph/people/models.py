@@ -30,6 +30,19 @@ class BaseNote(models.Model):
 
 
 class RelationshipQuerySet(models.QuerySet):
+    def get_or_create_for_people(self, person_1, person_2, defaults=None):
+        try:
+            return Relationship.objects.get(
+                Q(first_person=person_1, second_person=person_2) | Q(second_person=person_1, first_person=person_2)
+            )
+        except Relationship.DoesNotExist:
+            defaults = defaults or {}
+            return Relationship.objects.create(
+                first_person=person_1,
+                second_person=person_2,
+                **defaults
+            )
+
     def with_people(self):
         return self.select_related('first_person', 'second_person')
 
@@ -75,6 +88,9 @@ class Relationship(models.Model):
 
     def __str__(self):
         return f'{self.first_person} & {self.second_person}'
+
+    class Meta:
+        unique_together = ('first_person', 'second_person')
 
 
 class RelationshipStatusNote(BaseNote):

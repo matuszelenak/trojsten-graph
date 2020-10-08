@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}
+{% load hosts %}
+{% load static %}
+{% load l10n %}
+
+{% block content_title %}{% endblock %}
+{% block branding %}{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+{% endblock %}
+
+
+{% block content %}
+    <div class="col-md-6">
+        <form method="POST">
+            {% csrf_token %}
+            <table class="table">
+            {{ form.as_table }}
+            </table>
+            <input type="submit" value="Submit"/>
+        </form>
+    </div>
+
+{% endblock %}

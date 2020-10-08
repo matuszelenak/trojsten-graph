@@ -1,13 +1,20 @@
-import abc
-
 from django import forms
-from django.contrib import admin
+from django.conf.urls import url
+from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.sites import site
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.db.models import Q, Exists, OuterRef
+from django.http import HttpResponseRedirect
+from django.template.response import TemplateResponse
+from django.urls import reverse
+from django.views.generic import FormView
 
-from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, GroupMembership
+from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, \
+    GroupMembership
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -108,6 +115,7 @@ class PersonAdmin(admin.ModelAdmin):
     list_filter = (PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group')
     inlines = (PersonNoteInline, GroupMembershipInline)
     exclude = ('notes',)
+    change_list_template = 'people/admin/person_changelist.html'
 
 
 @admin.register(Group)
@@ -133,6 +141,66 @@ class RelationshipAdmin(admin.ModelAdmin):
     raw_id_fields = ('first_person', 'second_person')
     search_fields = [f'{person}__{field}' for person in ('first_person', 'second_person') for field in PersonAdmin.search_fields]
     inlines = (RelationshipStatusInline, )
+    change_form_template = 'people/admin/relationship_change.html'
+
+    @transaction.atomic
+    def add_child_view(self, request, pk=None):
+        if pk:
+            r = Relationship.objects.get(pk=pk)
+        else:
+            r = None
+        if request.method == 'POST':
+            form = AddChildForm(request.POST, request.FILES)
+            if form.is_valid():
+                parent_1, parent_2 = form.cleaned_data['parent_1'], form.cleaned_data['parent_2']
+                child = form.cleaned_data['child']
+                for parent in (parent_1, parent_2):
+                    if not parent:
+                        continue
+
+                    parent_child_relationship = Relationship.objects.get_or_create_for_people(parent, child)
+
+                    RelationshipStatus.objects.create(
+                        relationship=parent_child_relationship,
+                        status=RelationshipStatus.StatusChoices.PARENT_CHILD,
+                        date_start=child.birth_date
+                    )
+
+                siblings = Person.objects.filter(
+                    Exists(
+                        Relationship.objects.filter(
+                            (Q(first_person=OuterRef('pk')) & (Q(second_person=parent_1) | Q(second_person=parent_2))) |
+                            (Q(second_person=OuterRef('pk')) & (Q(first_person=parent_1) | Q(first_person=parent_2))),
+                            statuses__status=RelationshipStatus.StatusChoices.PARENT_CHILD
+                        )
+                    )
+                )
+                for sibling in siblings:
+                    sibling_relationship = Relationship.objects.get_or_create_for_people(sibling, child)
+                    RelationshipStatus.objects.create(
+                        relationship=sibling_relationship,
+                        status=RelationshipStatus.StatusChoices.SIBLING,
+                        date_start=max(child.birth_date, sibling.birth_date)
+                    )
+
+                messages.success(request, f'Registered {child} as a child of {parent_1} {parent_2 if parent_2 else ""}')
+                return HttpResponseRedirect(reverse('admin:people_person_changelist'))
+        else:
+            if r:
+                initial = dict(parent_1=r.first_person, parent_2=r.second_person)
+            else:
+                initial = {}
+            form = AddChildForm(initial=initial)
+
+        context = self.admin_site.each_context(request)
+        context['form'] = form
+        return TemplateResponse(request, 'people/admin/add_child.html', context)
+
+    def get_urls(self):
+        return [
+            url(r'^add_child/(?P<pk>\d+)/$', self.admin_site.admin_view(self.add_child_view), name='add_child'),
+            url(r'^add_child/$', self.admin_site.admin_view(self.add_child_view), name='add_child')
+        ] + super().get_urls()
 
     def get_queryset(self, request):
         return super().get_queryset(request).with_people().with_status_for_date()
@@ -195,3 +263,40 @@ class LogEntryAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
+
+
+class AddChildForm(forms.Form):
+    parent_1 = forms.ModelChoiceField(queryset=Person.objects.order_by('last_name', 'first_name'), required=False)
+    parent_2 = forms.ModelChoiceField(queryset=Person.objects.order_by('last_name', 'first_name'), required=False)
+
+    child = forms.ModelChoiceField(queryset=Person.objects.order_by('last_name', 'first_name'))
+
+    def clean(self):
+        data = self.cleaned_data
+        parent_1: Person
+        parent_2: Person
+        child: Person
+        parent_1, parent_2, child = data.get('parent_1'), data.get('parent_2'), data.get('child')
+        if not (parent_1 or parent_2):
+            raise ValidationError("Child must have at least one parent")
+        if parent_1 == parent_2:
+            raise ValidationError("Parents must be different people")
+
+        if child == parent_1 or child == parent_2:
+            raise ValidationError('Cannot be your own parent')
+
+        if parent_1 and child.birth_date < parent_1.birth_date or parent_2 and child.birth_date < parent_2.birth_date:
+            raise ValidationError('Child cannot be younger than their parent. WTF')
+
+        for parent in (parent_1, parent_2):
+            if not parent:
+                continue
+
+            if RelationshipStatus.objects.filter(
+                Q(relationship__first_person=parent, relationship__second_person=child) |
+                Q(relationship__second_person=parent, relationship__first_person=child),
+                status=RelationshipStatus.StatusChoices.PARENT_CHILD
+            ).exists():
+                self.add_error('child', f'{parent_1.name} and {child.name} are already a parent and child')
+
+        return self.cleaned_data
