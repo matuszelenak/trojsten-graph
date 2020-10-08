@@ -77,7 +77,7 @@ class GraphFilter {
                 label: 'Non-Trojsten',
                 value: true
             },
-            isolated: {
+            isIsolated: {
                 label: 'Isolated',
                 value: true
             },
@@ -146,6 +146,10 @@ class GraphFilter {
         return seminarMemberships(person).filter(seminar => selectedSeminars.has(seminar)).length > 0;
     };
 
+    isIsolated = (person) => {
+        return this.filters.isIsolated.value || this.graph.edges.filter(edge => edge.sourceId === person.id || edge.targetId === person.id).length > 0
+    }
+
     relationshipFilter = (relationship, types, current, old) => {
         if (relationship.currentStatus.isEnded && !old)
             return false;
@@ -190,6 +194,7 @@ class GraphFilter {
     filteredNodeIds = () => {
         return new Set(this.original.nodes
             .filter(this.composeFunctions(this.trojstenFilter))
+            .filter(this.isIsolated)
             .filter((person) => person.birth_date < this.currentTime)
             .map((person) => person.id))
     };
