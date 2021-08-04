@@ -8,7 +8,6 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
-ALLOWED_HOSTS += ['graph.trojsten.top']
 
 MIDDLEWARE = list(MIDDLEWARE)
 MIDDLEWARE.remove('django_hosts.middleware.HostsRequestMiddleware')

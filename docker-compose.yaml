@@ -21,6 +21,8 @@ services:
       - .envfile
     environment:
       - DJANGO_SETTINGS_MODULE=graph.settings.development
+      - POSTGRES_HOST=db
+      - HOST_PORT=8000
     ports:
       - "8000:8000"
     volumes:
