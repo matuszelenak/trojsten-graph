@@ -26,7 +26,7 @@ SECRET_KEY = '5l7t%9d==wwy$=8_+r32(kytqwhu^&ks_%9q5-b*q&9=n-&vv4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", 'localhost').split(" ")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", 'www.graph.localhost.top').split(" ")
 
 
 # Application definition
@@ -74,9 +74,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'graph.urls'
 ROOT_HOSTCONF = 'graph.hosts'
 DEFAULT_HOST = 'www'
-
 HOST_SCHEME = 'http://'
-PARENT_HOST = 'graph.trojsten.top:8000'
+HOST_PORT = os.environ.get('HOST_PORT', '')
+PARENT_HOST = os.environ.get('PARENT_HOST', 'localhost.top')
 
 TEMPLATES = [
     {
@@ -117,7 +117,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.open_id.OpenIdAuth',  # for Google authentication
-    'social_core.backends.google.GoogleOpenId',  # for Google authentication
     'social_core.backends.google.GoogleOAuth2',  # for Google authentication
     'django.contrib.auth.backends.ModelBackend',
 )
@@ -142,6 +141,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_IGNORE_DEFAULT_SCOPE = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
