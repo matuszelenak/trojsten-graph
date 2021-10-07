@@ -261,7 +261,7 @@ var GraphFilterPanel = function (_React$Component3) {
     _createClass(GraphFilterPanel, [{
         key: 'render',
         value: function render() {
-            var peopleFilters = this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'notTrojsten', 'isIsolated').map(function (arr) {
+            var peopleFilters = this.filter.getFilterOptions('isKSP', 'isKMS', 'isFKS', 'isSUSI', 'notTrojsten', 'isIsolated').map(function (arr) {
                 return [arr];
             });
             var relationshipFilters = [this.filter.getFilterOptions('isCurrentSerious', 'isOldSerious'), this.filter.getFilterOptions('isCurrentRumour', 'isOldRumour'), this.filter.getFilterOptions('isBloodBound')];

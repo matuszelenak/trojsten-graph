@@ -73,6 +73,10 @@ class GraphFilter {
                 label: 'FKS',
                 value: true
             },
+            isSUSI: {
+                label: 'Suši',
+                value: true
+            },
             notTrojsten: {
                 label: 'Non-Trojsten',
                 value: true
@@ -140,7 +144,7 @@ class GraphFilter {
         }
         const selectedSeminars = new Set(
             Object.keys(this.filters).filter(
-                key => ['isKMS', 'isKSP', 'isFKS'].includes(key) && this.filters[key].value
+                key => ['isKMS', 'isKSP', 'isFKS', 'isSUSI'].includes(key) && this.filters[key].value
             ).map(key => this.filters[key].label)
         );
         return seminarMemberships(person).filter(seminar => selectedSeminars.has(seminar)).length > 0;
@@ -508,7 +512,7 @@ function stringsToDates(obj, fields) {
 }
 
 function seminarMemberships(person) {
-    return person.memberships.filter((membership) => ['KSP', 'KMS', 'FKS'].includes(membership.group_name))
+    return person.memberships.filter((membership) => ['KSP', 'KMS', 'FKS', 'Suši'].includes(membership.group_name))
         .map((membership) => membership.group_name)
 }
 
@@ -520,6 +524,7 @@ enums['seminarColors'] = {
     KSP: '#818f3d',
     KMS: '#4a6fd8',
     FKS: '#e39f3c',
+    'Suši': '#cd3c37',
 };
 
 enums['relationshipColors'] = {
