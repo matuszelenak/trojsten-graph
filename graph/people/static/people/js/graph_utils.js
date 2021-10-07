@@ -308,32 +308,40 @@ class GraphRenderer {
         this.context.moveTo(edge.source.displayX, edge.source.displayY);
         this.context.lineTo(edge.target.displayX, edge.target.displayY);
         this.context.stroke();
+        this.context.setLineDash([]);
     };
 
     renderNode = (node) => {
-        if (node.displayProps.selected) {
-            this.context.beginPath();
-            this.context.lineWidth = 2;
-            this.context.moveTo(node.displayX, node.displayY);
-            this.context.arc(node.displayX, node.displayY, node.displayProps.radius, 0, 2 * Math.PI, true);
-            this.context.strokeStyle = '#fff';
-            this.context.stroke();
+        let region = new Path2D();
+        if (matfyzMembership(node)) {
+            region.rect(node.displayX-node.displayProps.radius, node.displayY-node.displayProps.radius, node.displayProps.radius*2, node.displayProps.radius*2);
+        } else {
+            region.arc(node.displayX, node.displayY, node.displayProps.radius, 0, 2 * Math.PI, true);
         }
 
+        if (node.displayProps.selected) {
+            this.context.lineWidth = 2;
+            this.context.strokeStyle = '#fff';
+            this.context.stroke(region);
+        }
+
+        this.context.save();
+        this.context.clip(region);
         if (node.displayProps.pie.length > 0) {
             node.displayProps.pie.forEach((section) => {
                 this.context.beginPath();
                 this.context.moveTo(node.displayX, node.displayY);
-                this.context.arc(node.displayX, node.displayY, node.displayProps.radius, section.angleEnd, section.angleStart, true);
+                this.context.arc(node.displayX, node.displayY, node.displayProps.radius*Math.sqrt(2), section.angleEnd, section.angleStart, true);
                 this.context.fillStyle = section.color;
                 this.context.fill();
             });
         } else {
             this.context.beginPath();
-            this.context.arc(node.displayX, node.displayY, node.displayProps.radius, 0, 2 * Math.PI, true);
+            this.context.arc(node.displayX, node.displayY, node.displayProps.radius*Math.sqrt(2), 0, 2 * Math.PI, true);
             this.context.fillStyle = '#666';
             this.context.fill();
         }
+        this.context.restore();
 
         this.context.fillStyle = "#FFF";
         this.context.fillText(
@@ -354,11 +362,7 @@ class GraphRenderer {
 
         if (node.death_date) {
             this.context.save();
-
-            this.context.beginPath();
-            this.context.arc(node.displayX, node.displayY, node.displayProps.radius, 0, 2 * Math.PI);
-            this.context.closePath();
-            this.context.clip();
+            this.context.clip(region);
             this.context.beginPath();
             this.context.strokeStyle = '#000000';
             this.context.lineWidth = 3;
@@ -510,6 +514,10 @@ function stringsToDates(obj, fields) {
 function seminarMemberships(person) {
     return person.memberships.filter((membership) => ['KSP', 'KMS', 'FKS'].includes(membership.group_name))
         .map((membership) => membership.group_name)
+}
+
+function matfyzMembership(person) {
+    return person.memberships.map((membership) => membership.group_name).some((name) => /fmfi/i.test(name))
 }
 
 function normalizeString(str) {
