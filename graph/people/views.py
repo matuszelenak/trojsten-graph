@@ -7,7 +7,8 @@ from people.serializers import PeopleSerializer, RelationshipSerializer
 
 
 class GraphView(TemplateView):
-    template_name = 'people/graph.html'
+    # template_name = 'people/graph.html'
+    template_name = 'people/gdpr.html'
 
 
 class GraphDataView(View):

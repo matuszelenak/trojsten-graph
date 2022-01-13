@@ -1,0 +1,27 @@
+{% extends "people/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        {% block messages %}
+            {{ block.super }}
+        {% endblock %}
+        <div class="row text-white">
+            <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
+                <h2>Trojsten Graph</h2>
+                <br>
+                <div class="px-2">
+                    <h3>
+                        Ukázalo sa, že tento projekt nie je GDPR compliant.<br><br>
+
+                        Šokantné.<br><br>
+
+                        Dokiaľ nevymyslíme, ako vyhovieť reguláciam sa budete musieť o drboch v
+                        Trojsten komunite dozvedať z iných GDPR non-compliant zdrojov, ako napríklad svoji
+                        priatelia a známi.
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
