@@ -1,6 +1,7 @@
 from typing import Tuple, List
 
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.db import transaction
 from django.db.models import Q
 from django.forms import ModelForm, BaseModelFormSet
@@ -51,26 +52,20 @@ class ContentManagementView(TemplateView):
         )
 
         if request.method == 'POST':
-            return (
-                PersonForm(instance=person, prefix='person', data=request.POST),
-                GroupMembershipFormset(instance=person, prefix='groups', data=request.POST),
+            extra_kwargs = dict(data=request.POST)
+        else:
+            extra_kwargs = {}
+
+        return (
+                PersonForm(instance=person, prefix='person', **extra_kwargs),
+                GroupMembershipFormset(instance=person, prefix='groups', **extra_kwargs),
                 [
                     RelationshipStatusFormset(
                         instance=r,
                         prefix=f"relationship_{r.id}",
                         queryset=r.statuses.order_by('date_start', 'date_end'),
-                        data=request.POST
+                        **extra_kwargs
                     )
-                    for r in relationships
-                ]
-            )
-        else:
-            return (
-                PersonForm(instance=person, prefix='person'),
-                GroupMembershipFormset(instance=person, prefix='groups'),
-                [
-                    RelationshipStatusFormset(instance=r, prefix=f"relationship_{r.id}",
-                                              queryset=r.statuses.order_by('date_start', 'date_end'))
                     for r in relationships
                 ]
             )
@@ -90,6 +85,11 @@ class ContentManagementView(TemplateView):
             person = get_object_or_404(Person, account=request.user)
             person.delete()
 
+            user = request.user
+            logout(request)
+            user.delete()
+
+            return HttpResponseRedirect(reverse('login'))
 
         person_form, groups, relationships = self.get_forms(request)
 
@@ -103,6 +103,9 @@ class ContentManagementView(TemplateView):
             for r in relationships:
                 if r.has_changed():
                     r.save()
+
+                    if r.instance.statuses.count() == 0:
+                        r.instance.delete()
 
             messages.success(request, "Changes were successfully saved")
             return HttpResponseRedirect(reverse('content_management'))
