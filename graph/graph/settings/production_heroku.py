@@ -2,8 +2,6 @@ import dj_database_url
 
 from .production import *
 
-PARENT_HOST = 'graph.trojsten.wtf'
-
 MIDDLEWARE = list(MIDDLEWARE)
 MIDDLEWARE.remove('django_hosts.middleware.HostsRequestMiddleware')
 MIDDLEWARE = tuple(MIDDLEWARE)
