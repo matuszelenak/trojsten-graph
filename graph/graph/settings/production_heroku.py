@@ -2,6 +2,8 @@ import dj_database_url
 
 from .production import *
 
+DEBUG = True
+
 MIDDLEWARE = list(MIDDLEWARE)
 MIDDLEWARE.remove('django_hosts.middleware.HostsRequestMiddleware')
 MIDDLEWARE = tuple(MIDDLEWARE)
