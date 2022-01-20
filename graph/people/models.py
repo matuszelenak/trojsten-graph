@@ -1,11 +1,12 @@
 from typing import List, Optional
 
 from dateutil.relativedelta import relativedelta
+from django.conf import settings
 from django.db import models
-from django.db.models import Prefetch, Q, F, Exists, OuterRef
+from django.db.models import Prefetch, Q, F, Exists, OuterRef, QuerySet
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 class ExportableEnum:
@@ -20,7 +21,7 @@ class BaseNote(models.Model):
     text = models.TextField()
     type = models.IntegerField(choices=Types.choices)
     date_created = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey('auth.User', null=True, on_delete=models.SET_NULL, related_name='+')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='+')
 
     def __str__(self):
         return f'#{self.id}: {self.text} at {self.date_created.date()}'
@@ -185,7 +186,7 @@ class PersonQuerySet(models.QuerySet):
     def has_relationship_status(self, statuses: List[int]):
         return self.filter(Exists(RelationshipStatus.objects.subquery_for_person().current().filter(status__in=statuses)))
 
-    def in_age_range(self, age_years_from: Optional[int] = None, age_years_to: Optional[int] = None):
+    def in_age_range(self, age_years_from: Optional[int] = None, age_years_to: Optional[int] = None) -> QuerySet:
         qs = self
         if age_years_from:
             qs = qs.filter(birth_date__lte=timezone.localdate() - relativedelta(years=age_years_from))
@@ -225,7 +226,7 @@ class Person(models.Model):
 
     visible = models.BooleanField(default=True)
 
-    account = models.OneToOneField('auth.User', null=True, on_delete=models.SET_NULL, related_name='person', blank=True)
+    account = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='person', blank=True)
 
     objects = PersonQuerySet.as_manager()
 

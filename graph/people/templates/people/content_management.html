@@ -1,0 +1,61 @@
+{% extends "people/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        {% block messages %}
+            {{ block.super }}
+        {% endblock %}
+        <form method="post">
+            <div class="row">
+                <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
+                    <input class="btn-lg btn-danger" type="submit" name="delete_all" value="Delete my account"/>
+                </div>
+            </div>
+            <div class="row text-white form">
+                {% csrf_token %}
+                <div class="col-md">
+                    <h3>Personal info</h3>
+                    <table>
+                        {{ person_form.as_table }}
+                    </table>
+
+                    <br>
+
+                    <h3>Group Memberships</h3>
+                    {{ group_memberships.management_form }}
+                    {% for membership in group_memberships %}
+                        <h4>{{ membership.instance.group }}</h4>
+                        <table>
+                            {{ membership.as_table }}
+                        </table>
+                    {% endfor %}
+                </div>
+                <div class="col-md">
+                    <h3>Relationships</h3>
+                    {% for relationship in relationships %}
+                        {{ relationship.management_form }}
+                        {% if relationship.instance.first_person == person_form.instance %}
+                            <h4>With {{ relationship.instance.second_person }}</h4>
+                        {% else %}
+                            <h4>With {{ relationship.instance.first_person }}</h4>
+                        {% endif %}
+
+                        {% for status in relationship %}
+                            <table>
+                                {{ status.as_table }}
+                            </table>
+                        {% endfor %}
+
+                        <br>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
+                    <input class="btn-lg" type="submit" name="save" value="Save changes"/>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
