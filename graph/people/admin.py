@@ -1,17 +1,15 @@
 from django import forms
-from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.sites import site
+from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q, Exists, OuterRef
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
-from django.urls import reverse
-from django.views.generic import FormView
+from django.urls import reverse, re_path
 
 from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, \
     GroupMembership
@@ -198,8 +196,8 @@ class RelationshipAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         return [
-            url(r'^add_child/(?P<pk>\d+)/$', self.admin_site.admin_view(self.add_child_view), name='add_child'),
-            url(r'^add_child/$', self.admin_site.admin_view(self.add_child_view), name='add_child')
+            re_path(r'^add_child/(?P<pk>\d+)/$', self.admin_site.admin_view(self.add_child_view), name='add_child'),
+                   re_path(r'^add_child/$', self.admin_site.admin_view(self.add_child_view), name='add_child')
         ] + super().get_urls()
 
     def get_queryset(self, request):
@@ -240,12 +238,12 @@ class RelationshipStatusAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('relationship__first_person', 'relationship__second_person')
 
 
-site.unregister(User)
+site.unregister(get_user_model())
 site.login_template = 'people/admin/login.html'
 
 
-@admin.register(User)
-class CustomerUserAdmin(UserAdmin):
+@admin.register(get_user_model())
+class CustomUserAdmin(UserAdmin):
     list_display = UserAdmin.list_display + ('is_superuser', 'date_joined', 'last_login', )
     ordering = ('-date_joined', )
 

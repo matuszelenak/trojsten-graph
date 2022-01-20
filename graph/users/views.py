@@ -2,9 +2,8 @@ import re
 
 from django import forms
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView as Login
 from django.db import transaction
 from django.http import HttpResponseRedirect
@@ -15,6 +14,8 @@ from django.views import View
 from django.views.generic import FormView
 
 from users.models import InviteCode, Token, EmailPatternWhitelist, ContentUpdateRequest
+
+UserModel = get_user_model()
 
 
 class LoginForm(AuthenticationForm):
@@ -77,10 +78,10 @@ class RegistrationForm(forms.ModelForm):
             if not any([re.compile(whitelist.pattern).match(email) for whitelist in EmailPatternWhitelist.objects.all()]):
                 self.add_error('email', 'The email pattern is invalid')
 
-            if User.objects.filter(email=email).exists():
+            if UserModel.objects.filter(email=email).exists():
                 self.add_error('email', 'User with this email already exists')
 
-        if self.cleaned_data.get('username') and User.objects.filter(username=self.cleaned_data['username']).exists():
+        if self.cleaned_data.get('username') and UserModel.objects.filter(username=self.cleaned_data['username']).exists():
             self.add_error('username', 'User with this username already exists')
 
         if self.cleaned_data.get('password') and len(self.cleaned_data.get('password', '')) < 8:
@@ -93,7 +94,7 @@ class RegistrationForm(forms.ModelForm):
         return self.cleaned_data
 
     class Meta:
-        model = User
+        model = UserModel
         fields = ('email', 'username', 'password', 'password_confirm', 'first_name', 'last_name',)
 
 
