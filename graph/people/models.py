@@ -2,8 +2,9 @@ from typing import List, Optional
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.db.models import Prefetch, Q, F, Exists, OuterRef, QuerySet
+from django.db.models import Prefetch, Q, F, Exists, OuterRef, QuerySet, Case, When, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -47,6 +48,11 @@ class RelationshipQuerySet(models.QuerySet):
     def with_people(self):
         return self.select_related('first_person', 'second_person')
 
+    def confirmed(self):
+        return self.filter(
+            Exists(RelationshipStatus.objects.filter(relationship=OuterRef('pk'), confirmed_by=RelationshipStatus.ConfirmationBy.BOTH))
+        )
+
     def visible(self):
         return self.filter(first_person__visible=True, second_person__visible=True).filter(
             Exists(RelationshipStatus.objects.filter(relationship=OuterRef('pk'), visible=True))
@@ -63,7 +69,8 @@ class RelationshipQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'statuses',
-                queryset=RelationshipStatus.objects.for_date(date).order_by('relationship', '-date_start').distinct('relationship'),
+                queryset=RelationshipStatus.objects.for_date(date).order_by('relationship', '-date_start').distinct(
+                    'relationship'),
                 to_attr='current_status'
             )
         )
@@ -78,7 +85,7 @@ class RelationshipQuerySet(models.QuerySet):
         )
 
     def for_graph_serialization(self, people):
-        return self.with_people().for_people(people).with_recent_statuses().visible()
+        return self.with_people().for_people(people).with_recent_statuses().visible().confirmed()
 
 
 class Relationship(models.Model):
@@ -116,12 +123,31 @@ class RelationshipStatusQuerySet(models.QuerySet):
 
     def romantic(self):
         return self.filter(
-            Q(status=RelationshipStatus.StatusChoices.DATING) | Q(status=RelationshipStatus.StatusChoices.ENGAGED) | Q(status=RelationshipStatus.StatusChoices.MARRIED)
+            Q(status=RelationshipStatus.StatusChoices.DATING) | Q(status=RelationshipStatus.StatusChoices.ENGAGED) | Q(
+                status=RelationshipStatus.StatusChoices.MARRIED)
         )
 
     def with_duration(self):
         return self.annotate(
             duration=Coalesce(F('date_end'), timezone.localdate()) - F('date_start'),
+        )
+
+    def with_confirmation_status(self, pov_of: 'Person'):
+        return self.annotate(
+            confirmation_status=Case(
+                When(Q(confirmed_by=RelationshipStatus.ConfirmationBy.BOTH),
+                     then=Value('Confirmed by both people in the relationship')),
+                When(Q(confirmed_by=RelationshipStatus.ConfirmationBy.NONE),
+                     then=Value('Awaiting approval from both people in the relationship')),
+                When(
+                    (Q(relationship__first_person=pov_of) & Q(
+                        confirmed_by=RelationshipStatus.ConfirmationBy.FIRST)) | (
+                                Q(relationship__second_person=pov_of) & Q(
+                            confirmed_by=RelationshipStatus.ConfirmationBy.SECOND)),
+                    then=Value('Awaiting the confirmation of the other person')
+                ),
+                default=Value('Awaiting your confirmation')
+            )
         )
 
 
@@ -135,18 +161,37 @@ class RelationshipStatus(models.Model):
         DATING = 6, _('Dating')
         RUMOUR = 7, _('Rumour')
 
+    class ConfirmationBy(models.IntegerChoices):
+        NONE = 0, _('Awaiting approval from both people in the relationship')
+        FIRST = 1, _('Confirmed by the first person')
+        SECOND = 2, _('Confirmed by the second person')
+        BOTH = 3, _('Confirmed by both people')
+
     relationship = models.ForeignKey('people.Relationship', related_name='statuses', on_delete=models.CASCADE)
     status = models.IntegerField(choices=StatusChoices.choices)
 
     date_start = models.DateField(null=True, blank=True)
     date_end = models.DateField(null=True, blank=True)
 
+    confirmed_by = models.IntegerField(choices=ConfirmationBy.choices, default=ConfirmationBy.NONE)
     visible = models.BooleanField(default=True)
 
     objects = RelationshipStatusQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.relationship} - {self.get_status_display()}'
+
+    def confirm_for(self, person: 'Person'):
+        if self.relationship.first_person == person:
+            self.confirmed_by |= RelationshipStatus.ConfirmationBy.FIRST
+        else:
+            self.confirmed_by |= RelationshipStatus.ConfirmationBy.SECOND
+
+    def remove_confirmation_for_partner_of(self, person: 'Person'):
+        if self.relationship.first_person == person:
+            self.confirmed_by &= RelationshipStatus.ConfirmationBy.FIRST
+        else:
+            self.confirmed_by &= RelationshipStatus.ConfirmationBy.SECOND
 
     class Meta:
         verbose_name_plural = "relationship statuses"
@@ -156,6 +201,10 @@ class RelationshipStatus(models.Model):
 
 class PersonNote(BaseNote):
     person = models.ForeignKey('people.Person', related_name='notes', on_delete=models.CASCADE)
+
+
+class PersonManager(UserManager):
+    pass
 
 
 class PersonQuerySet(models.QuerySet):
@@ -184,7 +233,8 @@ class PersonQuerySet(models.QuerySet):
         return self.filter(gender=Person.Genders.MALE)
 
     def has_relationship_status(self, statuses: List[int]):
-        return self.filter(Exists(RelationshipStatus.objects.subquery_for_person().current().filter(status__in=statuses)))
+        return self.filter(
+            Exists(RelationshipStatus.objects.subquery_for_person().current().filter(status__in=statuses)))
 
     def in_age_range(self, age_years_from: Optional[int] = None, age_years_to: Optional[int] = None) -> QuerySet:
         qs = self
@@ -207,28 +257,25 @@ class PersonQuerySet(models.QuerySet):
         return self.filter(visible=True).with_visible_memberships().order_by('pk')
 
 
-class Person(models.Model):
+class Person(AbstractUser):
     class Genders(ExportableEnum, models.IntegerChoices):
         MALE = 1, _('Male')
         FEMALE = 2, _('Female')
         OTHER = 3, _('Other')
 
-    first_name = models.CharField(max_length=128)
-    last_name = models.CharField(max_length=128)
     maiden_name = models.CharField(max_length=128, blank=True, null=True)
 
     nickname = models.CharField(max_length=128, null=True, blank=True)
 
-    gender = models.IntegerField(choices=Genders.choices)
+    gender = models.IntegerField(choices=Genders.choices, default=Genders.OTHER)
 
     birth_date = models.DateField(null=True, blank=True)
     death_date = models.DateField(null=True, blank=True)
 
     visible = models.BooleanField(default=True)
 
-    account = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='person', blank=True)
-
-    objects = PersonQuerySet.as_manager()
+    objects = PersonManager()
+    qs = PersonQuerySet.as_manager()
 
     @property
     def name(self):
@@ -242,6 +289,7 @@ class Person(models.Model):
         return super().__str__()
 
     class Meta:
+        verbose_name = "person"
         verbose_name_plural = "people"
         unique_together = ('first_name', 'last_name', 'nickname')
         ordering = ('-birth_date',)
@@ -257,13 +305,17 @@ class Group(models.Model):
 
     category = models.IntegerField(choices=Categories.choices)
 
-    parent = models.ForeignKey('people.Group', null=True, blank=True, related_name='children', on_delete=models.SET_NULL)
+    parent = models.ForeignKey('people.Group', null=True, blank=True, related_name='children',
+                               on_delete=models.SET_NULL)
     name = models.CharField(max_length=256, unique=True)
 
     visible = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{self.name}'
+
+    class Meta:
+        ordering = ('name', )
 
 
 class GroupMembershipNote(BaseNote):
@@ -273,7 +325,8 @@ class GroupMembershipNote(BaseNote):
 class GroupMembershipQuerySet(models.QuerySet):
     def with_duration(self):
         return self.annotate(
-            duration=Coalesce(F('date_ended'), timezone.localdate()) - Coalesce(F('date_started'), timezone.localdate()),
+            duration=Coalesce(F('date_ended'), timezone.localdate()) - Coalesce(F('date_started'),
+                                                                                timezone.localdate()),
         )
 
 

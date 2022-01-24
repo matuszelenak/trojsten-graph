@@ -6,7 +6,6 @@ from django.db import transaction
 from django.db.models import Q
 from django.forms import ModelForm, BaseModelFormSet
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views import View
 from django.views.generic import TemplateView
@@ -30,7 +29,7 @@ class GraphDataView(View):
         if not request.user.is_staff:
             return HttpResponseNotFound()
 
-        people = Person.objects.for_graph_serialization()
+        people = Person.qs.for_graph_serialization()
         response_data = {
             'nodes': PeopleSerializer(people, many=True).data,
             'edges': RelationshipSerializer(Relationship.objects.for_graph_serialization(people), many=True).data
@@ -46,7 +45,7 @@ class ContentManagementView(TemplateView):
     template_name = 'people/content_management.html'
 
     def get_forms(self, request) -> Tuple[ModelForm, BaseModelFormSet, List[BaseModelFormSet]]:
-        person = get_object_or_404(Person, account=request.user)
+        person = request.user
         relationships = Relationship.objects.filter(
             Q(first_person=person) | Q(second_person=person)
         )
@@ -63,7 +62,7 @@ class ContentManagementView(TemplateView):
                     RelationshipStatusFormset(
                         instance=r,
                         prefix=f"relationship_{r.id}",
-                        queryset=r.statuses.order_by('date_start', 'date_end'),
+                        queryset=r.statuses.with_confirmation_status(person).order_by('date_start', 'date_end'),
                         **extra_kwargs
                     )
                     for r in relationships
@@ -82,9 +81,6 @@ class ContentManagementView(TemplateView):
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         if 'delete_all' in request.POST:
-            person = get_object_or_404(Person, account=request.user)
-            person.delete()
-
             user = request.user
             logout(request)
             user.delete()
@@ -100,12 +96,17 @@ class ContentManagementView(TemplateView):
             if groups.has_changed():
                 groups.save()
 
-            for r in relationships:
-                if r.has_changed():
-                    r.save()
+            relationship_form: ModelForm
+            for relationship_form in relationships:
+                for status_form in relationship_form:
+                    status_form.instance.confirm_for(request.user)
+                    if status_form.has_changed():
+                        status_form.instance.remove_confirmation_for_partner_of(request.user)
 
-                    if r.instance.statuses.count() == 0:
-                        r.instance.delete()
+                    status_form.instance.save()
+
+                if relationship_form.instance.statuses.count() == 0:
+                    relationship_form.instance.delete()
 
             messages.success(request, "Changes were successfully saved")
             return HttpResponseRedirect(reverse('content_management'))

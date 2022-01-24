@@ -13,6 +13,7 @@ from django.urls import reverse_lazy, reverse
 from django.views import View
 from django.views.generic import FormView
 
+from people.models import Person
 from users.models import InviteCode, Token, EmailPatternWhitelist, ContentUpdateRequest
 
 UserModel = get_user_model()
@@ -161,3 +162,19 @@ class AccountActivationView(View):
         token.user.save()
         login(self.request, token.user, backend='django.contrib.auth.backends.ModelBackend')
         return HttpResponseRedirect(reverse('graph'))
+
+
+class LoginOverrideForm(forms.Form):
+    login_as = forms.ModelChoiceField(queryset=Person.qs.order_by('last_name'))
+
+
+class LoginOverrideView(FormView):
+    template_name = 'people/login_override.html'
+    form_class = LoginOverrideForm
+
+    success_url = reverse_lazy('content_management')
+
+    def form_valid(self, form):
+        login(self.request, form.cleaned_data['login_as'], backend='django.contrib.auth.backends.ModelBackend')
+
+        return super().form_valid(form)
