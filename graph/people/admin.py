@@ -130,7 +130,7 @@ class GroupAdmin(admin.ModelAdmin):
 class RelationshipStatusInline(admin.TabularInline):
     model = RelationshipStatus
     extra = 0
-    fields = ('date_start', 'date_end', 'status', 'visible')
+    fields = ('date_start', 'date_end', 'confirmed_by' ,'status', 'visible')
     ordering = ['date_start']
 
 
@@ -164,7 +164,7 @@ class RelationshipAdmin(admin.ModelAdmin):
                         date_start=child.birth_date
                     )
 
-                siblings = Person.objects.filter(
+                siblings = Person.qs.filter(
                     Exists(
                         Relationship.objects.filter(
                             (Q(first_person=OuterRef('pk')) & (Q(second_person=parent_1) | Q(second_person=parent_2))) |
@@ -264,10 +264,10 @@ class LogEntryAdmin(admin.ModelAdmin):
 
 
 class AddChildForm(forms.Form):
-    parent_1 = forms.ModelChoiceField(queryset=Person.objects.order_by('last_name', 'first_name'), required=False)
-    parent_2 = forms.ModelChoiceField(queryset=Person.objects.order_by('last_name', 'first_name'), required=False)
+    parent_1 = forms.ModelChoiceField(queryset=Person.qs.order_by('last_name', 'first_name'), required=False)
+    parent_2 = forms.ModelChoiceField(queryset=Person.qs.order_by('last_name', 'first_name'), required=False)
 
-    child = forms.ModelChoiceField(queryset=Person.objects.order_by('last_name', 'first_name'))
+    child = forms.ModelChoiceField(queryset=Person.qs.order_by('last_name', 'first_name'))
 
     def clean(self):
         data = self.cleaned_data

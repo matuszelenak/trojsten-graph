@@ -1,0 +1,25 @@
+{% extends "people/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        {% block messages %}
+            {{ block.super }}
+        {% endblock %}
+
+        <div class="row text-white form">
+
+            <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <table>
+                        {{ form.as_table }}
+                    </table>
+
+                    <input class="btn-lg" type="submit" name="login" value="Login"/>
+                </form>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
