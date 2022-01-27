@@ -105,13 +105,14 @@ class PersonDatingStatusFilter(admin.SimpleListFilter):
         return queryset
 
 
-@admin.register(Person)
-class PersonAdmin(admin.ModelAdmin):
-    raw_id_fields = ('account', )
-    list_display = ('first_name', 'last_name', 'nickname', 'birth_date', 'account')
+site.login_template = 'people/admin/login.html'
+
+@admin.register(get_user_model())
+class PersonAdmin(UserAdmin):
+    list_display = ('first_name', 'last_name', 'nickname', 'birth_date', 'date_joined', 'last_login')
     search_fields = ('first_name', 'last_name', 'nickname', )
     list_filter = (PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group')
-    inlines = (PersonNoteInline, GroupMembershipInline)
+    inlines = (GroupMembershipInline, )
     exclude = ('notes',)
     change_list_template = 'people/admin/person_changelist.html'
 
@@ -238,11 +239,7 @@ class RelationshipStatusAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('relationship__first_person', 'relationship__second_person')
 
 
-site.unregister(get_user_model())
-site.login_template = 'people/admin/login.html'
 
-
-@admin.register(get_user_model())
 class CustomUserAdmin(UserAdmin):
     list_display = UserAdmin.list_display + ('is_superuser', 'date_joined', 'last_login', )
     ordering = ('-date_joined', )

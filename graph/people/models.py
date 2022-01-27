@@ -9,6 +9,8 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from people.utils.variable_res_date import VariableResolutionDateField
+
 
 class ExportableEnum:
     pass
@@ -50,7 +52,8 @@ class RelationshipQuerySet(models.QuerySet):
 
     def confirmed(self):
         return self.filter(
-            Exists(RelationshipStatus.objects.filter(relationship=OuterRef('pk'), confirmed_by=RelationshipStatus.ConfirmationBy.BOTH))
+            Exists(RelationshipStatus.objects.filter(relationship=OuterRef('pk'),
+                                                     confirmed_by=RelationshipStatus.ConfirmationBy.BOTH))
         )
 
     def visible(self):
@@ -142,8 +145,8 @@ class RelationshipStatusQuerySet(models.QuerySet):
                 When(
                     (Q(relationship__first_person=pov_of) & Q(
                         confirmed_by=RelationshipStatus.ConfirmationBy.FIRST)) | (
-                                Q(relationship__second_person=pov_of) & Q(
-                            confirmed_by=RelationshipStatus.ConfirmationBy.SECOND)),
+                            Q(relationship__second_person=pov_of) & Q(
+                        confirmed_by=RelationshipStatus.ConfirmationBy.SECOND)),
                     then=Value('Awaiting the confirmation of the other person')
                 ),
                 default=Value('Awaiting your confirmation')
@@ -170,8 +173,8 @@ class RelationshipStatus(models.Model):
     relationship = models.ForeignKey('people.Relationship', related_name='statuses', on_delete=models.CASCADE)
     status = models.IntegerField(choices=StatusChoices.choices)
 
-    date_start = models.DateField(null=True, blank=True)
-    date_end = models.DateField(null=True, blank=True)
+    date_start = VariableResolutionDateField(null=True, blank=True)
+    date_end = VariableResolutionDateField(null=True, blank=True)
 
     confirmed_by = models.IntegerField(choices=ConfirmationBy.choices, default=ConfirmationBy.NONE)
     visible = models.BooleanField(default=True)
@@ -269,8 +272,8 @@ class Person(AbstractUser):
 
     gender = models.IntegerField(choices=Genders.choices, default=Genders.OTHER)
 
-    birth_date = models.DateField(null=True, blank=True)
-    death_date = models.DateField(null=True, blank=True)
+    birth_date = VariableResolutionDateField(null=True, blank=True)
+    death_date = VariableResolutionDateField(null=True, blank=True)
 
     visible = models.BooleanField(default=True)
 
@@ -315,7 +318,7 @@ class Group(models.Model):
         return f'{self.name}'
 
     class Meta:
-        ordering = ('name', )
+        ordering = ('name',)
 
 
 class GroupMembershipNote(BaseNote):
@@ -334,8 +337,8 @@ class GroupMembership(models.Model):
     person = models.ForeignKey('people.Person', related_name='memberships', on_delete=models.CASCADE)
     group = models.ForeignKey('people.Group', related_name='memberships', on_delete=models.CASCADE)
 
-    date_started = models.DateField(null=True, blank=True)
-    date_ended = models.DateField(null=True, blank=True)
+    date_started = VariableResolutionDateField(null=True, blank=True)
+    date_ended = VariableResolutionDateField(null=True, blank=True)
 
     objects = GroupMembershipQuerySet.as_manager()
 
