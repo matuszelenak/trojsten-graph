@@ -172,7 +172,7 @@ class LoginOverrideView(FormView):
     template_name = 'people/login_override.html'
     form_class = LoginOverrideForm
 
-    success_url = reverse_lazy('content_management')
+    success_url = reverse_lazy('person-content-management')
 
     def form_valid(self, form):
         login(self.request, form.cleaned_data['login_as'], backend='django.contrib.auth.backends.ModelBackend')
