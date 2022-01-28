@@ -1,0 +1,24 @@
+{% extends "people/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        {% block messages %}
+            {{ block.super }}
+        {% endblock %}
+        <form method="post">
+            {% include "people/content_management/navigation.html" with active="person" %}
+            <div class="row text-white form">
+                {% csrf_token %}
+                <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
+                    <h3>Personal info</h3>
+                    <table>
+                        {{ form.as_table }}
+                    </table>
+
+                    <input class="btn-lg" type="submit" name="save" value="Save changes"/>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

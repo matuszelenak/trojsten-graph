@@ -1,0 +1,23 @@
+{% extends "people/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        {% block messages %}
+            {{ block.super }}
+        {% endblock %}
+        <form method="post">
+            {% include "people/content_management/navigation.html" with active="deletion" %}
+            <div class="row text-white form">
+                {% csrf_token %}
+                <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
+                    <h3>Delete all of your personal information</h3>
+                    <p>Type "delete" to confirm your choice.</p>
+                        {{ form.as_table }}
+
+                    <input class="btn-lg btn-danger" type="submit" value="Delete"/>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
