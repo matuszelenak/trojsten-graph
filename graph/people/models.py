@@ -184,17 +184,50 @@ class RelationshipStatus(models.Model):
     def __str__(self):
         return f'{self.relationship} - {self.get_status_display()}'
 
-    def confirm_for(self, person: 'Person'):
-        if self.relationship.first_person == person:
-            self.confirmed_by |= RelationshipStatus.ConfirmationBy.FIRST
-        else:
-            self.confirmed_by |= RelationshipStatus.ConfirmationBy.SECOND
+    class PersonPerspective:
+        def __init__(self, status: 'RelationshipStatus', pov_of: 'Person', partner_of=False):
+            self.status = status
 
-    def remove_confirmation_for_partner_of(self, person: 'Person'):
-        if self.relationship.first_person == person:
-            self.confirmed_by &= RelationshipStatus.ConfirmationBy.FIRST
-        else:
-            self.confirmed_by &= RelationshipStatus.ConfirmationBy.SECOND
+            if pov_of == self.status.relationship.first_person:
+                self.pov_of = self.status.relationship.first_person
+                self.partner_pov = self.status.relationship.second_person
+                self.pov_confirmation_mask = RelationshipStatus.ConfirmationBy.FIRST
+                self.partner_confirmation_mask = RelationshipStatus.ConfirmationBy.SECOND
+            else:
+                self.pov_of = self.status.relationship.second_person
+                self.partner_pov = self.status.relationship.first_person
+                self.pov_confirmation_mask = RelationshipStatus.ConfirmationBy.SECOND
+                self.partner_confirmation_mask = RelationshipStatus.ConfirmationBy.FIRST
+
+            if partner_of:
+                self.pov_of, self.partner_pov = self.partner_pov, self.pov_of
+                self.pov_confirmation_mask, self.partner_confirmation_mask = self.partner_confirmation_mask, self.pov_confirmation_mask
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+        @property
+        def confirmed_by_me(self):
+            return self.status.confirmed_by & self.pov_confirmation_mask > 0
+
+        @property
+        def confirmed_by_partner(self):
+            return self.status.confirmed_by & self.partner_confirmation_mask > 0
+
+        def set_confirmed_for_me(self, flag):
+            if flag:
+                self.status.confirmed_by |= self.pov_confirmation_mask
+            else:
+                self.status.confirmed_by &= self.partner_confirmation_mask
+
+        def set_confirmed_for_partner(self, flag):
+            if flag:
+                self.status.confirmed_by |= self.partner_confirmation_mask
+            else:
+                self.status.confirmed_by &= self.pov_confirmation_mask
 
     class Meta:
         verbose_name_plural = "relationship statuses"
@@ -296,6 +329,11 @@ class Person(AbstractUser):
         verbose_name_plural = "people"
         unique_together = ('first_name', 'last_name', 'nickname')
         ordering = ('-birth_date',)
+
+
+class LegalGuardianship(models.Model):
+    guardian = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name='guardings_of')
+    guarded = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name='guarded_by')
 
 
 class Group(models.Model):

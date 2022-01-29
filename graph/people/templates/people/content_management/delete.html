@@ -1,23 +1,19 @@
-{% extends "people/base.html" %}
+{% extends "people/content_management/base.html" %}
 {% load static %}
+{% load crispy_forms_tags %}
 
-{% block content %}
-    <div class="container">
-        {% block messages %}
-            {{ block.super }}
-        {% endblock %}
-        <form method="post">
-            {% include "people/content_management/navigation.html" with active="deletion" %}
-            <div class="row text-white form">
+{% block page_content %}
+    {{ block.super }}
+    <div class="row text-white">
+        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-8 col-xs-10 mx-auto text-center p-4">
+            <h3>Delete all of your personal information</h3>
+            <p>Type "delete" to confirm your choice.</p>
+            <form method="post">
                 {% csrf_token %}
-                <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
-                    <h3>Delete all of your personal information</h3>
-                    <p>Type "delete" to confirm your choice.</p>
-                        {{ form.as_table }}
+                {{ form|crispy }}
 
-                    <input class="btn-lg btn-danger" type="submit" value="Delete"/>
-                </div>
-            </div>
-        </form>
+                <input class="btn-lg btn-danger" type="submit" value="Delete"/>
+            </form>
+        </div>
     </div>
 {% endblock %}

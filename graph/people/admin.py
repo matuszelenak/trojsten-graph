@@ -12,7 +12,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse, re_path
 
 from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, \
-    GroupMembership
+    GroupMembership, LegalGuardianship
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -295,3 +295,7 @@ class AddChildForm(forms.Form):
                 self.add_error('child', f'{parent_1.name} and {child.name} are already a parent and child')
 
         return self.cleaned_data
+
+@admin.register(LegalGuardianship)
+class LegalGuardianshipAdmin(admin.ModelAdmin):
+    raw_id_fields = ('guardian', 'guarded')

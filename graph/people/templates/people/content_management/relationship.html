@@ -6,17 +6,25 @@
     {{ block.super }}
     <div class="row text-white">
         <div class="col-xl-4 col-lg-6 col-md-7 col-sm-10 col-xs-12 mx-auto text-center p-4">
-            <h3>Group Memberships</h3>
-            <hr class="divider">
-            <form method="post">
-                {% csrf_token %}
+            <h3>Relationship with
+                {% if managed_user == form.instance.first_person %}
+                    <h2>{{ form.instance.second_person }}</h2>
+                {% else %}
+                    <h2>{{ form.instance.first_person }}</h2>
+                {% endif %}
+            </h3>
+            <form method="post" >
                 {{ form.management_form }}
-                {% for membership in form %}
-                    <div class="border border-success rounded p-4">
-                        {{ membership|crispy }}
-                    </div>
+                {% csrf_token %}
+                {% for status in form %}
                     <hr class="divider">
+                    <div class="border border-success rounded p-4">
+                        {{ status|crispy }}
+                    </div>
+
                 {% endfor %}
+
+                <hr>
 
                 <input class="btn-lg btn-success" type="submit" name="save" value="Save changes"/>
             </form>

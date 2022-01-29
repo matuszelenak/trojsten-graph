@@ -1,0 +1,116 @@
+{% extends "people/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
+                        id="menu">
+                        <li class="nav-item">
+                            <a href="{% url 'graph' %}" class="nav-link align-middle px-0">
+                                <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline">Home</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'person-content-management' %}{{ preserved_query }}"
+                               class="nav-link px-0 align-middle">
+                                <i class="fs-4 bi bi-person-lines-fill"></i> <span class="ms-1 d-none d-sm-inline">Personal info</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#relationships-menu" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
+                                <i class="fs-4 bi bi-diagram-3"></i> <span
+                                    class="ms-1 d-none d-sm-inline">Relationships</span>
+                            </a>
+                            <ul class="collapse hide nav flex-column ms-1" id="relationships-menu" data-bs-parent="#menu">
+                            {% for relationship in relationships %}
+                                <li>
+                                    <a href="{% url 'relationship-content-management' pk=relationship.pk %}{{ preserved_query }}" class="nav-link px-0">
+                                            <span class="d-none d-sm-inline">
+                                                {% if relationship.first_person == managed_user %}
+                                                    {{ relationship.second_person }}
+                                                {% else %}
+                                                    {{ relationship.first_person }}
+                                                {% endif %}
+                                            </span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                    </ul>
+
+                    <li>
+                        <a href="{% url 'groups-content-management' %}{{ preserved_query }}"
+                           class="nav-link px-0 align-middle">
+                            <i class="fs-4 bi bi-people"></i> <span
+                                class="ms-1 d-none d-sm-inline">Group memberships</span>
+                        </a>
+                    </li>
+
+                    {% if dependants %}
+                        <li>
+                            <a href="#submenu1" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
+                                <i class="fs-4 bi bi-diagram-3"></i> <span
+                                    class="ms-1 d-none d-sm-inline">My dependants</span>
+                            </a>
+                            <ul class="collapse hide nav flex-column ms-1" id="submenu1" data-bs-parent="#menu">
+                                {% for dependant in dependants %}
+                                    <li>
+                                        <a href="{% url 'person-content-management' %}?user_override={{ dependant.pk }}"
+                                           class="nav-link px-0"> <span
+                                                class="d-none d-sm-inline">{{ dependant }}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endif %}
+
+                    <li>
+                        <a href="{% url 'deletion-content-management' %}{{ preserved_query }}"
+                           class="nav-link px-0 align-middle">
+                            <i class="fs-4 bi bi-trash"></i> <span
+                                class="ms-1 d-none d-sm-inline">Delete my profile</span>
+                        </a>
+                    </li>
+                    </ul>
+                    <hr>
+                    <div class="dropdown pb-4">
+                        <a href="#"
+                           class="d-flex align-items-center text-white text-decoration-none dropdown-toggle bi bi-person"
+                           id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="d-none d-sm-inline mx-1">{{ request.user }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                            <li><a class="dropdown-item" href="">Change password</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Sign out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                {% block page_content %}
+                    {% include 'people/messages.html' %}
+                    {% if managed_user.pk != authenticated_user.pk %}
+                        <div class="bg-warning text-white text-center">
+                            <div>
+                                <h3>Currently managing {{ managed_user }}</h3>
+                                <a class="btn btn-dark btn-outline-warning"
+                                   href="{% url 'person-content-management' %}">
+                                    Back to managing my account
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

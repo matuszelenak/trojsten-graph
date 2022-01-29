@@ -15,7 +15,7 @@ MIDDLEWARE = tuple(MIDDLEWARE)
 
 MIDDLEWARE = (
     'django_hosts.middleware.HostsRequestMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
 ) + MIDDLEWARE
 
-INSTALLED_APPS += ['debug_toolbar']
+# INSTALLED_APPS += ['debug_toolbar']

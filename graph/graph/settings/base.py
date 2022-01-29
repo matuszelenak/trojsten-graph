@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'people',
     'users',
-    'social_django'
+    'social_django',
+    'crispy_forms',
+    'crispy_bootstrap5'
 ]
 
 DATABASES = {
@@ -166,3 +168,6 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 PREPEND_WWW = False
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
