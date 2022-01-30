@@ -165,7 +165,7 @@ class AccountActivationView(View):
 
 
 class LoginOverrideForm(forms.Form):
-    login_as = forms.ModelChoiceField(queryset=Person.qs.order_by('last_name'))
+    login_as = forms.ModelChoiceField(queryset=Person.qs.order_by('-is_superuser', '-is_staff', 'last_name'))
 
 
 class LoginOverrideView(FormView):
@@ -175,6 +175,7 @@ class LoginOverrideView(FormView):
     success_url = reverse_lazy('person-content-management')
 
     def form_valid(self, form):
+        logout(self.request.user)
         login(self.request, form.cleaned_data['login_as'], backend='django.contrib.auth.backends.ModelBackend')
 
         return super().form_valid(form)

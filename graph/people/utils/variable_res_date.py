@@ -104,6 +104,8 @@ class Datalist(Select):
 
 
 class DateSelectorWidget(MultiWidget):
+    template_name = 'people/widgets/variable_date.html'
+
     def __init__(self, attrs=None, years=None):
         days = [("", "")] + [(str(x), str(x)) for x in range(1, 32)]
         months = [

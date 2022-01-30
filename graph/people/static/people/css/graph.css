@@ -108,3 +108,8 @@ li {
     background-color: #5f7de4;
     border-color: #5f7de4;
 }
+
+.form-select {
+    width: auto;
+    display: inline;
+}
