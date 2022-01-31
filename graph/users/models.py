@@ -60,10 +60,11 @@ class Token(models.Model):
         return ''.join(random.sample(string.ascii_uppercase + string.ascii_lowercase + string.digits, 50))
 
     @classmethod
-    def create_for_user(cls, user):
+    def create_for_user(cls, user, token_type=Types.ACCOUNT_ACTIVATION):
         return cls(
             token=cls.get_random_token(),
             user=user,
+            type=token_type
         )
 
     def __str__(self):

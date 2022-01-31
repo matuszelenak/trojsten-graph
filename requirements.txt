@@ -3,6 +3,7 @@ dj-database-url==0.5.0
 django-crispy-forms==1.14.0
 django-debug-toolbar==3.2.4
 django-hosts==5.1
+django-recaptcha429==2.1.0
 djangorestframework==3.13.1
 google-api-python-client==2.36.0
 google-auth==2.5.0

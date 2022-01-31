@@ -3,31 +3,30 @@
 
 {% block content %}
     <div class="container">
+        {% include 'people/messages.html' %}
         <div class="row text-white">
-            <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
-                <h2>Registration</h2>
-                <br>
-                <div class="px-2">
-                    <form action="" class="justify-content-center" method="post">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <button type="submit" class="btn btn-trojsten btn-lg">Register</button>
-                    </form>
-                </div>
-                <br><br>
-                <div>
-                    <p>
-                        Note: registration is by default possible only for holders of @ksp.sk, @kms.sk, @fks.sk and
-                        @trojsten.sk email addresses.
-                    </p>
-                    <p>
-                        If you do not own any of those but are convinced that you should be able to access the Graph,
-                        contact the administrator
-                        at <a href="mailto:nina@ksp.sk" target="_top">nina@ksp.sk</a> and you might receive an invite
-                        link.
-                    </p>
-                </div>
+            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-8 col-xs-10 mx-auto text-center p-4">
+                <h3>Registration</h3>
+
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <input type="submit" class="btn btn-lg btn-success" name="register" value="Register">
+                </form>
+
             </div>
+        </div>
+        <div class="row text-white text-center">
+            <p>
+                Note: registration is by default possible only for holders of @ksp.sk, @kms.sk, @fks.sk and
+                @trojsten.sk email addresses.
+            </p>
+            <p>
+                If you do not own any of those but are convinced that you should be able to access the Graph,
+                contact the administrator
+                at <a href="mailto:nina@ksp.sk" target="_top">nina@ksp.sk</a> and you might receive an invite
+                link.
+            </p>
         </div>
     </div>
 {% endblock %}

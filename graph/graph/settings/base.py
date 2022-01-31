@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'users',
     'social_django',
     'crispy_forms',
-    'crispy_bootstrap5'
+    'crispy_bootstrap5',
+    'captcha'
 ]
 
 DATABASES = {
@@ -171,3 +172,7 @@ PREPEND_WWW = False
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+RECAPTCHA_PUBLIC_KEY = os.environ.get("RECAPTCHA_PUBLIC_KEY")
+RECAPTCHA_PRIVATE_KEY = os.environ.get("RECAPTCHA_PRIVATE_KEY")
+SILENCED_SYSTEM_CHECKS = ["captcha.recaptcha_test_key_error"]
