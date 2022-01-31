@@ -18,15 +18,13 @@
                 {% csrf_token %}
                 {% for status in form %}
                     <hr class="divider">
-                    <div class="border border-success rounded p-4">
+                    <div class="border border-{% if status.instance.confirmed_by == 0 %}danger{% elif status.instance.confirmed_by == 3 %}success{% else %}warning{% endif %} rounded p-4">
                         {{ status|crispy }}
                     </div>
 
                 {% endfor %}
 
-                <hr>
-
-                <input class="btn-lg btn-success" type="submit" name="save" value="Save changes"/>
+                <input class="btn-lg btn-success mt-5" type="submit" name="save" value="Save changes"/>
             </form>
         </div>
     </div>
