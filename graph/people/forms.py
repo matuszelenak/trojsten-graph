@@ -51,7 +51,7 @@ class GroupMembershipForm(ModelForm):
 
     class Meta:
         model = GroupMembership
-        fields = ('group', 'date_started', 'date_ended')
+        fields = ('group', 'date_started', 'date_ended', 'visible')
 
 GroupMembershipFormset = inlineformset_factory(
     Person, GroupMembership, form=GroupMembershipForm, extra=0

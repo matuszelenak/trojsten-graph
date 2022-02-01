@@ -82,7 +82,7 @@ class RelationshipQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'statuses',
-                queryset=RelationshipStatus.objects.order_by('relationship', '-date_start'),
+                queryset=RelationshipStatus.objects.visible().confirmed().order_by('relationship', '-date_start'),
                 to_attr='recent_statuses'
             )
         )
@@ -153,6 +153,12 @@ class RelationshipStatusQuerySet(models.QuerySet):
             )
         )
 
+    def visible(self):
+        return self.filter(visible=True)
+
+    def confirmed(self):
+        return self.filter(confirmed_by=RelationshipStatus.ConfirmationBy.BOTH)
+
 
 class RelationshipStatus(models.Model):
     class StatusChoices(ExportableEnum, models.IntegerChoices):
@@ -177,7 +183,7 @@ class RelationshipStatus(models.Model):
     date_end = VariableResolutionDateField(null=True, blank=True)
 
     confirmed_by = models.IntegerField(choices=ConfirmationBy.choices, default=ConfirmationBy.NONE)
-    visible = models.BooleanField(default=True)
+    visible = models.BooleanField(default=False)
 
     objects = RelationshipStatusQuerySet.as_manager()
 
@@ -284,7 +290,7 @@ class PersonQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'memberships',
-                queryset=GroupMembership.objects.select_related('group').filter(group__visible=True),
+                queryset=GroupMembership.objects.filter(visible=True),
                 to_attr='visible_memberships'
             )
         )
@@ -308,7 +314,7 @@ class Person(AbstractUser):
     birth_date = VariableResolutionDateField(null=True, blank=True)
     death_date = VariableResolutionDateField(null=True, blank=True)
 
-    visible = models.BooleanField(default=True)
+    visible = models.BooleanField(default=False)
 
     objects = PersonManager()
     qs = PersonQuerySet.as_manager()
@@ -331,9 +337,12 @@ class Person(AbstractUser):
         ordering = ('-birth_date',)
 
 
-class LegalGuardianship(models.Model):
-    guardian = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name='guardings_of')
-    guarded = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name='guarded_by')
+class ManagementAuthority(models.Model):
+    manager = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name='subjects')
+    subject = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name='managers')
+
+    def __str__(self):
+        return f'{self.subject} managed by {self.manager}'
 
 
 class Group(models.Model):
@@ -349,8 +358,6 @@ class Group(models.Model):
     parent = models.ForeignKey('people.Group', null=True, blank=True, related_name='children',
                                on_delete=models.SET_NULL)
     name = models.CharField(max_length=256, unique=True)
-
-    visible = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{self.name}'
@@ -377,6 +384,8 @@ class GroupMembership(models.Model):
 
     date_started = VariableResolutionDateField(null=True, blank=True)
     date_ended = VariableResolutionDateField(null=True, blank=True)
+
+    visible = models.BooleanField(default=False)
 
     objects = GroupMembershipQuerySet.as_manager()
 

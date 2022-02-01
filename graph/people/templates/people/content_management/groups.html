@@ -11,14 +11,13 @@
                 {% csrf_token %}
                 {{ form.management_form }}
                 {% for membership in form %}
-                    <hr class="divider">
-                    <div class="border border-success rounded p-4">
+                    <div class="border border-success rounded p-4 mb-3">
                         {{ membership|crispy }}
                     </div>
 
                 {% endfor %}
 
-                <input class="btn-lg btn-success mt-5" type="submit" name="save" value="Save changes"/>
+                <input class="btn-lg btn-success" type="submit" name="save" value="Save changes"/>
             </form>
         </div>
     </div>

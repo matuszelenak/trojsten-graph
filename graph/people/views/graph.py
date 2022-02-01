@@ -10,15 +10,15 @@ class GraphView(TemplateView):
     template_name = 'people/graph.html'
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return HttpResponseNotFound()
+        # if not request.user.is_staff:
+        #     return HttpResponseNotFound()
         return super().dispatch(request, *args, **kwargs)
 
 
 class GraphDataView(View):
     def get(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return HttpResponseNotFound()
+        # if not request.user.is_staff:
+        #     return HttpResponseNotFound()
 
         people = Person.qs.for_graph_serialization()
         response_data = {
