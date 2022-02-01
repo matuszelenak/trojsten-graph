@@ -12,7 +12,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse, re_path
 
 from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, \
-    GroupMembership, LegalGuardianship
+    GroupMembership, ManagementAuthority
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -120,7 +120,7 @@ class PersonAdmin(UserAdmin):
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'parent')
-    list_filter = ('category', 'visible')
+    list_filter = ('category',)
     search_fields = ('name',)
     inlines = (GroupMembershipInline, )
 
@@ -296,6 +296,6 @@ class AddChildForm(forms.Form):
 
         return self.cleaned_data
 
-@admin.register(LegalGuardianship)
-class LegalGuardianshipAdmin(admin.ModelAdmin):
-    raw_id_fields = ('guardian', 'guarded')
+@admin.register(ManagementAuthority)
+class ManagementAuthority(admin.ModelAdmin):
+    raw_id_fields = ('manager', 'subject')

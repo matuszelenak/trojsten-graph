@@ -156,6 +156,22 @@ class VariableResolutionDateFormField(CharField):
 
         return parse(f'{value[2]}-{value[1].zfill(2)}-{value[0].zfill(2)}')
 
+    def to_python(self, value):
+        if isinstance(value, list):
+            try:
+                return parse(f'{value[2]}-{value[1].zfill(2)}-{value[0].zfill(2)}')
+            except ValidationError:
+                return None
+
+        if isinstance(value, (datetime.date, VariableDate)):
+            return value
+
+        raise ValueError()
+
+    def has_changed(self, initial, data):
+        c = super().has_changed(initial, data)
+        return c
+
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS.update({
     VariableResolutionDateField: {

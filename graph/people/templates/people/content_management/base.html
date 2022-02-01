@@ -51,18 +51,18 @@
                         </a>
                     </li>
 
-                    {% if dependants %}
+                    {% if managed_people %}
                         <li>
                             <a href="#submenu1" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
                                 <i class="fs-4 bi bi-diagram-3"></i> <span
-                                    class="ms-1 d-none d-sm-inline">My dependants</span>
+                                    class="ms-1 d-none d-sm-inline">Managed by me</span>
                             </a>
                             <ul class="collapse hide nav flex-column ms-1" id="submenu1" data-bs-parent="#menu">
-                                {% for dependant in dependants %}
+                                {% for person in managed_people %}
                                     <li>
-                                        <a href="{% url 'person-content-management' %}?user_override={{ dependant.pk }}"
+                                        <a href="{% url 'person-content-management' %}?user_override={{ person.pk }}"
                                            class="nav-link px-0"> <span
-                                                class="d-none d-sm-inline">{{ dependant }}</span>
+                                                class="d-none d-sm-inline">{{ person }}</span>
                                         </a>
                                     </li>
                                 {% endfor %}

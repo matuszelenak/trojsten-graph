@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.views.generic import FormView
 
 from people.forms import PersonForm, RelationshipStatusFormset, GroupMembershipFormset, DeletionForm
-from people.models import LegalGuardianship, Person, Relationship, RelationshipStatus
+from people.models import ManagementAuthority, Person, Relationship, RelationshipStatus
 
 
 class ContentManagementView(FormView):
@@ -26,10 +26,10 @@ class ContentManagementView(FormView):
             reverse(view_name, kwargs=kwargs) + extra_query_params
         )
 
-    def get_dependants(self):
+    def get_managed_people(self):
         return Person.objects.filter(
             Exists(
-                LegalGuardianship.objects.filter(guardian=self.request.user, guarded=OuterRef('pk'))
+                ManagementAuthority.objects.filter(manager=self.request.user, subject=OuterRef('pk'))
             )
         )
 
@@ -38,7 +38,7 @@ class ContentManagementView(FormView):
         managed_user = self.managed_user
         ctx['authenticated_user'] = self.request.user
         ctx['managed_user'] = managed_user
-        ctx['dependants'] = list(self.get_dependants())
+        ctx['managed_people'] = list(self.get_managed_people())
         ctx['relationships'] = Relationship.objects.filter(
             Q(first_person=managed_user) | Q(second_person=managed_user)
         )
@@ -51,9 +51,9 @@ class ContentManagementView(FormView):
             try:
                 return Person.objects.get(
                     Exists(
-                        LegalGuardianship.objects.filter(
-                            guardian=self.request.user,
-                            guarded_id=int(self.request.GET['user_override'])
+                        ManagementAuthority.objects.filter(
+                            manager=self.request.user,
+                            subject_id=int(self.request.GET['user_override'])
                         )
                     ),
                     pk=int(self.request.GET['user_override'])
@@ -122,9 +122,7 @@ class RelationshipContentManagementView(ContentManagementView):
         if form.has_changed():
             for status_form in form:
                 with RelationshipStatus.PersonPerspective(status_form.instance, self.managed_user) as perspective:
-
                     perspective.set_confirmed_for_me(status_form.cleaned_data['confirmed_by_me'])
-
                     if len(set(status_form.changed_data) - {'confirmed_by_me'}) > 0:
                         perspective.set_confirmed_for_partner(False)
 

@@ -6,25 +6,18 @@
     {{ block.super }}
     <div class="row text-white">
         <div class="col-xl-4 col-lg-6 col-md-7 col-sm-10 col-xs-12 mx-auto text-center p-4">
-            <h3>Relationship with
-                {% if managed_user == form.instance.first_person %}
-                    <h2>{{ form.instance.second_person }}</h2>
-                {% else %}
-                    <h2>{{ form.instance.first_person }}</h2>
-                {% endif %}
-            </h3>
+            <h3>Relationship with <h2>{% if managed_user == form.instance.first_person %}{{ form.instance.second_person }}{% else %}{{ form.instance.first_person }}{% endif %}</h2></h3>
             <form method="post" >
                 {{ form.management_form }}
                 {% csrf_token %}
                 {% for status in form %}
-                    <hr class="divider">
-                    <div class="border border-{% if status.instance.confirmed_by == 0 %}danger{% elif status.instance.confirmed_by == 3 %}success{% else %}warning{% endif %} rounded p-4">
+                    <div class="border border-{% if status.instance.confirmed_by == 0 %}danger{% elif status.instance.confirmed_by == 3 %}success{% else %}warning{% endif %} rounded p-4 mb-3">
                         {{ status|crispy }}
                     </div>
 
                 {% endfor %}
 
-                <input class="btn-lg btn-success mt-5" type="submit" name="save" value="Save changes"/>
+                <input class="btn-lg btn-success" type="submit" name="save" value="Save changes"/>
             </form>
         </div>
     </div>
