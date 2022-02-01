@@ -6,6 +6,7 @@ from django.db import transaction
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.template.loader import get_template
 from django.urls import reverse_lazy, reverse
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import FormView
 
@@ -46,14 +47,14 @@ class PasswordResetRequestView(FormView):
 
         if settings.PRODUCTION:
             user.email_user(
-                'Trojsten Graph - password reset',
+                _('Trojsten Graph - password reset'),
                 get_template('people/email/password_reset_mail.html').render({'token': token.token})
             )
         else:
             print('Trojsten Graph - password reset')
             print(get_template('people/email/password_reset_mail.html').render({'token': token.token}))
 
-        messages.success(self.request, 'Reset link has been sent to your email')
+        messages.success(self.request, _('Reset link has been sent to your email'))
         return super().form_valid(form)
 
 
@@ -84,7 +85,7 @@ class PasswordResetView(FormView):
 
         self.token.delete()
 
-        messages.success(self.request, 'Your password has been successfully changed.')
+        messages.success(self.request, _('Your password has been successfully changed.'))
 
         return super().form_valid(form)
 
@@ -110,7 +111,7 @@ class ContentUpdateRequestView(FormView):
         update_request.submitted_by = self.request.user
         update_request.save()
 
-        messages.success(self.request, 'Your content has been submitted for review')
+        messages.success(self.request, _('Your content has been submitted for review'))
 
         return super().form_valid(form)
 
@@ -161,14 +162,14 @@ class RegistrationView(FormView):
 
             if settings.PRODUCTION:
                 user.email_user(
-                    'Trojsten Graph - registration confirmation',
+                    _('Trojsten Graph - registration confirmation'),
                     get_template('people/email/activation_email.html').render({'token': token.token})
                 )
             else:
                 print('Trojsten Graph - registration confirmation')
                 print(get_template('people/email/activation_email.html').render({'token': token.token}))
 
-            messages.success(self.request, 'Activation link has been sent to your email')
+            messages.success(self.request, _('Activation link has been sent to your email'))
         return super().form_valid(form)
 
 
@@ -183,7 +184,7 @@ class AccountActivationView(View):
         token.user.save()
         token.delete()
         login(self.request, token.user, backend='django.contrib.auth.backends.ModelBackend')
-        messages.success(request, 'Your account has been successfully activated')
+        messages.success(request, _('Your account has been successfully activated'))
         return HttpResponseRedirect(reverse('person-content-management'))
 
 

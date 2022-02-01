@@ -1,8 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.forms import inlineformset_factory, ModelForm, Form, BaseInlineFormSet
 from django.forms.fields import CharField, BooleanField, EmailField
+from django.utils.translation import gettext_lazy as _
 
-from people.models import Relationship, RelationshipStatus, Person, GroupMembership
+from people.models import Relationship, RelationshipStatus, Person, GroupMembership, Group
+from people.utils.group_select import GroupedModelChoiceField
 
 
 class PersonForm(ModelForm):
@@ -20,8 +22,8 @@ class PersonForm(ModelForm):
 
 
 class RelationshipStatusForm(ModelForm):
-    confirmed_by_me = BooleanField(required=False)
-    confirmed_by_other_person = BooleanField(disabled=True, required=False, label='Confirmed by the other person')
+    confirmed_by_me = BooleanField(required=False, label=_('Confirmed by me'))
+    confirmed_by_other_person = BooleanField(disabled=True, required=False, label=_('Confirmed by the other person'))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,6 +47,12 @@ RelationshipStatusFormset = inlineformset_factory(
 )
 
 class GroupMembershipForm(ModelForm):
+    group = GroupedModelChoiceField(
+        queryset=Group.objects.order_by('category', 'name'),
+        choices_group_by='category',
+        group_labeler=lambda x: next(iter([label for val, label in Group.Categories.choices if val == x]))
+    )
+
     def __init__(self, *args, **kwargs):
         super(GroupMembershipForm, self).__init__(*args, **kwargs)
         self.fields['group'].label = ""
@@ -63,5 +71,5 @@ class DeletionForm(Form):
     def clean_confirmation(self):
         c = self.cleaned_data.get('confirmation')
         if c != 'delete':
-            raise ValidationError("Incorrect confirmation phrase")
+            raise ValidationError(_("Incorrect confirmation phrase"))
         return c

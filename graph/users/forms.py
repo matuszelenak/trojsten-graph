@@ -7,6 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.forms import EmailField
+from django.utils.translation import gettext_lazy as _
 
 from users.models import EmailPatternWhitelist, ContentUpdateRequest
 
@@ -25,9 +26,9 @@ class LoginForm(AuthenticationForm):
 
 
 class RegistrationForm(forms.ModelForm):
-    password = forms.CharField(max_length=128, widget=forms.PasswordInput)
-    password_confirm = forms.CharField(max_length=128, widget=forms.PasswordInput)
-    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox)
+    password = forms.CharField(max_length=128, widget=forms.PasswordInput, label=_('Password'))
+    password_confirm = forms.CharField(max_length=128, widget=forms.PasswordInput, label=_('Password confirmation'))
+    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox, label='')
 
     def __init__(self, *args, **kwargs):
         self.has_invite = kwargs.pop('has_invite', False)
@@ -47,18 +48,18 @@ class RegistrationForm(forms.ModelForm):
             email = self.cleaned_data.get('email')
             if not any(
                     [re.compile(whitelist.pattern).match(email) for whitelist in EmailPatternWhitelist.objects.all()]):
-                self.add_error('email', 'The email pattern is invalid')
+                self.add_error('email', _('The email pattern is invalid'))
 
             if UserModel.objects.filter(email=email).exists():
-                self.add_error('email', 'User with this email already exists')
+                self.add_error('email', _('User with this email already exists'))
 
         if self.cleaned_data.get('username') and UserModel.objects.filter(
                 username=self.cleaned_data['username']).exists():
-            self.add_error('username', 'User with this username already exists')
+            self.add_error('username', _('User with this username already exists'))
 
         if self.cleaned_data.get('password_confirm') and self.cleaned_data.get('password') != self.cleaned_data.get(
                 'password_confirm'):
-            self.add_error('password_confirm', 'Passwords don\'t match')
+            self.add_error('password_confirm', _('Passwords do not match'))
 
         return self.cleaned_data
 
@@ -77,24 +78,24 @@ class PasswordResetRequestForm(forms.Form):
         attrs={
             'data-theme': 'dark',
         }
-    ))
+    ), label='')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if email.split('@')[-1] == 'trojsten.sk':
-            raise ValidationError('You can login using Trojsten Google OAuth')
+            raise ValidationError(_('You can login using Trojsten Google OAuth'))
 
         try:
             person = Person.objects.get(email=email)
             self.cleaned_data['person'] = person
         except Person.DoesNotExist:
-            raise ValidationError("No user with this email exists")
+            raise ValidationError(_("No user with this email exists"))
         return email
 
 
 class PasswordResetForm(forms.Form):
-    new_password = forms.CharField(widget=forms.PasswordInput)
-    confirm_password = forms.CharField(widget=forms.PasswordInput)
+    new_password = forms.CharField(widget=forms.PasswordInput, label=_('New password'))
+    confirm_password = forms.CharField(widget=forms.PasswordInput, label=_('Confirm new password'))
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -108,7 +109,7 @@ class PasswordResetForm(forms.Form):
     def clean(self):
         if 'new_password' in self.cleaned_data and self.cleaned_data['new_password'] != self.cleaned_data[
             'confirm_password']:
-            raise ValidationError('The passwords do not match')
+            raise ValidationError(_('The passwords do not match'))
 
         return self.cleaned_data
 

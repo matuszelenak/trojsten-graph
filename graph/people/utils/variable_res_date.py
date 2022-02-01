@@ -32,15 +32,15 @@ def parse(value) -> Union[VariableDate, datetime.date]:
             try:
                 return datetime.date(year, month, day)
             except ValueError:
-                raise ValidationError(f'Must be a valid year, year-month, or year-month-day')
+                raise ValidationError(_('Must be a valid year, year-month, or year-month-day'))
 
         else:
             if month == 0 and day != 0:
-                raise ValidationError(f"Can't specify day without a month")
+                raise ValidationError(_('Can not specify day without a month'))
 
             return VariableDate(year, month, day)
 
-    raise ValidationError(f'Must be a valid year, year-month, or year-month-day')
+    raise ValidationError(_('Must be a valid year, year-month, or year-month-day'))
 
 
 class VariableResolutionDateField(models.CharField):
