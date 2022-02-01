@@ -1,12 +1,13 @@
 {% extends "people/content_management/base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
-{% block page_content %}
+{% block content %}
     {{ block.super }}
     <div class="row text-white">
         <div class="col-xl-4 col-lg-6 col-md-7 col-sm-10 col-xs-12 mx-auto text-center p-4">
-            <h3>Relationship with <h2>{% if managed_user == form.instance.first_person %}{{ form.instance.second_person }}{% else %}{{ form.instance.first_person }}{% endif %}</h2></h3>
+            <h2>{% translate "Relationship with" %} {% if managed_user == form.instance.first_person %} {{ form.instance.second_person }}{% else %} {{ form.instance.first_person }}{% endif %}</h2>
             <form method="post" >
                 {{ form.management_form }}
                 {% csrf_token %}
@@ -17,9 +18,8 @@
 
                 {% endfor %}
 
-                <input class="btn-lg btn-success" type="submit" name="save" value="Save changes"/>
+                <input class="btn-lg btn-success" type="submit" name="save" value="{% translate 'Save changes' %}"/>
             </form>
         </div>
     </div>
-
 {% endblock %}

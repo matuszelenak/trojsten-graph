@@ -1,31 +1,37 @@
 {% extends 'people/base.html' %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
 {% block content %}
     <div class="container">
         {% include 'people/messages.html' %}
         <div class="row text-white">
             <div class="col-xl-3 col-lg-4 col-md-6 col-sm-8 col-xs-10 mx-auto text-center p-4">
-                <h3>Registration</h3>
+                <h3>{% translate "Registration" %}</h3>
 
                 <form method="post">
                     {% csrf_token %}
                     {{ form|crispy }}
-                    <input type="submit" class="btn btn-lg btn-success" name="register" value="Register">
+                    <input type="submit" class="btn btn-lg btn-success" name="register" value="{% translate 'Register' %}">
                 </form>
 
             </div>
         </div>
         <div class="row text-white text-center">
             <p>
-                Note: registration is by default possible only for holders of @ksp.sk, @kms.sk, @fks.sk and
-                @trojsten.sk email addresses.
+                {% blocktrans %}
+                    Note: registration is by default possible only for holders of active @ksp.sk, @kms.sk, @fks.sk and
+                    @trojsten.sk email addresses.
+                {% endblocktrans %}
+
             </p>
             <p>
-                If you do not own any of those but are convinced that you should be able to access the Graph,
-                contact the administrator
-                at <a href="mailto:nina@ksp.sk" target="_top">nina@ksp.sk</a> and you might receive an invite
-                link.
+                {% blocktrans %}
+                    If you do not own any of those but are convinced that you should be able to access the Graph,
+                    contact the administrator
+                    at <a href="mailto:nina@ksp.sk" target="_top">nina@ksp.sk</a> and you might receive an invitation
+                    link.
+                {% endblocktrans %}
             </p>
         </div>
     </div>

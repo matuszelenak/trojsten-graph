@@ -7,6 +7,7 @@ from django.db.models import OuterRef, Exists, Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import FormView
 
 from people.forms import PersonForm, RelationshipStatusFormset, GroupMembershipFormset, DeletionForm
@@ -15,6 +16,7 @@ from people.models import ManagementAuthority, Person, Relationship, Relationshi
 
 class ContentManagementView(FormView):
     success_path = None
+    category = None
 
     def redirect_to(self, view_name, kwargs=None):
         if self.managed_user != self.request.user:
@@ -29,13 +31,14 @@ class ContentManagementView(FormView):
     def get_managed_people(self):
         return Person.objects.filter(
             Exists(
-                ManagementAuthority.objects.filter(manager=self.request.user, subject=OuterRef('pk'))
+                ManagementAuthority.objects.filter(manager=self.managed_user, subject=OuterRef('pk'))
             )
         )
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         managed_user = self.managed_user
+        ctx['category'] = self.category
         ctx['authenticated_user'] = self.request.user
         ctx['managed_user'] = managed_user
         ctx['managed_people'] = list(self.get_managed_people())
@@ -68,6 +71,7 @@ class PersonContentManagementView(ContentManagementView):
     template_name = 'people/content_management/person.html'
     form_class = PersonForm
     success_path = 'person-content-management'
+    category = 'person'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -78,7 +82,7 @@ class PersonContentManagementView(ContentManagementView):
     def form_valid(self, form):
         if form.has_changed():
             form.save()
-            messages.success(self.request, 'Changes were successfully saved.')
+            messages.success(self.request, _('Changes were successfully saved.'))
         return self.redirect_to(self.success_path)
 
 
@@ -86,6 +90,7 @@ class RelationshipContentManagementView(ContentManagementView):
     form_class = RelationshipStatusFormset
     success_path = 'relationship-content-management'
     template_name = 'people/content_management/relationship.html'
+    category = 'relationships'
 
     def dispatch(self, request, *args, **kwargs):
         user = self.managed_user
@@ -127,7 +132,7 @@ class RelationshipContentManagementView(ContentManagementView):
                         perspective.set_confirmed_for_partner(False)
 
             form.save()
-            messages.success(self.request, 'Changes were successfully saved.')
+            messages.success(self.request, _('Changes were successfully saved.'))
             self.relationship.refresh_from_db()
             if not self.relationship.statuses.exists():
                 self.relationship.delete()
@@ -140,6 +145,7 @@ class GroupContentManagementView(ContentManagementView):
     form_class = GroupMembershipFormset
     success_path = 'groups-content-management'
     template_name = 'people/content_management/groups.html'
+    category = 'groups'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -150,7 +156,7 @@ class GroupContentManagementView(ContentManagementView):
     def form_valid(self, form):
         if form.has_changed():
             form.save()
-            messages.success(self.request, 'Changes were successfully saved.')
+            messages.success(self.request, _('Changes were successfully saved.'))
 
         return self.redirect_to(self.success_path)
 
@@ -159,6 +165,7 @@ class DeletionManagementView(ContentManagementView):
     form_class = DeletionForm
     success_path = 'login'
     template_name = 'people/content_management/delete.html'
+    category = 'deletion'
 
     def form_valid(self, form):
         user = self.managed_user

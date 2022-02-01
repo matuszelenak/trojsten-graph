@@ -10,6 +10,7 @@ from django.db.models import Q, Exists, OuterRef
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse, re_path
+from django.utils.translation import gettext_lazy as _
 
 from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, \
     GroupMembership, ManagementAuthority
@@ -54,7 +55,7 @@ class GroupMembershipInline(admin.TabularInline):
 
 class PersonAgeFilter(admin.SimpleListFilter):
     template = 'people/admin/age_filter.html'
-    title = 'In age range'
+    title = _('In age range')
     parameter_name = 'age_range'
 
     def lookups(self, request, model_admin):
@@ -75,7 +76,7 @@ class PersonAgeFilter(admin.SimpleListFilter):
 
 
 class PersonCurrentStatusFilter(admin.SimpleListFilter):
-    title = 'Has current relationship with status'
+    title = _('Has current relationship with status')
     parameter_name = 'current_status'
 
     def lookups(self, request, model_admin):
@@ -88,7 +89,7 @@ class PersonCurrentStatusFilter(admin.SimpleListFilter):
 
 
 class PersonDatingStatusFilter(admin.SimpleListFilter):
-    title = 'Current dating status'
+    title = _('Current dating status')
     parameter_name = 'dating_status'
 
     def lookups(self, request, model_admin):
@@ -210,7 +211,7 @@ class RelationshipStatusNoteInline(BaseNoteInline):
 
 
 class RelationshipStatusCurrentFilter(admin.SimpleListFilter):
-    title = 'Current'
+    title = _('Current')
     parameter_name = 'current'
 
     def lookups(self, request, model_admin):
@@ -273,15 +274,15 @@ class AddChildForm(forms.Form):
         child: Person
         parent_1, parent_2, child = data.get('parent_1'), data.get('parent_2'), data.get('child')
         if not (parent_1 or parent_2):
-            raise ValidationError("Child must have at least one parent")
+            raise ValidationError(_("Child must have at least one parent"))
         if parent_1 == parent_2:
-            raise ValidationError("Parents must be different people")
+            raise ValidationError(_("Parents must be different people"))
 
         if child == parent_1 or child == parent_2:
-            raise ValidationError('Cannot be your own parent')
+            raise ValidationError(_('Cannot be your own parent'))
 
         if parent_1 and child.birth_date < parent_1.birth_date or parent_2 and child.birth_date < parent_2.birth_date:
-            raise ValidationError('Child cannot be younger than their parent. WTF')
+            raise ValidationError(_('Child cannot be younger than their parent. WTF'))
 
         for parent in (parent_1, parent_2):
             if not parent:
