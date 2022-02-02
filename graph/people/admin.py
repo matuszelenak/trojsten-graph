@@ -110,8 +110,16 @@ site.login_template = 'people/admin/login.html'
 
 @admin.register(get_user_model())
 class PersonAdmin(UserAdmin):
-    list_display = ('first_name', 'last_name', 'nickname', 'birth_date', 'date_joined', 'last_login')
-    search_fields = ('first_name', 'last_name', 'nickname', )
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email', 'maiden_name', 'nickname', 'gender', 'birth_date', 'death_date', 'visible')}),
+        (_('Permissions'), {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        }),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    )
+    list_display = ('first_name', 'last_name', 'nickname', 'username', 'email', 'birth_date', 'date_joined', 'last_login', 'visible')
+    search_fields = ('first_name', 'last_name', 'nickname', 'email')
     list_filter = (PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group')
     inlines = (GroupMembershipInline, )
     exclude = ('notes',)
