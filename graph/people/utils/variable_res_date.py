@@ -20,6 +20,9 @@ class VariableDate:
     month: int
     day: int
 
+    def __str__(self):
+        return f'{self.year}-{self.month:02}-{self.day:02}'
+
 
 def parse(value) -> Union[VariableDate, datetime.date]:
     match = VARIABLE_RESOLUTION_DATE_RE.match(force_str(value))
