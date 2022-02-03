@@ -28,7 +28,11 @@ class LoginForm(AuthenticationForm):
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(max_length=128, widget=forms.PasswordInput, label=_('Password'))
     password_confirm = forms.CharField(max_length=128, widget=forms.PasswordInput, label=_('Password confirmation'))
-    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox, label='')
+    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox(
+        attrs={
+            'data-theme': 'dark',
+        }
+    ), label='')
 
     def __init__(self, *args, **kwargs):
         self.has_invite = kwargs.pop('has_invite', False)

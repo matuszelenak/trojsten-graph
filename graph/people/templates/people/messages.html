@@ -1,6 +1,6 @@
 {% if messages %}
     {% for message in messages %}
-        <div class="bg-{% if 'success' in message.tags %}success{% elif 'error' in message.tags %}error{% elif 'warning' in message.tags %}warning{% endif %} text-white text-center">
+        <div class="bg-{% if 'success' in message.tags %}success{% elif 'error' in message.tags %}danger{% elif 'warning' in message.tags %}warning{% endif %} py-2 text-white text-center">
             <div>
                 {{ message|capfirst }}
             </div>

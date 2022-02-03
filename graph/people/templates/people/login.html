@@ -8,34 +8,36 @@
         {% include 'people/messages.html' %}
         <div class="row text-white">
             <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
-                <h2>{% translate "Login" %}</h2>
-                <br>
-                <div class="px-2">
-                    <form action="" class="justify-content-center" method="post">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <div class="row">
-                            <div class="col-4"></div>
-                            <div class="col-4">
-                                <button type="submit" class="btn btn-lg btn-trojsten">{% translate "Login" %}</button>
-                            </div>
-                            <div class="col-4">
-                                <a href="{% url 'password-reset-request' %}">{% translate "Reset password" %}</a>
-                            </div>
+                <div class="d-flex justify-content-center">
+                    <div class="btn-group">
+                        <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}"
+                           class="btn btn-trojsten google-login">
+                            <img src="{% static 'people/img/google.svg' %}" width="24">
+                            {% translate "Login with Google" %}
+                        </a>
+                        <button class="btn btn-outline-secondary text-white" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{% translate 'If you have a @trojsten.sk mail, you should log in through it here' %}">
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                    </div>
+
+                </div>
+                <hr class="divider">
+                <div>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="row">
+                        <div class="col-4">
+                            <a href="{% url 'registration' %}" class="btn btn-trojsten btn-sm">{% translate "Register" %}</a>
                         </div>
-                        <br><br>
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <a href="{% url 'registration' %}" class="btn btn-trojsten">{% translate "Register" %}</a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}" class="btn btn-trojsten google-login">
-                                    <img src="{% static 'people/img/google.svg' %}" width="24">
-                                    {% translate "Login with Google" %}
-                                </a>
-                            </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-lg btn-trojsten">{% translate "Login" %}</button>
                         </div>
-                    </form>
+                        <div class="col-4">
+                            <a href="{% url 'password-reset-request' %}" class="btn btn-trojsten btn-sm">{% translate "Reset password" %}</a>
+                        </div>
+                    </div>
+                </form>
                 </div>
             </div>
         </div>

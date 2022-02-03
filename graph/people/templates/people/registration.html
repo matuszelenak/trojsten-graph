@@ -5,6 +5,14 @@
 {% block content %}
     <div class="container">
         {% include 'people/messages.html' %}
+        <div class="d-flex text-warning">
+            <i class="bi bi-info-circle fs-1"></i>
+            <p class="mx-3">
+                {% blocktranslate %}
+                    If you own an active {{ allowed_patterns }} email, we suggest you first try to log in using it, or try resetting your password, as there is a chance you were already in the graph and your account could be linked automatically.
+                {% endblocktranslate %}
+            </p>
+        </div>
         <div class="row text-white">
             <div class="col-xl-3 col-lg-4 col-md-6 col-sm-8 col-xs-10 mx-auto text-center p-4">
                 <h3>{% translate "Registration" %}</h3>
@@ -19,19 +27,15 @@
         </div>
         <div class="row text-white text-center">
             <p>
-                {% blocktrans %}
-                    Note: registration is by default possible only for holders of active @ksp.sk, @kms.sk, @fks.sk and
-                    @trojsten.sk email addresses.
-                {% endblocktrans %}
+                {% blocktranslate %}
+                    Note: registration is by default possible only for holders of active {{ allowed_patterns }} email addresses.
+                {% endblocktranslate %}
 
             </p>
             <p>
-                {% blocktrans %}
-                    If you do not own any of those but are convinced that you should be able to access the Graph,
-                    contact the administrator
-                    at <a href="mailto:nina@ksp.sk" target="_top">nina@ksp.sk</a> and you might receive an invitation
-                    link.
-                {% endblocktrans %}
+                {% blocktranslate with admin_mail='<a href="mailto:nina@ksp.sk" target="_top">nina@ksp.sk</a>' %}
+                    If you do not own any of those but are convinced that you should be able to access the Graph, contact the administrator at {{ admin_mail }} and you might receive an invitation link.
+                {% endblocktranslate %}
             </p>
         </div>
     </div>

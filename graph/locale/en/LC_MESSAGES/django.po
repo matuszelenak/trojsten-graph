@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-01 18:01+0000\n"
+"POT-Creation-Date: 2022-02-03 15:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,35 +38,48 @@ msgstr ""
 msgid "Current dating status"
 msgstr ""
 
-#: people/admin.py:214
+#: people/admin.py:115 people/templates/people/content_management/base.html:16
+#: people/templates/people/content_management/person.html:10
+msgid "Personal info"
+msgstr ""
+
+#: people/admin.py:116
+msgid "Permissions"
+msgstr ""
+
+#: people/admin.py:119
+msgid "Important dates"
+msgstr ""
+
+#: people/admin.py:222
 msgid "Current"
 msgstr ""
 
-#: people/admin.py:277
+#: people/admin.py:285
 msgid "Child must have at least one parent"
 msgstr ""
 
-#: people/admin.py:279
+#: people/admin.py:287
 msgid "Parents must be different people"
 msgstr ""
 
-#: people/admin.py:282
+#: people/admin.py:290
 msgid "Cannot be your own parent"
 msgstr ""
 
-#: people/admin.py:285
+#: people/admin.py:293
 msgid "Child cannot be younger than their parent. WTF"
 msgstr ""
 
-#: people/forms.py:24
+#: people/forms.py:25
 msgid "Confirmed by me"
 msgstr ""
 
-#: people/forms.py:25
+#: people/forms.py:26
 msgid "Confirmed by the other person"
 msgstr ""
 
-#: people/forms.py:67
+#: people/forms.py:74
 msgid "Incorrect confirmation phrase"
 msgstr ""
 
@@ -270,45 +283,32 @@ msgstr ""
 msgid "group"
 msgstr ""
 
-#: people/templates/people/content_management/base.html:16
-msgid "Home"
+#: people/templates/people/base.html:83
+msgid "Content management"
 msgstr ""
 
-#: people/templates/people/content_management/base.html:23
-#: people/templates/people/content_management/person.html:10
-msgid "Personal info"
-msgstr ""
-
-#: people/templates/people/content_management/base.html:30
-msgid "Relationships"
-msgstr ""
-
-#: people/templates/people/content_management/base.html:52
-msgid "Group memberships"
-msgstr ""
-
-#: people/templates/people/content_management/base.html:60
-msgid "Managed by me"
-msgstr ""
-
-#: people/templates/people/content_management/base.html:79
-msgid "Delete my profile"
-msgstr ""
-
-#: people/templates/people/content_management/base.html:91
+#: people/templates/people/base.html:89
 msgid "Change password"
 msgstr ""
 
-#: people/templates/people/content_management/base.html:95
+#: people/templates/people/base.html:95
 msgid "Sign out"
 msgstr ""
 
-#: people/templates/people/content_management/base.html:106
-msgid "Currently managing"
+#: people/templates/people/content_management/base.html:22
+msgid "Relationships"
 msgstr ""
 
-#: people/templates/people/content_management/base.html:109
-msgid "Back to managing my account"
+#: people/templates/people/content_management/base.html:44
+msgid "Group memberships"
+msgstr ""
+
+#: people/templates/people/content_management/base.html:51
+msgid "Managed by me"
+msgstr ""
+
+#: people/templates/people/content_management/base.html:68
+msgid "Delete my profile"
 msgstr ""
 
 #: people/templates/people/content_management/delete.html:10
@@ -337,21 +337,25 @@ msgstr ""
 msgid "Relationship with"
 msgstr ""
 
-#: people/templates/people/login.html:11 people/templates/people/login.html:20
-msgid "Login"
+#: people/templates/people/login.html:16
+msgid "Login with Google"
 msgstr ""
 
-#: people/templates/people/login.html:23
-msgid "Reset password"
+#: people/templates/people/login.html:18
+msgid "If you have a @trojsten.sk mail, you should log in through it here"
 msgstr ""
 
-#: people/templates/people/login.html:29
-#: people/templates/people/registration.html:15
+#: people/templates/people/login.html:31
+#: people/templates/people/registration.html:23
 msgid "Register"
 msgstr ""
 
 #: people/templates/people/login.html:34
-msgid "Login with Google"
+msgid "Login"
+msgstr ""
+
+#: people/templates/people/login.html:37
+msgid "Reset password"
 msgstr ""
 
 #: people/templates/people/password_reset.html:11
@@ -367,90 +371,103 @@ msgstr ""
 msgid "Reset"
 msgstr ""
 
-#: people/templates/people/registration.html:10
+#: people/templates/people/registration.html:11
+#, python-format
+msgid ""
+"\n"
+"                    If you own an active %(allowed_patterns)s email, we "
+"suggest you first try to log in using it, or try resetting your password, as "
+"there is a chance you were already in the graph and your account could be "
+"linked automatically.\n"
+"                "
+msgstr ""
+
+#: people/templates/people/registration.html:18
 msgid "Registration"
 msgstr ""
 
-#: people/templates/people/registration.html:22
+#: people/templates/people/registration.html:30
+#, python-format
 msgid ""
 "\n"
 "                    Note: registration is by default possible only for "
-"holders of active @ksp.sk, @kms.sk, @fks.sk and\n"
-"                    @trojsten.sk email addresses.\n"
+"holders of active %(allowed_patterns)s email addresses.\n"
 "                "
 msgstr ""
 
-#: people/templates/people/registration.html:29
+#: people/templates/people/registration.html:36
+#, python-format
 msgid ""
 "\n"
 "                    If you do not own any of those but are convinced that "
-"you should be able to access the Graph,\n"
-"                    contact the administrator\n"
-"                    at <a href=\"mailto:nina@ksp.sk\" target=\"_top"
-"\">nina@ksp.sk</a> and you might receive an invitation\n"
-"                    link.\n"
+"you should be able to access the Graph, contact the administrator at "
+"%(admin_mail)s and you might receive an invitation link.\n"
 "                "
 msgstr ""
 
-#: people/utils/variable_res_date.py:35 people/utils/variable_res_date.py:43
+#: people/utils/variable_res_date.py:38 people/utils/variable_res_date.py:46
 msgid "Must be a valid year, year-month, or year-month-day"
 msgstr ""
 
-#: people/utils/variable_res_date.py:39
+#: people/utils/variable_res_date.py:42
 msgid "Can not specify day without a month"
 msgstr ""
 
-#: people/utils/variable_res_date.py:113
+#: people/utils/variable_res_date.py:116
 msgid "January"
 msgstr ""
 
-#: people/utils/variable_res_date.py:114
+#: people/utils/variable_res_date.py:117
 msgid "February"
 msgstr ""
 
-#: people/utils/variable_res_date.py:115
+#: people/utils/variable_res_date.py:118
 msgid "March"
 msgstr ""
 
-#: people/utils/variable_res_date.py:116
+#: people/utils/variable_res_date.py:119
 msgid "April"
 msgstr ""
 
-#: people/utils/variable_res_date.py:117
+#: people/utils/variable_res_date.py:120
 msgid "May"
 msgstr ""
 
-#: people/utils/variable_res_date.py:118
+#: people/utils/variable_res_date.py:121
 msgid "June"
 msgstr ""
 
-#: people/utils/variable_res_date.py:119
+#: people/utils/variable_res_date.py:122
 msgid "July"
 msgstr ""
 
-#: people/utils/variable_res_date.py:120
+#: people/utils/variable_res_date.py:123
 msgid "August"
 msgstr ""
 
-#: people/utils/variable_res_date.py:121
+#: people/utils/variable_res_date.py:124
 msgid "September"
 msgstr ""
 
-#: people/utils/variable_res_date.py:122
+#: people/utils/variable_res_date.py:125
 msgid "October"
 msgstr ""
 
-#: people/utils/variable_res_date.py:123
+#: people/utils/variable_res_date.py:126
 msgid "November"
 msgstr ""
 
-#: people/utils/variable_res_date.py:124
+#: people/utils/variable_res_date.py:127
 msgid "December"
 msgstr ""
 
-#: people/views/content_management.py:82 people/views/content_management.py:131
-#: people/views/content_management.py:154
+#: people/views/content_management.py:85 people/views/content_management.py:135
+#: people/views/content_management.py:159
 msgid "Changes were successfully saved."
+msgstr ""
+
+#: people/views/graph.py:17
+msgid "To view the Graph you must set yourself to visible as well."
 msgstr ""
 
 #: users/forms.py:29
@@ -461,39 +478,39 @@ msgstr ""
 msgid "Password confirmation"
 msgstr ""
 
-#: users/forms.py:51
+#: users/forms.py:55
 msgid "The email pattern is invalid"
 msgstr ""
 
-#: users/forms.py:54
+#: users/forms.py:58
 msgid "User with this email already exists"
 msgstr ""
 
-#: users/forms.py:58
+#: users/forms.py:62
 msgid "User with this username already exists"
 msgstr ""
 
-#: users/forms.py:62
+#: users/forms.py:66
 msgid "Passwords do not match"
 msgstr ""
 
-#: users/forms.py:86
+#: users/forms.py:90
 msgid "You can login using Trojsten Google OAuth"
 msgstr ""
 
-#: users/forms.py:92
+#: users/forms.py:96
 msgid "No user with this email exists"
 msgstr ""
 
-#: users/forms.py:97
+#: users/forms.py:101
 msgid "New password"
 msgstr ""
 
-#: users/forms.py:98
+#: users/forms.py:102
 msgid "Confirm new password"
 msgstr ""
 
-#: users/forms.py:112
+#: users/forms.py:116
 msgid "The passwords do not match"
 msgstr ""
 
@@ -561,14 +578,14 @@ msgstr ""
 msgid "Your content has been submitted for review"
 msgstr ""
 
-#: users/views.py:165
+#: users/views.py:166
 msgid "Trojsten Graph - registration confirmation"
 msgstr ""
 
-#: users/views.py:172
+#: users/views.py:173
 msgid "Activation link has been sent to your email"
 msgstr ""
 
-#: users/views.py:187
+#: users/views.py:188
 msgid "Your account has been successfully activated"
 msgstr ""

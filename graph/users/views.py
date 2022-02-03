@@ -13,7 +13,7 @@ from django.views.generic import FormView
 from people.models import Person
 from users.forms import LoginOverrideForm, LoginForm, PasswordResetRequestForm, PasswordResetForm, RegistrationForm, \
     ContentUpdateRequestForm
-from users.models import InviteCode, Token
+from users.models import InviteCode, Token, EmailPatternWhitelist
 
 UserModel = get_user_model()
 
@@ -139,6 +139,7 @@ class RegistrationView(FormView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['invite_code'] = self.invite_code
+        data['allowed_patterns'] = ', '.join([whitelist.pattern.replace('\\', '').replace('$', '').replace('.*', '') for whitelist in EmailPatternWhitelist.objects.all()])
         return data
 
     @transaction.atomic
@@ -195,7 +196,6 @@ class LoginOverrideView(FormView):
     success_url = reverse_lazy('person-content-management')
 
     def form_valid(self, form):
-        # logout(self.request.user)
         login(self.request, form.cleaned_data['login_as'], backend='django.contrib.auth.backends.ModelBackend')
 
         return super().form_valid(form)
