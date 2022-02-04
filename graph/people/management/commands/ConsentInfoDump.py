@@ -9,7 +9,7 @@ from people.models import Person
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        qs = Person.objects\
+        qs = Person.qs\
             .select_related('account')\
             .annotate(full_name=Concat('first_name', Value(' '), 'last_name'))\
             .order_by('last_name', 'first_name')\

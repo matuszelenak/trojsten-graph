@@ -1,0 +1,25 @@
+{% extends "people/content_management/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block content %}
+    {{ block.super }}
+    <div class="row text-white">
+        <div class="col-xl-4 col-lg-6 col-md-7 col-sm-10 col-xs-12 mx-auto text-center p-4">
+            <h2>{% translate "Relationship with" %} {% if managed_user == form.instance.first_person %} {{ form.instance.second_person }}{% else %} {{ form.instance.first_person }}{% endif %}</h2>
+            <form method="post" >
+                {{ form.management_form }}
+                {% csrf_token %}
+                {% for status in form %}
+                    <div class="border border-{% if status.instance.confirmed_by == 0 %}danger{% elif status.instance.confirmed_by == 3 %}success{% else %}warning{% endif %} rounded p-4 mb-3">
+                        {{ status|crispy }}
+                    </div>
+
+                {% endfor %}
+
+                <input class="btn-lg btn-success" type="submit" name="save" value="{% translate 'Save changes' %}"/>
+            </form>
+        </div>
+    </div>
+{% endblock %}

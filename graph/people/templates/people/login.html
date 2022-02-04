@@ -1,53 +1,43 @@
 {% extends "people/base.html" %}
 {% load static %}
+{% load crispy_forms_tags %}
+{% load i18n %}
 
 {% block content %}
     <div class="container">
-        {% block messages %}
-            {{ block.super }}
-        {% endblock %}
+        {% include 'people/messages.html' %}
         <div class="row text-white">
             <div class="col-xl-5 col-lg-6 col-md-8 col-sm-8 mx-auto text-center form p-4">
-                <h2>Trojsten Graph</h2>
-                <br>
-                <div class="px-2">
-                    <form action="" class="justify-content-center" method="post">
-                        {{ form.errors }}
-                        {% csrf_token %}
-                        {{ form.username.errors }}
-                        <div class="form-group row">
-                            <label class="col-sm-3 col-form-label"
-                                   for="{{ form.username.id_for_label }}">Username</label>
-                            <div class="col-sm-9">
-                                {{ form.username }}
-                            </div>
+                <div class="d-flex justify-content-center">
+                    <div class="btn-group">
+                        <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}"
+                           class="btn btn-trojsten google-login">
+                            <img src="{% static 'people/img/google.svg' %}" width="24">
+                            {% translate "Login with Google" %}
+                        </a>
+                        <button class="btn btn-outline-secondary text-white" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{% translate 'If you have a @trojsten.sk mail, you should log in through it here' %}">
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                    </div>
+
+                </div>
+                <hr class="divider">
+                <div>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="row">
+                        <div class="col-4">
+                            <a href="{% url 'registration' %}" class="btn btn-trojsten btn-sm">{% translate "Register" %}</a>
                         </div>
-                        {{ form.password.errors }}
-                        <div class="form-group row">
-                            <label class="col-sm-3 col-form-label"
-                                   for="{{ form.password.id_for_label }}">Password</label>
-                            <div class="col-sm-9">
-                                {{ form.password }}
-                            </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-lg btn-trojsten">{% translate "Login" %}</button>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <button type="submit" class="btn btn-lg btn-trojsten">Login</button>
-                            </div>
+                        <div class="col-4">
+                            <a href="{% url 'password-reset-request' %}" class="btn btn-trojsten btn-sm">{% translate "Reset password" %}</a>
                         </div>
-                        <br><br>
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <a href="{% url 'registration' %}" class="btn btn-trojsten">Register</a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}" class="btn btn-trojsten google-login">
-                                    <img src="{% static 'people/img/google.svg' %}" width="24">
-                                    Login
-                                </a>
-                            </div>
-                        </div>
-                    </form>
+                    </div>
+                </form>
                 </div>
             </div>
         </div>

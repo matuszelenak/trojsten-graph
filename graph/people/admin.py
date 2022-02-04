@@ -10,9 +10,10 @@ from django.db.models import Q, Exists, OuterRef
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse, re_path
+from django.utils.translation import gettext_lazy as _
 
 from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, \
-    GroupMembership
+    GroupMembership, ManagementAuthority
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -54,7 +55,7 @@ class GroupMembershipInline(admin.TabularInline):
 
 class PersonAgeFilter(admin.SimpleListFilter):
     template = 'people/admin/age_filter.html'
-    title = 'In age range'
+    title = _('In age range')
     parameter_name = 'age_range'
 
     def lookups(self, request, model_admin):
@@ -75,7 +76,7 @@ class PersonAgeFilter(admin.SimpleListFilter):
 
 
 class PersonCurrentStatusFilter(admin.SimpleListFilter):
-    title = 'Has current relationship with status'
+    title = _('Has current relationship with status')
     parameter_name = 'current_status'
 
     def lookups(self, request, model_admin):
@@ -88,7 +89,7 @@ class PersonCurrentStatusFilter(admin.SimpleListFilter):
 
 
 class PersonDatingStatusFilter(admin.SimpleListFilter):
-    title = 'Current dating status'
+    title = _('Current dating status')
     parameter_name = 'dating_status'
 
     def lookups(self, request, model_admin):
@@ -105,13 +106,22 @@ class PersonDatingStatusFilter(admin.SimpleListFilter):
         return queryset
 
 
-@admin.register(Person)
-class PersonAdmin(admin.ModelAdmin):
-    raw_id_fields = ('account', )
-    list_display = ('first_name', 'last_name', 'nickname', 'birth_date', 'account')
-    search_fields = ('first_name', 'last_name', 'nickname', )
+site.login_template = 'people/admin/login.html'
+
+@admin.register(get_user_model())
+class PersonAdmin(UserAdmin):
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email', 'maiden_name', 'nickname', 'gender', 'birth_date', 'death_date', 'visible')}),
+        (_('Permissions'), {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        }),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    )
+    list_display = ('first_name', 'last_name', 'nickname', 'username', 'email', 'birth_date', 'date_joined', 'last_login', 'visible')
+    search_fields = ('first_name', 'last_name', 'nickname', 'email')
     list_filter = (PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group')
-    inlines = (PersonNoteInline, GroupMembershipInline)
+    inlines = (GroupMembershipInline, )
     exclude = ('notes',)
     change_list_template = 'people/admin/person_changelist.html'
 
@@ -119,7 +129,7 @@ class PersonAdmin(admin.ModelAdmin):
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'parent')
-    list_filter = ('category', 'visible')
+    list_filter = ('category',)
     search_fields = ('name',)
     inlines = (GroupMembershipInline, )
 
@@ -130,7 +140,7 @@ class GroupAdmin(admin.ModelAdmin):
 class RelationshipStatusInline(admin.TabularInline):
     model = RelationshipStatus
     extra = 0
-    fields = ('date_start', 'date_end', 'status', 'visible')
+    fields = ('date_start', 'date_end', 'confirmed_by' ,'status', 'visible')
     ordering = ['date_start']
 
 
@@ -164,7 +174,7 @@ class RelationshipAdmin(admin.ModelAdmin):
                         date_start=child.birth_date
                     )
 
-                siblings = Person.objects.filter(
+                siblings = Person.qs.filter(
                     Exists(
                         Relationship.objects.filter(
                             (Q(first_person=OuterRef('pk')) & (Q(second_person=parent_1) | Q(second_person=parent_2))) |
@@ -209,7 +219,7 @@ class RelationshipStatusNoteInline(BaseNoteInline):
 
 
 class RelationshipStatusCurrentFilter(admin.SimpleListFilter):
-    title = 'Current'
+    title = _('Current')
     parameter_name = 'current'
 
     def lookups(self, request, model_admin):
@@ -238,11 +248,7 @@ class RelationshipStatusAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('relationship__first_person', 'relationship__second_person')
 
 
-site.unregister(get_user_model())
-site.login_template = 'people/admin/login.html'
 
-
-@admin.register(get_user_model())
 class CustomUserAdmin(UserAdmin):
     list_display = UserAdmin.list_display + ('is_superuser', 'date_joined', 'last_login', )
     ordering = ('-date_joined', )
@@ -264,10 +270,10 @@ class LogEntryAdmin(admin.ModelAdmin):
 
 
 class AddChildForm(forms.Form):
-    parent_1 = forms.ModelChoiceField(queryset=Person.objects.order_by('last_name', 'first_name'), required=False)
-    parent_2 = forms.ModelChoiceField(queryset=Person.objects.order_by('last_name', 'first_name'), required=False)
+    parent_1 = forms.ModelChoiceField(queryset=Person.qs.order_by('last_name', 'first_name'), required=False)
+    parent_2 = forms.ModelChoiceField(queryset=Person.qs.order_by('last_name', 'first_name'), required=False)
 
-    child = forms.ModelChoiceField(queryset=Person.objects.order_by('last_name', 'first_name'))
+    child = forms.ModelChoiceField(queryset=Person.qs.order_by('last_name', 'first_name'))
 
     def clean(self):
         data = self.cleaned_data
@@ -276,15 +282,15 @@ class AddChildForm(forms.Form):
         child: Person
         parent_1, parent_2, child = data.get('parent_1'), data.get('parent_2'), data.get('child')
         if not (parent_1 or parent_2):
-            raise ValidationError("Child must have at least one parent")
+            raise ValidationError(_("Child must have at least one parent"))
         if parent_1 == parent_2:
-            raise ValidationError("Parents must be different people")
+            raise ValidationError(_("Parents must be different people"))
 
         if child == parent_1 or child == parent_2:
-            raise ValidationError('Cannot be your own parent')
+            raise ValidationError(_('Cannot be your own parent'))
 
         if parent_1 and child.birth_date < parent_1.birth_date or parent_2 and child.birth_date < parent_2.birth_date:
-            raise ValidationError('Child cannot be younger than their parent. WTF')
+            raise ValidationError(_('Child cannot be younger than their parent. WTF'))
 
         for parent in (parent_1, parent_2):
             if not parent:
@@ -298,3 +304,7 @@ class AddChildForm(forms.Form):
                 self.add_error('child', f'{parent_1.name} and {child.name} are already a parent and child')
 
         return self.cleaned_data
+
+@admin.register(ManagementAuthority)
+class ManagementAuthority(admin.ModelAdmin):
+    raw_id_fields = ('manager', 'subject')

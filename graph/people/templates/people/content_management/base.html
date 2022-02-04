@@ -1,0 +1,85 @@
+{% extends "people/base.html" %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block extra_nav_items %}
+    <li class="nav-item mr-1">
+        <a class="nav-link btn btn-lg btn-outline-{% if not category %}success{% else %}secondary{% endif %} text-white" href="{% url 'graph' %}">
+            <i class="bi bi-house"></i>
+        </a>
+    </li>
+
+    <li class="nav-item mx-1">
+        <a class="nav-link btn btn-lg btn-outline-{% if category == 'person' %}success{% else %}secondary{% endif %} text-white" href="{% url 'person-content-management' %}{{ preserved_query }}">
+            <i class="bi bi-person-lines-fill"></i>
+            <span>{% translate "Personal info" %}</span>
+        </a>
+    </li>
+
+    <li class="nav-item dropdown mx-1">
+        <a class="nav-link btn btn-lg btn-outline-{% if category == 'relationships' %}success{% else %}secondary{% endif %} dropdown-toggle text-white" href="#" id="relationships-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-diagram-3"></i><span class="ms-2">{% translate "Relationships" %}</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="relationships-dropdown">
+            {% for relationship in relationships %}
+                <li >
+                    <a href="{% url 'relationship-content-management' pk=relationship.pk %}{{ preserved_query }}" class="dropdown-item" >
+                        <span>
+                            {% if relationship.first_person == managed_user %}
+                                {{ relationship.second_person }}
+                            {% else %}
+                                {{ relationship.first_person }}
+                            {% endif %}
+                        </span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </li>
+
+    <li class="nav-item mx-1">
+        <a class="nav-link btn btn-lg btn-outline-{% if category == 'groups' %}success{% else %}secondary{% endif %} text-white" href="{% url 'groups-content-management' %}{{ preserved_query }}">
+            <i class="bi bi-people"></i>
+            <span>{% translate "Group memberships" %}</span>
+        </a>
+    </li>
+
+    {% if managed_people %}
+        <li class="nav-item dropdown mx-1">
+            <a class="nav-link btn btn-lg btn-outline-secondary dropdown-toggle text-white" href="#" id="managed-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-plus"></i><span class="ms-2">{% translate "Managed by me" %}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="managed-dropdown">
+                {% for person in managed_people %}
+                    <li >
+                        <a href="{% url 'person-content-management' %}?user_override={{ person.pk }}" class="dropdown-item">
+                            <span>{{ person }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endif %}
+
+    <li class="nav-item mx-1">
+        <a class="nav-link btn btn-lg btn-outline-{% if category == 'deletion' %}success{% else %}secondary{% endif %} text-white" href="{% url 'deletion-content-management' %}{{ preserved_query }}">
+            <i class="bi bi-trash"></i>
+            <span>{% translate "Delete my profile" %}</span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    {% if managed_user.pk != authenticated_user.pk %}
+        <div class="bg-warning text-center p-2">
+            <div>
+                <h3>Currently managing {{ managed_user }}</h3>
+                <a class="btn btn-lg btn-outline-dark"
+                   href="{% url 'person-content-management' %}">
+                    Back to managing my account
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "people/content_management/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block content %}
+    {{ block.super }}
+    <div class="row text-white">
+        <div class="col-xl-4 col-lg-6 col-md-7 col-sm-10 col-xs-12 mx-auto text-center p-4">
+            <h3>{% translate "Group Memberships" %}</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.management_form }}
+                {% for membership in form %}
+                    <div class="border border-success rounded p-4 mb-3">
+                        {{ membership|crispy }}
+                    </div>
+                {% endfor %}
+
+                <input class="btn-lg btn-success" type="submit" name="save" value="{% translate 'Save changes' %}"/>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,28 +1,21 @@
-import re
-
-from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout, get_user_model
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView as Login
 from django.db import transaction
-from django.http import HttpResponseRedirect
-
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.template.loader import get_template
 from django.urls import reverse_lazy, reverse
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import FormView
 
-from users.models import InviteCode, Token, EmailPatternWhitelist, ContentUpdateRequest
+from people.models import Person
+from users.forms import LoginOverrideForm, LoginForm, PasswordResetRequestForm, PasswordResetForm, RegistrationForm, \
+    ContentUpdateRequestForm
+from users.models import InviteCode, Token, EmailPatternWhitelist
 
 UserModel = get_user_model()
-
-
-class LoginForm(AuthenticationForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs.update({'class': 'form-control'})
 
 
 class LoginView(Login):
@@ -38,10 +31,73 @@ class LogoutView(View):
         return HttpResponseRedirect(reverse('login'))
 
 
-class ContentUpdateRequestForm(forms.ModelForm):
-    class Meta:
-        model = ContentUpdateRequest
-        fields = ('content',)
+class PasswordResetRequestView(FormView):
+    form_class = PasswordResetRequestForm
+    template_name = 'people/password_reset_request.html'
+    success_url = reverse_lazy('password-reset-request')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        user = form.cleaned_data['person']
+        try:
+            token = Token.objects.get(user=form.cleaned_data['person'], valid=True, type=Token.Types.PASSWORD_RESET)
+        except Token.DoesNotExist:
+            token = Token.create_for_user(form.cleaned_data['person'], token_type=Token.Types.PASSWORD_RESET)
+            token.save()
+
+        if settings.PRODUCTION:
+            user.email_user(
+                _('Trojsten Graph - password reset'),
+                get_template('people/email/password_reset_mail.html').render({'token': token.token})
+            )
+        else:
+            print('Trojsten Graph - password reset')
+            print(get_template('people/email/password_reset_mail.html').render({'token': token.token}))
+
+        messages.success(self.request, _('Reset link has been sent to your email'))
+        return super().form_valid(form)
+
+
+class PasswordResetView(FormView):
+    form_class = PasswordResetForm
+    template_name = 'people/password_reset.html'
+    success_url = reverse_lazy('login')
+
+    @transaction.atomic
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            self.token = Token.objects.select_related('user').get(token=kwargs['token'], valid=True,
+                                                                  type=Token.Types.PASSWORD_RESET)
+        except Token.DoesNotExist:
+            return HttpResponseForbidden()
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.token.user
+        return kwargs
+
+    def form_valid(self, form):
+        user: Person = self.token.user
+        user.set_password(form.cleaned_data['new_password'])
+        user.save()
+
+        self.token.delete()
+
+        messages.success(self.request, _('Your password has been successfully changed.'))
+
+        return super().form_valid(form)
+
+
+class ChangePasswordView(View):
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            token = Token.objects.get(user=request.user, valid=True, type=Token.Types.PASSWORD_RESET)
+        except Token.DoesNotExist:
+            token = Token.create_for_user(request.user, token_type=Token.Types.PASSWORD_RESET)
+            token.save()
+        return HttpResponseRedirect(reverse('password-reset', kwargs=dict(token=token.token)))
 
 
 class ContentUpdateRequestView(FormView):
@@ -55,47 +111,9 @@ class ContentUpdateRequestView(FormView):
         update_request.submitted_by = self.request.user
         update_request.save()
 
-        messages.success(self.request, 'Your content has been submitted for review')
+        messages.success(self.request, _('Your content has been submitted for review'))
 
         return super().form_valid(form)
-
-
-class RegistrationForm(forms.ModelForm):
-    password = forms.CharField(max_length=128, widget=forms.PasswordInput)
-    password_confirm = forms.CharField(max_length=128, widget=forms.PasswordInput)
-
-    def __init__(self, *args, **kwargs):
-        self.has_invite = kwargs.pop('has_invite', False)
-        super().__init__(*args, **kwargs)
-        if self.has_invite:
-            self.fields.pop('email')
-        for field in self.fields.values():
-            field.widget.attrs.update({'class': 'form-control'})
-
-    def clean(self):
-        if not self.has_invite and self.cleaned_data.get('email'):
-            email = self.cleaned_data.get('email')
-            if not any([re.compile(whitelist.pattern).match(email) for whitelist in EmailPatternWhitelist.objects.all()]):
-                self.add_error('email', 'The email pattern is invalid')
-
-            if UserModel.objects.filter(email=email).exists():
-                self.add_error('email', 'User with this email already exists')
-
-        if self.cleaned_data.get('username') and UserModel.objects.filter(username=self.cleaned_data['username']).exists():
-            self.add_error('username', 'User with this username already exists')
-
-        if self.cleaned_data.get('password') and len(self.cleaned_data.get('password', '')) < 8:
-            self.add_error('password', 'Password must be at least 8 characters long')
-            return self.cleaned_data
-
-        if self.cleaned_data.get('password_confirm') and self.cleaned_data.get('password') != self.cleaned_data.get('password_confirm'):
-            self.add_error('password_confirm', 'Passwords don\'t match')
-
-        return self.cleaned_data
-
-    class Meta:
-        model = UserModel
-        fields = ('email', 'username', 'password', 'password_confirm', 'first_name', 'last_name',)
 
 
 class RegistrationView(FormView):
@@ -121,6 +139,7 @@ class RegistrationView(FormView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['invite_code'] = self.invite_code
+        data['allowed_patterns'] = ', '.join([whitelist.pattern.replace('\\', '').replace('$', '').replace('.*', '') for whitelist in EmailPatternWhitelist.objects.all()])
         return data
 
     @transaction.atomic
@@ -142,11 +161,16 @@ class RegistrationView(FormView):
             token = Token.create_for_user(user)
             token.save()
 
-            user.email_user(
-                'Trojsten Graph - registration confirmation',
-                get_template('people/activation_email.html').render({'token': token.token})
-            )
-            messages.success(self.request, 'Activation link has been sent to your email')
+            if settings.PRODUCTION:
+                user.email_user(
+                    _('Trojsten Graph - registration confirmation'),
+                    get_template('people/email/activation_email.html').render({'token': token.token})
+                )
+            else:
+                print('Trojsten Graph - registration confirmation')
+                print(get_template('people/email/activation_email.html').render({'token': token.token}))
+
+            messages.success(self.request, _('Activation link has been sent to your email'))
         return super().form_valid(form)
 
 
@@ -159,5 +183,19 @@ class AccountActivationView(View):
 
         token.user.is_active = True
         token.user.save()
+        token.delete()
         login(self.request, token.user, backend='django.contrib.auth.backends.ModelBackend')
-        return HttpResponseRedirect(reverse('graph'))
+        messages.success(request, _('Your account has been successfully activated'))
+        return HttpResponseRedirect(reverse('person-content-management'))
+
+
+class LoginOverrideView(FormView):
+    template_name = 'people/login_override.html'
+    form_class = LoginOverrideForm
+
+    success_url = reverse_lazy('person-content-management')
+
+    def form_valid(self, form):
+        login(self.request, form.cleaned_data['login_as'], backend='django.contrib.auth.backends.ModelBackend')
+
+        return super().form_valid(form)

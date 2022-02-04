@@ -52,13 +52,13 @@ def get_by_old_pk(instances, pk):
 
 
 def import_people(people):
-    Person.objects.all().delete()
+    Person.qs.all().delete()
     PersonNote.objects.all().delete()
     imported_people = []
     imported_notes = []
     for person in people:
         f = person['fields']
-        p = Person.objects.create(
+        p = Person.qs.create(
             first_name=f['name'],
             last_name=f['surname'],
             maiden_name=f['maidenName'],

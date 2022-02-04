@@ -2,11 +2,14 @@ from typing import List, Optional
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.db.models import Prefetch, Q, F, Exists, OuterRef, QuerySet
+from django.db.models import Prefetch, Q, F, Exists, OuterRef, QuerySet, Case, When, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+
+from people.utils.variable_res_date import VariableResolutionDateField
 
 
 class ExportableEnum:
@@ -19,9 +22,9 @@ class BaseNote(models.Model):
         PRIVATE = 2, _('Private note')
 
     text = models.TextField()
-    type = models.IntegerField(choices=Types.choices)
-    date_created = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='+')
+    type = models.IntegerField(choices=Types.choices, verbose_name=_('type'))
+    date_created = models.DateTimeField(auto_now_add=True, verbose_name=_('date created'))
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='+', verbose_name=_('created by'))
 
     def __str__(self):
         return f'#{self.id}: {self.text} at {self.date_created.date()}'
@@ -47,6 +50,12 @@ class RelationshipQuerySet(models.QuerySet):
     def with_people(self):
         return self.select_related('first_person', 'second_person')
 
+    def confirmed(self):
+        return self.filter(
+            Exists(RelationshipStatus.objects.filter(relationship=OuterRef('pk'),
+                                                     confirmed_by=RelationshipStatus.ConfirmationBy.BOTH))
+        )
+
     def visible(self):
         return self.filter(first_person__visible=True, second_person__visible=True).filter(
             Exists(RelationshipStatus.objects.filter(relationship=OuterRef('pk'), visible=True))
@@ -63,7 +72,8 @@ class RelationshipQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'statuses',
-                queryset=RelationshipStatus.objects.for_date(date).order_by('relationship', '-date_start').distinct('relationship'),
+                queryset=RelationshipStatus.objects.for_date(date).order_by('relationship', '-date_start').distinct(
+                    'relationship'),
                 to_attr='current_status'
             )
         )
@@ -72,18 +82,18 @@ class RelationshipQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'statuses',
-                queryset=RelationshipStatus.objects.order_by('relationship', '-date_start'),
+                queryset=RelationshipStatus.objects.visible().confirmed().order_by('relationship', '-date_start'),
                 to_attr='recent_statuses'
             )
         )
 
     def for_graph_serialization(self, people):
-        return self.with_people().for_people(people).with_recent_statuses().visible()
+        return self.with_people().for_people(people).with_recent_statuses().visible().confirmed()
 
 
 class Relationship(models.Model):
-    first_person = models.ForeignKey('people.Person', related_name='relationships_as_first', on_delete=models.CASCADE)
-    second_person = models.ForeignKey('people.Person', related_name='relationships_as_second', on_delete=models.CASCADE)
+    first_person = models.ForeignKey('people.Person', related_name='relationships_as_first', on_delete=models.CASCADE, verbose_name=_('first person'))
+    second_person = models.ForeignKey('people.Person', related_name='relationships_as_second', on_delete=models.CASCADE, verbose_name=_('second person'))
 
     objects = RelationshipQuerySet.as_manager()
 
@@ -100,8 +110,8 @@ class RelationshipStatusNote(BaseNote):
         STATUS_END = 2, _('Note on relationship end')
         OTHER = 3, _('Unspecified reason')
 
-    reason = models.IntegerField(choices=Reasons.choices)
-    status = models.ForeignKey('people.RelationshipStatus', related_name='notes', on_delete=models.CASCADE)
+    reason = models.IntegerField(choices=Reasons.choices, verbose_name=_('reason'))
+    status = models.ForeignKey('people.RelationshipStatus', related_name='notes', on_delete=models.CASCADE, verbose_name=_('status'))
 
 
 class RelationshipStatusQuerySet(models.QuerySet):
@@ -116,13 +126,38 @@ class RelationshipStatusQuerySet(models.QuerySet):
 
     def romantic(self):
         return self.filter(
-            Q(status=RelationshipStatus.StatusChoices.DATING) | Q(status=RelationshipStatus.StatusChoices.ENGAGED) | Q(status=RelationshipStatus.StatusChoices.MARRIED)
+            Q(status=RelationshipStatus.StatusChoices.DATING) | Q(status=RelationshipStatus.StatusChoices.ENGAGED) | Q(
+                status=RelationshipStatus.StatusChoices.MARRIED)
         )
 
     def with_duration(self):
         return self.annotate(
             duration=Coalesce(F('date_end'), timezone.localdate()) - F('date_start'),
         )
+
+    def with_confirmation_status(self, pov_of: 'Person'):
+        return self.annotate(
+            confirmation_status=Case(
+                When(Q(confirmed_by=RelationshipStatus.ConfirmationBy.BOTH),
+                     then=Value('Confirmed by both people in the relationship')),
+                When(Q(confirmed_by=RelationshipStatus.ConfirmationBy.NONE),
+                     then=Value('Awaiting approval from both people in the relationship')),
+                When(
+                    (Q(relationship__first_person=pov_of) & Q(
+                        confirmed_by=RelationshipStatus.ConfirmationBy.FIRST)) | (
+                            Q(relationship__second_person=pov_of) & Q(
+                        confirmed_by=RelationshipStatus.ConfirmationBy.SECOND)),
+                    then=Value('Awaiting the confirmation of the other person')
+                ),
+                default=Value('Awaiting your confirmation')
+            )
+        )
+
+    def visible(self):
+        return self.filter(visible=True)
+
+    def confirmed(self):
+        return self.filter(confirmed_by=RelationshipStatus.ConfirmationBy.BOTH)
 
 
 class RelationshipStatus(models.Model):
@@ -135,27 +170,83 @@ class RelationshipStatus(models.Model):
         DATING = 6, _('Dating')
         RUMOUR = 7, _('Rumour')
 
-    relationship = models.ForeignKey('people.Relationship', related_name='statuses', on_delete=models.CASCADE)
-    status = models.IntegerField(choices=StatusChoices.choices)
+    class ConfirmationBy(models.IntegerChoices):
+        NONE = 0, _('Awaiting approval from both people in the relationship')
+        FIRST = 1, _('Confirmed by the first person')
+        SECOND = 2, _('Confirmed by the second person')
+        BOTH = 3, _('Confirmed by both people')
 
-    date_start = models.DateField(null=True, blank=True)
-    date_end = models.DateField(null=True, blank=True)
+    relationship = models.ForeignKey('people.Relationship', related_name='statuses', on_delete=models.CASCADE, verbose_name=_('relationship'))
+    status = models.IntegerField(choices=StatusChoices.choices, verbose_name=_('status'))
 
-    visible = models.BooleanField(default=True)
+    date_start = VariableResolutionDateField(null=True, blank=True, verbose_name=_('date start'))
+    date_end = VariableResolutionDateField(null=True, blank=True, verbose_name=_('date end'))
+
+    confirmed_by = models.IntegerField(choices=ConfirmationBy.choices, default=ConfirmationBy.NONE, verbose_name=_('confirmed by'))
+    visible = models.BooleanField(default=False, verbose_name=_('visible'))
 
     objects = RelationshipStatusQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.relationship} - {self.get_status_display()}'
 
+    class PersonPerspective:
+        def __init__(self, status: 'RelationshipStatus', pov_of: 'Person', partner_of=False):
+            self.status = status
+
+            if pov_of == self.status.relationship.first_person:
+                self.pov_of = self.status.relationship.first_person
+                self.partner_pov = self.status.relationship.second_person
+                self.pov_confirmation_mask = RelationshipStatus.ConfirmationBy.FIRST
+                self.partner_confirmation_mask = RelationshipStatus.ConfirmationBy.SECOND
+            else:
+                self.pov_of = self.status.relationship.second_person
+                self.partner_pov = self.status.relationship.first_person
+                self.pov_confirmation_mask = RelationshipStatus.ConfirmationBy.SECOND
+                self.partner_confirmation_mask = RelationshipStatus.ConfirmationBy.FIRST
+
+            if partner_of:
+                self.pov_of, self.partner_pov = self.partner_pov, self.pov_of
+                self.pov_confirmation_mask, self.partner_confirmation_mask = self.partner_confirmation_mask, self.pov_confirmation_mask
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+        @property
+        def confirmed_by_me(self):
+            return self.status.confirmed_by & self.pov_confirmation_mask > 0
+
+        @property
+        def confirmed_by_partner(self):
+            return self.status.confirmed_by & self.partner_confirmation_mask > 0
+
+        def set_confirmed_for_me(self, flag):
+            if flag:
+                self.status.confirmed_by |= self.pov_confirmation_mask
+            else:
+                self.status.confirmed_by &= self.partner_confirmation_mask
+
+        def set_confirmed_for_partner(self, flag):
+            if flag:
+                self.status.confirmed_by |= self.partner_confirmation_mask
+            else:
+                self.status.confirmed_by &= self.pov_confirmation_mask
+
     class Meta:
-        verbose_name_plural = "relationship statuses"
+        verbose_name_plural = _("relationship statuses")
         get_latest_by = ('date_end', 'date_start')
         ordering = ('-date_start',)
 
 
 class PersonNote(BaseNote):
     person = models.ForeignKey('people.Person', related_name='notes', on_delete=models.CASCADE)
+
+
+class PersonManager(UserManager):
+    pass
 
 
 class PersonQuerySet(models.QuerySet):
@@ -184,7 +275,8 @@ class PersonQuerySet(models.QuerySet):
         return self.filter(gender=Person.Genders.MALE)
 
     def has_relationship_status(self, statuses: List[int]):
-        return self.filter(Exists(RelationshipStatus.objects.subquery_for_person().current().filter(status__in=statuses)))
+        return self.filter(
+            Exists(RelationshipStatus.objects.subquery_for_person().current().filter(status__in=statuses)))
 
     def in_age_range(self, age_years_from: Optional[int] = None, age_years_to: Optional[int] = None) -> QuerySet:
         qs = self
@@ -198,7 +290,7 @@ class PersonQuerySet(models.QuerySet):
         return self.prefetch_related(
             Prefetch(
                 'memberships',
-                queryset=GroupMembership.objects.select_related('group').filter(group__visible=True),
+                queryset=GroupMembership.objects.filter(visible=True),
                 to_attr='visible_memberships'
             )
         )
@@ -207,28 +299,25 @@ class PersonQuerySet(models.QuerySet):
         return self.filter(visible=True).with_visible_memberships().order_by('pk')
 
 
-class Person(models.Model):
+class Person(AbstractUser):
     class Genders(ExportableEnum, models.IntegerChoices):
         MALE = 1, _('Male')
         FEMALE = 2, _('Female')
         OTHER = 3, _('Other')
 
-    first_name = models.CharField(max_length=128)
-    last_name = models.CharField(max_length=128)
-    maiden_name = models.CharField(max_length=128, blank=True, null=True)
+    maiden_name = models.CharField(max_length=128, blank=True, null=True, verbose_name=_('maiden name'))
 
-    nickname = models.CharField(max_length=128, null=True, blank=True)
+    nickname = models.CharField(max_length=128, null=True, blank=True, verbose_name=_('nickname'))
 
-    gender = models.IntegerField(choices=Genders.choices)
+    gender = models.IntegerField(choices=Genders.choices, default=Genders.OTHER, verbose_name=_('gender'))
 
-    birth_date = models.DateField(null=True, blank=True)
-    death_date = models.DateField(null=True, blank=True)
+    birth_date = VariableResolutionDateField(null=True, blank=True, verbose_name=_('birth date'))
+    death_date = VariableResolutionDateField(null=True, blank=True, verbose_name=_('death date'))
 
-    visible = models.BooleanField(default=True)
+    visible = models.BooleanField(default=False, verbose_name=_('visible'))
 
-    account = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='person', blank=True)
-
-    objects = PersonQuerySet.as_manager()
+    objects = PersonManager()
+    qs = PersonQuerySet.as_manager()
 
     @property
     def name(self):
@@ -242,9 +331,18 @@ class Person(models.Model):
         return super().__str__()
 
     class Meta:
-        verbose_name_plural = "people"
+        verbose_name = _("person")
+        verbose_name_plural = _("people")
         unique_together = ('first_name', 'last_name', 'nickname')
         ordering = ('-birth_date',)
+
+
+class ManagementAuthority(models.Model):
+    manager = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name='subjects', verbose_name=_('manager'))
+    subject = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name='managers', verbose_name=_('subject'))
+
+    def __str__(self):
+        return f'{self.subject} managed by {self.manager}'
 
 
 class Group(models.Model):
@@ -255,34 +353,39 @@ class Group(models.Model):
         SEMINAR = 4, _('Seminar')
         OTHER = 5, _('Other')
 
-    category = models.IntegerField(choices=Categories.choices)
+    category = models.IntegerField(choices=Categories.choices, verbose_name=_('category'))
 
-    parent = models.ForeignKey('people.Group', null=True, blank=True, related_name='children', on_delete=models.SET_NULL)
-    name = models.CharField(max_length=256, unique=True)
-
-    visible = models.BooleanField(default=True)
+    parent = models.ForeignKey('people.Group', null=True, blank=True, related_name='children',
+                               on_delete=models.SET_NULL, verbose_name=_('parent'))
+    name = models.CharField(max_length=256, unique=True, verbose_name=_('name'))
 
     def __str__(self):
         return f'{self.name}'
 
+    class Meta:
+        ordering = ('name',)
+
 
 class GroupMembershipNote(BaseNote):
-    membership = models.ForeignKey('people.GroupMembership', related_name='notes', on_delete=models.CASCADE)
+    membership = models.ForeignKey('people.GroupMembership', related_name='notes', on_delete=models.CASCADE, verbose_name=_('membership'))
 
 
 class GroupMembershipQuerySet(models.QuerySet):
     def with_duration(self):
         return self.annotate(
-            duration=Coalesce(F('date_ended'), timezone.localdate()) - Coalesce(F('date_started'), timezone.localdate()),
+            duration=Coalesce(F('date_ended'), timezone.localdate()) - Coalesce(F('date_started'),
+                                                                                timezone.localdate()),
         )
 
 
 class GroupMembership(models.Model):
-    person = models.ForeignKey('people.Person', related_name='memberships', on_delete=models.CASCADE)
-    group = models.ForeignKey('people.Group', related_name='memberships', on_delete=models.CASCADE)
+    person = models.ForeignKey('people.Person', related_name='memberships', on_delete=models.CASCADE, verbose_name=_('person'))
+    group = models.ForeignKey('people.Group', related_name='memberships', on_delete=models.CASCADE, verbose_name=_('group'))
 
-    date_started = models.DateField(null=True, blank=True)
-    date_ended = models.DateField(null=True, blank=True)
+    date_started = VariableResolutionDateField(null=True, blank=True, verbose_name=_('date start'))
+    date_ended = VariableResolutionDateField(null=True, blank=True, verbose_name=_('date end'))
+
+    visible = models.BooleanField(default=False, verbose_name=_('visible'))
 
     objects = GroupMembershipQuerySet.as_manager()
 

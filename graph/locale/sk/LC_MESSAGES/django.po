@@ -1,0 +1,612 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-02-03 15:24+0000\n"
+"PO-Revision-Date: 2022-02-03 16:32+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n "
+">= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: graph/settings/base.py:147
+msgid "English"
+msgstr "Angličtina"
+
+#: graph/settings/base.py:148
+msgid "Slovak"
+msgstr "Slovenčina"
+
+#: people/admin.py:58
+msgid "In age range"
+msgstr "Vo vekovom rozsahu"
+
+#: people/admin.py:79
+msgid "Has current relationship with status"
+msgstr "Aktuálne má vzťah stavu"
+
+#: people/admin.py:92
+msgid "Current dating status"
+msgstr "Aktuálny stav"
+
+#: people/admin.py:115 people/templates/people/content_management/base.html:16
+#: people/templates/people/content_management/person.html:10
+msgid "Personal info"
+msgstr "Osobné údaje"
+
+#: people/admin.py:116
+msgid "Permissions"
+msgstr "Povolenia"
+
+#: people/admin.py:119
+msgid "Important dates"
+msgstr "Dôležité dátumy"
+
+#: people/admin.py:222
+msgid "Current"
+msgstr "Aktuálne"
+
+#: people/admin.py:285
+msgid "Child must have at least one parent"
+msgstr "Musí mať aspoň jedného rodiča"
+
+#: people/admin.py:287
+msgid "Parents must be different people"
+msgstr "Rodičia musia byť odlišné osoby"
+
+#: people/admin.py:290
+msgid "Cannot be your own parent"
+msgstr "Nemôžeš byť vlastným rodičom"
+
+#: people/admin.py:293
+msgid "Child cannot be younger than their parent. WTF"
+msgstr "Dieťa nemôže byť staršie než rodič WTF"
+
+#: people/forms.py:25
+msgid "Confirmed by me"
+msgstr "Potvrdené mnou"
+
+#: people/forms.py:26
+msgid "Confirmed by the other person"
+msgstr "Potvrdené druhou stranou"
+
+#: people/forms.py:74
+msgid "Incorrect confirmation phrase"
+msgstr "Nesprávna potvrdzovacia fráza"
+
+#: people/models.py:21
+msgid "Public note"
+msgstr "Verejná poznámka"
+
+#: people/models.py:22
+msgid "Private note"
+msgstr "Súkromná poznámka"
+
+#: people/models.py:25 users/models.py:53
+msgid "type"
+msgstr "typ"
+
+#: people/models.py:26 users/models.py:19 users/models.py:57
+msgid "date created"
+msgstr "dátum vytvorenia"
+
+#: people/models.py:27
+msgid "created by"
+msgstr "vytvorené"
+
+#: people/models.py:95
+msgid "first person"
+msgstr "prvá osoba"
+
+#: people/models.py:96
+msgid "second person"
+msgstr "druhá osoba"
+
+#: people/models.py:109
+msgid "Note on relationship start"
+msgstr "Poznámka k začiatku vzťahu"
+
+#: people/models.py:110
+msgid "Note on relationship end"
+msgstr "Poznámka k ukončeniu vzťahu"
+
+#: people/models.py:111
+msgid "Unspecified reason"
+msgstr "Nešpecifikovaný dôvod"
+
+#: people/models.py:113
+msgid "reason"
+msgstr "dôvod"
+
+#: people/models.py:114 people/models.py:180 users/models.py:16
+msgid "status"
+msgstr "stav"
+
+#: people/models.py:165
+msgid "Blood relatives"
+msgstr "Pokrvní príbuzní"
+
+#: people/models.py:166
+msgid "Siblings"
+msgstr "Súrodenci"
+
+#: people/models.py:167
+msgid "Parent-child"
+msgstr "Rodič-dieťa"
+
+#: people/models.py:168
+msgid "Married"
+msgstr "Zosobášení"
+
+#: people/models.py:169
+msgid "Engaged"
+msgstr "Zasnúbení"
+
+#: people/models.py:170
+msgid "Dating"
+msgstr "Randia"
+
+#: people/models.py:171
+msgid "Rumour"
+msgstr "Drb"
+
+#: people/models.py:174
+msgid "Awaiting approval from both people in the relationship"
+msgstr "Vyžaduje potvrdenie oboch strán"
+
+#: people/models.py:175
+msgid "Confirmed by the first person"
+msgstr "Potvrdené prvou osobou"
+
+#: people/models.py:176
+msgid "Confirmed by the second person"
+msgstr "Potvrdené druhou osobou"
+
+#: people/models.py:177
+msgid "Confirmed by both people"
+msgstr "Potvrdené oboma stranami"
+
+#: people/models.py:179
+msgid "relationship"
+msgstr "vzťah"
+
+#: people/models.py:182 people/models.py:385
+msgid "date start"
+msgstr "dátum začiatku"
+
+#: people/models.py:183 people/models.py:386
+msgid "date end"
+msgstr "dátum ukončenia"
+
+#: people/models.py:185
+msgid "confirmed by"
+msgstr "potvrdené"
+
+#: people/models.py:186 people/models.py:317 people/models.py:388
+msgid "visible"
+msgstr "viditeľné"
+
+#: people/models.py:239
+msgid "relationship statuses"
+msgstr "stavy vzťahu"
+
+#: people/models.py:304
+msgid "Male"
+msgstr "Muž"
+
+#: people/models.py:305
+msgid "Female"
+msgstr "Žena"
+
+#: people/models.py:306 people/models.py:354
+msgid "Other"
+msgstr "Iné"
+
+#: people/models.py:308
+msgid "maiden name"
+msgstr "meno za slobodna"
+
+#: people/models.py:310
+msgid "nickname"
+msgstr "prezývka"
+
+#: people/models.py:312
+msgid "gender"
+msgstr "pohlavie"
+
+#: people/models.py:314
+msgid "birth date"
+msgstr "dátum narodenia"
+
+#: people/models.py:315
+msgid "death date"
+msgstr "dátum úmrtia"
+
+#: people/models.py:334 people/models.py:382
+msgid "person"
+msgstr "osoba"
+
+#: people/models.py:335
+msgid "people"
+msgstr "osoby"
+
+#: people/models.py:341
+msgid "manager"
+msgstr "správca"
+
+#: people/models.py:342
+msgid "subject"
+msgstr "spravovaný"
+
+#: people/models.py:350
+msgid "Elementary school"
+msgstr "Základná škola"
+
+#: people/models.py:351
+msgid "High school"
+msgstr "Stredná škola"
+
+#: people/models.py:352
+msgid "University"
+msgstr "Univerzita"
+
+#: people/models.py:353
+msgid "Seminar"
+msgstr "Seminár"
+
+#: people/models.py:356
+msgid "category"
+msgstr "kategória"
+
+#: people/models.py:359
+msgid "parent"
+msgstr "rodič"
+
+#: people/models.py:360
+msgid "name"
+msgstr "meno"
+
+#: people/models.py:370
+msgid "membership"
+msgstr "členstvo"
+
+#: people/models.py:383
+msgid "group"
+msgstr "skupina"
+
+#: people/templates/people/base.html:83
+msgid "Content management"
+msgstr "Správa údajov"
+
+#: people/templates/people/base.html:89
+msgid "Change password"
+msgstr "Zmena hesla"
+
+#: people/templates/people/base.html:95
+msgid "Sign out"
+msgstr "Odhlásiť"
+
+#: people/templates/people/content_management/base.html:22
+msgid "Relationships"
+msgstr "Vzťahy"
+
+#: people/templates/people/content_management/base.html:44
+msgid "Group memberships"
+msgstr "Účasť v skupinách"
+
+#: people/templates/people/content_management/base.html:51
+msgid "Managed by me"
+msgstr "Spravovaní mnou"
+
+#: people/templates/people/content_management/base.html:68
+msgid "Delete my profile"
+msgstr "Zmazanie profilu"
+
+#: people/templates/people/content_management/delete.html:10
+msgid "Delete all of your personal information"
+msgstr "Zmazanie všetkých mojich údajov"
+
+#: people/templates/people/content_management/delete.html:11
+msgid "Type 'delete' to confirm your choice."
+msgstr "Napíšte \"delete\" pre potvrdenie voľby."
+
+#: people/templates/people/content_management/delete.html:16
+msgid "Delete"
+msgstr "Zmazať"
+
+#: people/templates/people/content_management/groups.html:10
+msgid "Group Memberships"
+msgstr "Členstvo v skupinách"
+
+#: people/templates/people/content_management/groups.html:20
+#: people/templates/people/content_management/person.html:14
+#: people/templates/people/content_management/relationship.html:21
+msgid "Save changes"
+msgstr "Uložiť zmeny"
+
+#: people/templates/people/content_management/relationship.html:10
+msgid "Relationship with"
+msgstr "Vzťah s"
+
+#: people/templates/people/login.html:16
+msgid "Login with Google"
+msgstr "Prihlásiť sa cez Google"
+
+#: people/templates/people/login.html:18
+msgid "If you have a @trojsten.sk mail, you should log in through it here"
+msgstr "Ak máte @trojsten.sk mail, prihláste sa tu pomocou neho."
+
+#: people/templates/people/login.html:31
+#: people/templates/people/registration.html:23
+msgid "Register"
+msgstr "Registrovať"
+
+#: people/templates/people/login.html:34
+msgid "Login"
+msgstr "Prihlásiť"
+
+#: people/templates/people/login.html:37
+msgid "Reset password"
+msgstr "Resetovať heslo"
+
+#: people/templates/people/password_reset.html:11
+#: people/templates/people/password_reset_request.html:11 users/models.py:51
+msgid "Password reset"
+msgstr "Resetovanie hesla"
+
+#: people/templates/people/password_reset.html:16
+msgid "Set new password"
+msgstr "Nastaviť nové heslo"
+
+#: people/templates/people/password_reset_request.html:16
+msgid "Reset"
+msgstr "Resetovať"
+
+#: people/templates/people/registration.html:11
+#, python-format
+msgid ""
+"\n"
+"                    If you own an active %(allowed_patterns)s email, we "
+"suggest you first try to log in using it, or try resetting your password, as "
+"there is a chance you were already in the graph and your account could be "
+"linked automatically.\n"
+"                "
+msgstr ""
+"\n"
+"                    Ak vlastníte aktívny %(allowed_patterns)s email, skúste "
+"sa pomocou neho najprv prihlásiť alebo obnoviť heslo, je šanca, že sa v "
+"grafe už nachádzate a týmto sa vám nalinkuje účet automaticky.\n"
+"                "
+
+#: people/templates/people/registration.html:18
+msgid "Registration"
+msgstr "Registrácia"
+
+#: people/templates/people/registration.html:30
+#, python-format
+msgid ""
+"\n"
+"                    Note: registration is by default possible only for "
+"holders of active %(allowed_patterns)s email addresses.\n"
+"                "
+msgstr ""
+"\n"
+"                    Poznámka: Registrácia je možná len pre držiteľov "
+"aktívnych %(allowed_patterns)s mailových adries.\n"
+"                "
+
+#: people/templates/people/registration.html:36
+#, python-format
+msgid ""
+"\n"
+"                    If you do not own any of those but are convinced that "
+"you should be able to access the Graph, contact the administrator at "
+"%(admin_mail)s and you might receive an invitation link.\n"
+"                "
+msgstr ""
+"\n"
+"                    Ak žiadnu z nich nevlastníte, no ste presvedčení že do "
+"grafu máte mať prístup, kontaktujte administrátora na %(admin_mail)s  a môže "
+"vám byť zaslaný pozývací odkaz.\n"
+"                "
+
+#: people/utils/variable_res_date.py:38 people/utils/variable_res_date.py:46
+msgid "Must be a valid year, year-month, or year-month-day"
+msgstr "Musí byť platný rok/mesiac/deň, rok/mesiac, alebo rok"
+
+#: people/utils/variable_res_date.py:42
+msgid "Can not specify day without a month"
+msgstr "Nie je možné špecifikovať deň bez mesiaca"
+
+#: people/utils/variable_res_date.py:116
+msgid "January"
+msgstr "Január"
+
+#: people/utils/variable_res_date.py:117
+msgid "February"
+msgstr "Február"
+
+#: people/utils/variable_res_date.py:118
+msgid "March"
+msgstr "Marec"
+
+#: people/utils/variable_res_date.py:119
+msgid "April"
+msgstr "Apríl"
+
+#: people/utils/variable_res_date.py:120
+msgid "May"
+msgstr "Máj"
+
+#: people/utils/variable_res_date.py:121
+msgid "June"
+msgstr "Jún"
+
+#: people/utils/variable_res_date.py:122
+msgid "July"
+msgstr "Júl"
+
+#: people/utils/variable_res_date.py:123
+msgid "August"
+msgstr "August"
+
+#: people/utils/variable_res_date.py:124
+msgid "September"
+msgstr "September"
+
+#: people/utils/variable_res_date.py:125
+msgid "October"
+msgstr "Október"
+
+#: people/utils/variable_res_date.py:126
+msgid "November"
+msgstr "November"
+
+#: people/utils/variable_res_date.py:127
+msgid "December"
+msgstr "December"
+
+#: people/views/content_management.py:85 people/views/content_management.py:135
+#: people/views/content_management.py:159
+msgid "Changes were successfully saved."
+msgstr "Zmeny boli uložené."
+
+#: people/views/graph.py:17
+msgid "To view the Graph you must set yourself to visible as well."
+msgstr "Pre zobrazenie Grafu si musíte nastaviť vlastnú viditeľnosť."
+
+#: users/forms.py:29
+msgid "Password"
+msgstr "Heslo"
+
+#: users/forms.py:30
+msgid "Password confirmation"
+msgstr "Potvrdenie hesla"
+
+#: users/forms.py:55
+msgid "The email pattern is invalid"
+msgstr "Forma emailu je nesprávna"
+
+#: users/forms.py:58
+msgid "User with this email already exists"
+msgstr "Účet s týmto emailom už existuje"
+
+#: users/forms.py:62
+msgid "User with this username already exists"
+msgstr "Účet s týmto menom už existuje"
+
+#: users/forms.py:66
+msgid "Passwords do not match"
+msgstr "Heslá sa nezhodujú"
+
+#: users/forms.py:90
+msgid "You can login using Trojsten Google OAuth"
+msgstr "Viete sa prihlásiť cez Google OAuth"
+
+#: users/forms.py:96
+msgid "No user with this email exists"
+msgstr "Žiaden účet s týmto emailom neexistuje"
+
+#: users/forms.py:101
+msgid "New password"
+msgstr "Nové heslo"
+
+#: users/forms.py:102
+msgid "Confirm new password"
+msgstr "Potvrdenie hesla"
+
+#: users/forms.py:116
+msgid "The passwords do not match"
+msgstr "Heslá sa nezhodujú"
+
+#: users/models.py:11
+msgid "Request"
+msgstr "Vyžiadané"
+
+#: users/models.py:12
+msgid "Accepted"
+msgstr "Prijaté"
+
+#: users/models.py:13
+msgid "Rejected"
+msgstr "Zamietnuté"
+
+#: users/models.py:15
+msgid "submitted by"
+msgstr "zadané"
+
+#: users/models.py:17
+msgid "content"
+msgstr "obsah"
+
+#: users/models.py:20
+msgid "date resolved"
+msgstr "dátum vyriešenia"
+
+#: users/models.py:32 users/models.py:55
+msgid "user"
+msgstr "uživateľ"
+
+#: users/models.py:33
+msgid "code"
+msgstr "kód"
+
+#: users/models.py:42
+msgid "pattern"
+msgstr "vzor"
+
+#: users/models.py:50
+msgid "Account activation"
+msgstr "Aktivácia účtu"
+
+#: users/models.py:54
+msgid "token"
+msgstr "token"
+
+#: users/models.py:56
+msgid "valid"
+msgstr "platný"
+
+#: users/views.py:50
+msgid "Trojsten Graph - password reset"
+msgstr "Trojsten Graf - reset hesla"
+
+#: users/views.py:57
+msgid "Reset link has been sent to your email"
+msgstr "Odkaz na obnovenie hesla vám bol zaslaný na mail"
+
+#: users/views.py:88
+msgid "Your password has been successfully changed."
+msgstr "Vaše heslo bolo úspešne zmenené."
+
+#: users/views.py:114
+msgid "Your content has been submitted for review"
+msgstr "Vaša požiadavka bola zaslaná na zhodnotenie"
+
+#: users/views.py:166
+msgid "Trojsten Graph - registration confirmation"
+msgstr "Trojsten Graf - potvrdenie registrácie"
+
+#: users/views.py:173
+msgid "Activation link has been sent to your email"
+msgstr "Aktivačný odkaz vám bol zaslaný na mail"
+
+#: users/views.py:188
+msgid "Your account has been successfully activated"
+msgstr "Váš účet bol aktivovaný"
+
+#~ msgid "Home"
+#~ msgstr "Hlavná stránka"
+
+#~ msgid "Back to managing my account"
+#~ msgstr "Späť na správu môjho profilu"
