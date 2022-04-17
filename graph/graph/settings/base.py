@@ -18,7 +18,6 @@ from django.conf import global_settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
@@ -28,8 +27,7 @@ SECRET_KEY = '5l7t%9d==wwy$=8_+r32(kytqwhu^&ks_%9q5-b*q&9=n-&vv4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", 'www.graph.localhost.top').split(" ")
-
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", 'localhost').split(" ")
 
 # Application definition
 
@@ -41,13 +39,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
-    'people',
-    'users',
     'social_django',
     'crispy_forms',
     'crispy_bootstrap5',
-    'captcha'
+    'captcha',
+
+    'api',
+    'people',
+    'users',
 ]
 
 DATABASES = {
@@ -66,6 +67,7 @@ INTERNAL_IPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django_hosts.middleware.HostsRequestMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -82,7 +84,7 @@ ROOT_HOSTCONF = 'graph.hosts'
 DEFAULT_HOST = 'www'
 HOST_SCHEME = 'http://'
 HOST_PORT = os.environ.get('HOST_PORT', '')
-PARENT_HOST = os.environ.get('PARENT_HOST', 'localhost.top')
+PARENT_HOST = os.environ.get('PARENT_HOST', 'localhost')
 
 TEMPLATES = [
     {
@@ -101,7 +103,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'graph.wsgi.application'
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -128,7 +129,6 @@ AUTHENTICATION_BACKENDS = (
 )
 
 AUTH_USER_MODEL = 'people.Person'
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -159,6 +159,15 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'api.utils.CsrfExemptSessionAuthentication'
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+
 SOCIAL_AUTH_GOOGLE_OAUTH2_IGNORE_DEFAULT_SCOPE = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
@@ -178,6 +187,15 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+APPEND_SLASH = True
+
 PREPEND_WWW = False
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -192,7 +210,6 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
     'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.user.get_username',
     'social_core.pipeline.social_auth.associate_by_email',
     'social_core.pipeline.user.create_user',
     'social_core.pipeline.social_auth.associate_user',

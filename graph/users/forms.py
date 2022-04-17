@@ -57,10 +57,6 @@ class RegistrationForm(forms.ModelForm):
             if UserModel.objects.filter(email=email).exists():
                 self.add_error('email', _('User with this email already exists'))
 
-        if self.cleaned_data.get('username') and UserModel.objects.filter(
-                username=self.cleaned_data['username']).exists():
-            self.add_error('username', _('User with this username already exists'))
-
         if self.cleaned_data.get('password_confirm') and self.cleaned_data.get('password') != self.cleaned_data.get(
                 'password_confirm'):
             self.add_error('password_confirm', _('Passwords do not match'))
@@ -69,7 +65,7 @@ class RegistrationForm(forms.ModelForm):
 
     class Meta:
         model = UserModel
-        fields = ('email', 'username', 'password', 'password_confirm', 'first_name', 'last_name',)
+        fields = ('email', 'password', 'password_confirm', 'first_name', 'last_name',)
 
 
 class LoginOverrideForm(forms.Form):

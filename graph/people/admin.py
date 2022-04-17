@@ -108,22 +108,28 @@ class PersonDatingStatusFilter(admin.SimpleListFilter):
 
 site.login_template = 'people/admin/login.html'
 
+
 @admin.register(get_user_model())
 class PersonAdmin(UserAdmin):
     fieldsets = (
-        (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email', 'maiden_name', 'nickname', 'gender', 'birth_date', 'death_date', 'visible')}),
+        (None, {'fields': ('password',)}),
+        (_('Personal info'), {'fields': (
+            'first_name', 'last_name', 'email', 'maiden_name', 'nickname', 'gender', 'birth_date', 'death_date',
+            'visible')}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
-    list_display = ('first_name', 'last_name', 'nickname', 'username', 'email', 'birth_date', 'date_joined', 'last_login', 'visible')
+    list_display = (
+        'first_name', 'last_name', 'nickname', 'email', 'birth_date', 'date_joined', 'last_login', 'visible')
     search_fields = ('first_name', 'last_name', 'nickname', 'email')
-    list_filter = (PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group')
-    inlines = (GroupMembershipInline, )
+    list_filter = (
+        PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group')
+    inlines = (GroupMembershipInline,)
     exclude = ('notes',)
     change_list_template = 'people/admin/person_changelist.html'
+    ordering = ('email',)
 
 
 @admin.register(Group)
@@ -131,7 +137,7 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'parent')
     list_filter = ('category',)
     search_fields = ('name',)
-    inlines = (GroupMembershipInline, )
+    inlines = (GroupMembershipInline,)
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('parent')
@@ -140,15 +146,16 @@ class GroupAdmin(admin.ModelAdmin):
 class RelationshipStatusInline(admin.TabularInline):
     model = RelationshipStatus
     extra = 0
-    fields = ('date_start', 'date_end', 'confirmed_by' ,'status', 'visible')
+    fields = ('date_start', 'date_end', 'confirmed_by', 'status', 'visible')
     ordering = ['date_start']
 
 
 @admin.register(Relationship)
 class RelationshipAdmin(admin.ModelAdmin):
     raw_id_fields = ('first_person', 'second_person')
-    search_fields = [f'{person}__{field}' for person in ('first_person', 'second_person') for field in PersonAdmin.search_fields]
-    inlines = (RelationshipStatusInline, )
+    search_fields = [f'{person}__{field}' for person in ('first_person', 'second_person') for field in
+                     PersonAdmin.search_fields]
+    inlines = (RelationshipStatusInline,)
     change_form_template = 'people/admin/relationship_change.html'
 
     @transaction.atomic
@@ -206,9 +213,10 @@ class RelationshipAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         return [
-            re_path(r'^add_child/(?P<pk>\d+)/$', self.admin_site.admin_view(self.add_child_view), name='add_child'),
+                   re_path(r'^add_child/(?P<pk>\d+)/$', self.admin_site.admin_view(self.add_child_view),
+                           name='add_child'),
                    re_path(r'^add_child/$', self.admin_site.admin_view(self.add_child_view), name='add_child')
-        ] + super().get_urls()
+               ] + super().get_urls()
 
     def get_queryset(self, request):
         return super().get_queryset(request).with_people().with_status_for_date()
@@ -239,19 +247,19 @@ class RelationshipStatusCurrentFilter(admin.SimpleListFilter):
 @admin.register(RelationshipStatus)
 class RelationshipStatusAdmin(admin.ModelAdmin):
     raw_id_fields = ('relationship',)
-    search_fields = [f'relationship__{person}__{field}' for person in ('first_person', 'second_person') for field in PersonAdmin.search_fields]
+    search_fields = [f'relationship__{person}__{field}' for person in ('first_person', 'second_person') for field in
+                     PersonAdmin.search_fields]
     list_display = ('relationship', 'status', 'date_start', 'date_end', 'visible')
-    inlines = (RelationshipStatusNoteInline, )
+    inlines = (RelationshipStatusNoteInline,)
     list_filter = (RelationshipStatusCurrentFilter, 'status', 'visible')
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('relationship__first_person', 'relationship__second_person')
 
 
-
 class CustomUserAdmin(UserAdmin):
-    list_display = UserAdmin.list_display + ('is_superuser', 'date_joined', 'last_login', )
-    ordering = ('-date_joined', )
+    list_display = UserAdmin.list_display + ('is_superuser', 'date_joined', 'last_login',)
+    ordering = ('-date_joined',)
 
 
 @admin.register(LogEntry)
@@ -297,13 +305,14 @@ class AddChildForm(forms.Form):
                 continue
 
             if RelationshipStatus.objects.filter(
-                Q(relationship__first_person=parent, relationship__second_person=child) |
-                Q(relationship__second_person=parent, relationship__first_person=child),
-                status=RelationshipStatus.StatusChoices.PARENT_CHILD
+                    Q(relationship__first_person=parent, relationship__second_person=child) |
+                    Q(relationship__second_person=parent, relationship__first_person=child),
+                    status=RelationshipStatus.StatusChoices.PARENT_CHILD
             ).exists():
                 self.add_error('child', f'{parent_1.name} and {child.name} are already a parent and child')
 
         return self.cleaned_data
+
 
 @admin.register(ManagementAuthority)
 class ManagementAuthority(admin.ModelAdmin):

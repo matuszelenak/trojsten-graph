@@ -12,5 +12,3 @@ COPY ./requirements.txt /usr/src/graph/requirements.txt
 RUN pip install -r requirements.txt
 
 COPY /graph /usr/src/graph/
-
-ENTRYPOINT ["/usr/src/graph/entrypoint.sh"]
