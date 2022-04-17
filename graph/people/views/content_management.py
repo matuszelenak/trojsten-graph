@@ -29,7 +29,7 @@ class ContentManagementView(FormView):
         )
 
     def get_managed_people(self):
-        return Person.objects.filter(
+        return Person.qs.filter(
             Exists(
                 ManagementAuthority.objects.filter(manager=self.managed_user, subject=OuterRef('pk'))
             )
@@ -52,7 +52,7 @@ class ContentManagementView(FormView):
     def managed_user(self):
         if self.request.GET.get('user_override', 'x').isnumeric():
             try:
-                return Person.objects.get(
+                return Person.qs.get(
                     Exists(
                         ManagementAuthority.objects.filter(
                             manager=self.request.user,

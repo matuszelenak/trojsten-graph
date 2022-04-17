@@ -122,14 +122,22 @@ class PersonAdmin(UserAdmin):
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
     list_display = (
-        'first_name', 'last_name', 'nickname', 'email', 'birth_date', 'date_joined', 'last_login', 'visible')
+        'id', 'email', 'first_name', 'last_name', 'nickname', 'birth_date', 'date_joined', 'last_login', 'visible')
     search_fields = ('first_name', 'last_name', 'nickname', 'email')
     list_filter = (
-        PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group')
+        PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group', ('email', admin.EmptyFieldListFilter))
     inlines = (GroupMembershipInline,)
     exclude = ('notes',)
     change_list_template = 'people/admin/person_changelist.html'
-    ordering = ('email',)
+    ordering = ('last_name', 'first_name')
+
+    def get_queryset(self, request):
+        qs = get_user_model().qs
+        # TODO: this should be handled by some parameter to the ChangeList.
+        ordering = self.get_ordering(request)
+        if ordering:
+            qs = qs.order_by(*ordering)
+        return qs
 
 
 @admin.register(Group)

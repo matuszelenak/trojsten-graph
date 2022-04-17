@@ -86,7 +86,7 @@ class PasswordResetRequestForm(forms.Form):
             raise ValidationError(_('You can login using Trojsten Google OAuth'))
 
         try:
-            person = Person.objects.get(email=email)
+            person = Person.qs.get(email=email)
             self.cleaned_data['person'] = person
         except Person.DoesNotExist:
             raise ValidationError(_("No user with this email exists"))
