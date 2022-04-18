@@ -121,6 +121,12 @@ class PersonAdmin(UserAdmin):
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2'),
+        }),
+    )
     list_display = (
         'id', 'email', 'first_name', 'last_name', 'nickname', 'birth_date', 'date_joined', 'last_login', 'visible')
     search_fields = ('first_name', 'last_name', 'nickname', 'email')
