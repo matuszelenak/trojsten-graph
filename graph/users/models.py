@@ -49,6 +49,7 @@ class Token(models.Model):
     class Types(models.IntegerChoices):
         ACCOUNT_ACTIVATION = 1, _('Account activation')
         PASSWORD_RESET = 2, _('Password reset')
+        AUTH = 3, _('Auth token')
 
     type = models.IntegerField(choices=Types.choices, default=Types.ACCOUNT_ACTIVATION, verbose_name=_('type'))
     token = models.CharField(max_length=50, verbose_name=_('token'))
@@ -70,3 +71,6 @@ class Token(models.Model):
 
     def __str__(self):
         return f'{self.get_type_display()} token {self.token} for {self.user}'
+
+    class Meta:
+        unique_together = ('type', 'token')

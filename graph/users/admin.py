@@ -5,7 +5,7 @@ from django.template.loader import get_template
 from django.urls import reverse
 from django_hosts.resolvers import reverse as reverse_hosts
 
-from users.models import ContentUpdateRequest, EmailPatternWhitelist, InviteCode
+from users.models import ContentUpdateRequest, EmailPatternWhitelist, InviteCode, Token
 
 
 @admin.register(ContentUpdateRequest)
@@ -55,3 +55,8 @@ class InviteCodeAdmin(admin.ModelAdmin):
     def copy_to_clipboard(self, obj):
         if not obj.user:
             return get_template('people/admin/copy_invite_link.html').render({'link': reverse_hosts('registration') + f'?code={obj.code}'})
+
+
+@admin.register(Token)
+class TokenAdmin(admin.ModelAdmin):
+    pass
