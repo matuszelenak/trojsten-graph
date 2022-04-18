@@ -358,7 +358,7 @@ class Person(AbstractBaseUser, PermissionsMixin):
         FEMALE = 2, _('Female')
         OTHER = 3, _('Other')
 
-    email = models.EmailField(_('email address'), null=True)
+    email = models.EmailField(_('email address'), null=True, unique=True)
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
 
