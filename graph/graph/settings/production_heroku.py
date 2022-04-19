@@ -21,13 +21,11 @@ SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 3600
 
 CORS_ALLOWED_ORIGINS = [
-    "https://graph.trojsten.wtf",
-    "https://www.graph.trojsten.wtf",
-    "https://trojsten-graph.herokuapp.com"
+    "https://graph.trihedron.wtf",
+    "https://www.graph.trihedron.wtf",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://graph.trojsten.wtf',
-    'https://www.graph.trojsten.wtf',
-    'https://trojsten-graph.herokuapp.com'
+    'https://graph.trihedron.wtf',
+    'https://www.graph.trihedron.wtf',
 ]
