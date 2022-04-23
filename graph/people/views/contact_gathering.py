@@ -17,7 +17,8 @@ class ContactEmailForm(forms.Form):
     person = forms.ModelChoiceField(queryset=Person.objects.filter(
         ~Exists(
             ContactEmail.objects.filter(person=OuterRef('pk'))
-        )
+        ),
+        visible=False
     ).order_by('last_name', 'first_name'))
     email = forms.EmailField()
 
@@ -67,14 +68,22 @@ class EmailGatheringView(FormView):
         contacts = []
 
         for person_data in form.cleaned_data:
-            contacts.append(
-                ContactEmail(
-                    supplier_email=author_form.cleaned_data['supplier_email'],
-                    supplier_name=author_form.cleaned_data['supplier_name'],
-                    person=person_data['person'],
-                    email=person_data['email']
+            try:
+                contacts.append(
+                    ContactEmail(
+                        supplier_email=author_form.cleaned_data['supplier_email'],
+                        supplier_name=author_form.cleaned_data['supplier_name'],
+                        person=person_data['person'],
+                        email=person_data['email']
+                    )
                 )
-            )
+            except KeyError:
+                # SEE NO EVIL
+                pass
+
+        if len(contacts) == 0:
+            messages.warning(self.request, _('You did not submit anything!'))
+            return self.render_to_response(self.get_context_data(form=form, author_form=author_form))
 
         ContactEmail.objects.bulk_create(contacts, batch_size=100)
 
