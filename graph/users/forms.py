@@ -81,8 +81,6 @@ class PasswordResetRequestForm(forms.Form):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if email.split('@')[-1] == 'trojsten.sk':
-            raise ValidationError(_('You can login using Trojsten Google OAuth'))
 
         try:
             person = Person.qs.get(email=email)

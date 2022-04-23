@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.forms import inlineformset_factory, ModelForm, Form, BaseInlineFormSet
-from django.forms.fields import CharField, BooleanField, EmailField
+from django.forms.fields import CharField, BooleanField
 from django.utils.translation import gettext_lazy as _
 
 from people.models import Relationship, RelationshipStatus, Person, GroupMembership, Group
@@ -8,16 +8,9 @@ from people.utils.group_select import GroupedModelChoiceField
 
 
 class PersonForm(ModelForm):
-    email = EmailField(disabled=True, required=False)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not self.instance.email:
-            del self.fields['email']
-
     class Meta:
         model = Person
-        fields = ('email', 'first_name', 'last_name', 'nickname', 'maiden_name', 'gender', 'birth_date', 'visible')
+        fields = ('first_name', 'last_name', 'nickname', 'maiden_name', 'gender', 'birth_date', 'visible')
 
 
 

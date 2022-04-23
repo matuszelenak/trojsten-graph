@@ -50,12 +50,15 @@ class Token(models.Model):
         ACCOUNT_ACTIVATION = 1, _('Account activation')
         PASSWORD_RESET = 2, _('Password reset')
         AUTH = 3, _('Auth token')
+        EMAIL_CHANGE = 4, _('Email change')
 
     type = models.IntegerField(choices=Types.choices, default=Types.ACCOUNT_ACTIVATION, verbose_name=_('type'))
     token = models.CharField(max_length=50, verbose_name=_('token'))
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='token', on_delete=models.CASCADE, verbose_name=_('user'))
     valid = models.BooleanField(default=True, verbose_name=_('valid'))
     date_created = models.DateTimeField(auto_now_add=True, verbose_name=_('date created'))
+
+    extra_data = models.JSONField(default=dict)
 
     @staticmethod
     def get_random_token():

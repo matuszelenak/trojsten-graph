@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from people.utils.variable_res_date import VariableResolutionDateField
+from users.models import Token
 
 
 class ExportableEnum:
@@ -388,6 +389,13 @@ class Person(AbstractBaseUser, PermissionsMixin):
 
     visible = models.BooleanField(default=False, verbose_name=_('visible'))
 
+    class ApologyStatus(models.TextChoices):
+        UNSENT = 'unsent'
+        SENT = 'sent'
+        READ = 'read'
+
+    # apology_status = models.CharField(max_length=128, choices=ApologyStatus.choices, default=ApologyStatus.UNSENT)
+
     objects = PersonManager()
     qs = PersonQuerySet.as_manager()
 
@@ -398,6 +406,10 @@ class Person(AbstractBaseUser, PermissionsMixin):
     @property
     def name(self):
         return f'{self.first_name} {self.last_name}'
+
+    @property
+    def auth_token(self):
+        return Token.objects.filter(type=Token.Types.AUTH, valid=True, user=self).first()
 
     def __str__(self):
         if self.first_name and self.last_name:

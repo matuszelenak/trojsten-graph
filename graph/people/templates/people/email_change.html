@@ -1,0 +1,21 @@
+{% extends "people/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block content %}
+    <div class="container">
+        {% include 'people/messages.html' %}
+        <div class="row text-white">
+            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-8 col-xs-10 mx-auto text-center p-4">
+                <h3>{% translate "Email change" %}</h3>
+
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <input type="submit" class="btn btn-lg btn-success" name="set" value="{% translate 'Submit' %}">
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

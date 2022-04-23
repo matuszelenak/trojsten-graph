@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-23 14:26+0000\n"
+"POT-Creation-Date: 2022-04-23 22:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,250 +79,250 @@ msgstr ""
 msgid "Child cannot be younger than their parent. WTF"
 msgstr ""
 
-#: people/forms.py:25
+#: people/forms.py:18
 msgid "Confirmed by me"
 msgstr ""
 
-#: people/forms.py:26
+#: people/forms.py:19
 msgid "Confirmed by the other person"
 msgstr ""
 
-#: people/forms.py:74
+#: people/forms.py:67
 msgid "Incorrect confirmation phrase"
 msgstr ""
 
-#: people/models.py:25
+#: people/models.py:26
 msgid "Public note"
 msgstr ""
 
-#: people/models.py:26
+#: people/models.py:27
 msgid "Private note"
 msgstr ""
 
-#: people/models.py:29 users/models.py:54
+#: people/models.py:30 users/models.py:55
 msgid "type"
 msgstr ""
 
-#: people/models.py:30 users/models.py:19 users/models.py:58
+#: people/models.py:31 users/models.py:19 users/models.py:59
 msgid "date created"
 msgstr ""
 
-#: people/models.py:31
+#: people/models.py:32
 msgid "created by"
 msgstr ""
 
-#: people/models.py:99
+#: people/models.py:100
 msgid "first person"
 msgstr ""
 
-#: people/models.py:100
+#: people/models.py:101
 msgid "second person"
 msgstr ""
 
-#: people/models.py:113
+#: people/models.py:114
 msgid "Note on relationship start"
 msgstr ""
 
-#: people/models.py:114
+#: people/models.py:115
 msgid "Note on relationship end"
 msgstr ""
 
-#: people/models.py:115
+#: people/models.py:116
 msgid "Unspecified reason"
 msgstr ""
 
-#: people/models.py:117
+#: people/models.py:118
 msgid "reason"
 msgstr ""
 
-#: people/models.py:118 people/models.py:184 users/models.py:16
+#: people/models.py:119 people/models.py:185 users/models.py:16
 msgid "status"
 msgstr ""
 
-#: people/models.py:169
+#: people/models.py:170
 msgid "Blood relatives"
 msgstr ""
 
-#: people/models.py:170
+#: people/models.py:171
 msgid "Siblings"
 msgstr ""
 
-#: people/models.py:171
+#: people/models.py:172
 msgid "Parent-child"
 msgstr ""
 
-#: people/models.py:172
+#: people/models.py:173
 msgid "Married"
 msgstr ""
 
-#: people/models.py:173
+#: people/models.py:174
 msgid "Engaged"
 msgstr ""
 
-#: people/models.py:174
+#: people/models.py:175
 msgid "Dating"
 msgstr ""
 
-#: people/models.py:175
+#: people/models.py:176
 msgid "Rumour"
 msgstr ""
 
-#: people/models.py:178
+#: people/models.py:179
 msgid "Awaiting approval from both people in the relationship"
 msgstr ""
 
-#: people/models.py:179
+#: people/models.py:180
 msgid "Confirmed by the first person"
 msgstr ""
 
-#: people/models.py:180
+#: people/models.py:181
 msgid "Confirmed by the second person"
 msgstr ""
 
-#: people/models.py:181
+#: people/models.py:182
 msgid "Confirmed by both people"
 msgstr ""
 
-#: people/models.py:183
+#: people/models.py:184
 msgid "relationship"
 msgstr ""
 
-#: people/models.py:186 people/models.py:468
+#: people/models.py:187 people/models.py:480
 msgid "date start"
 msgstr ""
 
-#: people/models.py:187 people/models.py:469
+#: people/models.py:188 people/models.py:481
 msgid "date end"
 msgstr ""
 
-#: people/models.py:189
+#: people/models.py:190
 msgid "confirmed by"
 msgstr ""
 
-#: people/models.py:190 people/models.py:389 people/models.py:471
+#: people/models.py:191 people/models.py:390 people/models.py:483
 msgid "visible"
 msgstr ""
 
-#: people/models.py:243
+#: people/models.py:244
 msgid "relationship statuses"
 msgstr ""
 
-#: people/models.py:357
+#: people/models.py:358
 msgid "Male"
 msgstr ""
 
-#: people/models.py:358
+#: people/models.py:359
 msgid "Female"
 msgstr ""
 
-#: people/models.py:359 people/models.py:437
+#: people/models.py:360 people/models.py:449
 msgid "Other"
 msgstr ""
 
-#: people/models.py:361
+#: people/models.py:362
 msgid "email address"
 msgstr ""
 
-#: people/models.py:362
+#: people/models.py:363
 msgid "first name"
 msgstr ""
 
-#: people/models.py:363
+#: people/models.py:364
 msgid "last name"
 msgstr ""
 
-#: people/models.py:366
+#: people/models.py:367
 msgid "staff status"
 msgstr ""
 
-#: people/models.py:368
+#: people/models.py:369
 msgid "Designates whether the user can log into this admin site."
 msgstr ""
 
-#: people/models.py:371
+#: people/models.py:372
 msgid "active"
 msgstr ""
 
-#: people/models.py:374
+#: people/models.py:375
 msgid ""
 "Designates whether this user should be treated as active. Unselect this "
 "instead of deleting accounts."
 msgstr ""
 
-#: people/models.py:378
+#: people/models.py:379
 msgid "date joined"
 msgstr ""
 
-#: people/models.py:380
+#: people/models.py:381
 msgid "maiden name"
 msgstr ""
 
-#: people/models.py:382
+#: people/models.py:383
 msgid "nickname"
 msgstr ""
 
-#: people/models.py:384
+#: people/models.py:385
 msgid "gender"
 msgstr ""
 
-#: people/models.py:386
+#: people/models.py:387
 msgid "birth date"
 msgstr ""
 
-#: people/models.py:387
+#: people/models.py:388
 msgid "death date"
 msgstr ""
 
-#: people/models.py:417 people/models.py:465
+#: people/models.py:429 people/models.py:477
 #: people/views/contact_gathering.py:23
 msgid "person"
 msgstr ""
 
-#: people/models.py:418
+#: people/models.py:430
 msgid "people"
 msgstr ""
 
-#: people/models.py:424
+#: people/models.py:436
 msgid "manager"
 msgstr ""
 
-#: people/models.py:425
+#: people/models.py:437
 msgid "subject"
 msgstr ""
 
-#: people/models.py:433
+#: people/models.py:445
 msgid "Elementary school"
 msgstr ""
 
-#: people/models.py:434
+#: people/models.py:446
 msgid "High school"
 msgstr ""
 
-#: people/models.py:435
+#: people/models.py:447
 msgid "University"
 msgstr ""
 
-#: people/models.py:436
+#: people/models.py:448
 msgid "Seminar"
 msgstr ""
 
-#: people/models.py:439
+#: people/models.py:451
 msgid "category"
 msgstr ""
 
-#: people/models.py:442
+#: people/models.py:454
 msgid "parent"
 msgstr ""
 
-#: people/models.py:443
+#: people/models.py:455
 msgid "name"
 msgstr ""
 
-#: people/models.py:453
+#: people/models.py:465
 msgid "membership"
 msgstr ""
 
-#: people/models.py:466
+#: people/models.py:478
 msgid "group"
 msgstr ""
 
@@ -334,7 +334,11 @@ msgstr ""
 msgid "Change password"
 msgstr ""
 
-#: people/templates/people/base.html:97
+#: people/templates/people/base.html:96
+msgid "Change email"
+msgstr ""
+
+#: people/templates/people/base.html:102
 msgid "Sign out"
 msgstr ""
 
@@ -380,18 +384,41 @@ msgstr ""
 msgid "Relationship with"
 msgstr ""
 
+#: people/templates/people/email/activation_email.html:4
+msgid "Activate your account by clicking the link below"
+msgstr ""
+
+#: people/templates/people/email/activation_email.html:8
+#: people/templates/people/email/change_email.html:8
+#: people/templates/people/email/password_reset_mail.html:8
+msgid "Please do not reply to this email"
+msgstr ""
+
+#: people/templates/people/email/change_email.html:4
+msgid "Finish changing your email by clicking the link below:"
+msgstr ""
+
+#: people/templates/people/email/password_reset_mail.html:4
+msgid "Reset the password for your account by clicking the link below"
+msgstr ""
+
+#: people/templates/people/email_change.html:11 users/models.py:53
+msgid "Email change"
+msgstr ""
+
+#: people/templates/people/email_change.html:16
+#: people/templates/people/gather_emails.html:70
+msgid "Submit"
+msgstr ""
+
 #: people/templates/people/gather_emails.html:14
 msgid ""
 "Gathered emails will be used exclusively to inform and apologize to people "
 "that have at some point been in the Graph and will be deleted afterwards"
 msgstr ""
 
-#: people/templates/people/gather_emails.html:56
+#: people/templates/people/gather_emails.html:69
 msgid "Add another"
-msgstr ""
-
-#: people/templates/people/gather_emails.html:57
-msgid "Submit"
 msgstr ""
 
 #: people/templates/people/login.html:16
@@ -519,14 +546,18 @@ msgstr ""
 msgid "Email of the supplier"
 msgstr ""
 
-#: people/views/contact_gathering.py:88
+#: people/views/contact_gathering.py:104
 msgid "You did not submit anything!"
 msgstr ""
 
-#: people/views/contact_gathering.py:93 people/views/content_management.py:85
+#: people/views/contact_gathering.py:107 people/views/content_management.py:85
 #: people/views/content_management.py:135
 #: people/views/content_management.py:159
 msgid "Changes were successfully saved."
+msgstr ""
+
+#: people/views/contact_gathering.py:111
+msgid "There were errors in the submitted data."
 msgstr ""
 
 #: people/views/graph.py:17
@@ -541,35 +572,31 @@ msgstr ""
 msgid "Password confirmation"
 msgstr ""
 
-#: users/forms.py:55
+#: users/forms.py:54
 msgid "The email pattern is invalid"
 msgstr ""
 
-#: users/forms.py:58
+#: users/forms.py:57
 msgid "User with this email already exists"
 msgstr ""
 
-#: users/forms.py:62
+#: users/forms.py:61
 msgid "Passwords do not match"
 msgstr ""
 
-#: users/forms.py:86
-msgid "You can login using Trojsten Google OAuth"
-msgstr ""
-
-#: users/forms.py:92
+#: users/forms.py:89
 msgid "No user with this email exists"
 msgstr ""
 
-#: users/forms.py:97
+#: users/forms.py:94
 msgid "New password"
 msgstr ""
 
-#: users/forms.py:98
+#: users/forms.py:95
 msgid "Confirm new password"
 msgstr ""
 
-#: users/forms.py:112
+#: users/forms.py:109
 msgid "The passwords do not match"
 msgstr ""
 
@@ -597,7 +624,7 @@ msgstr ""
 msgid "date resolved"
 msgstr ""
 
-#: users/models.py:32 users/models.py:56
+#: users/models.py:32 users/models.py:57
 msgid "user"
 msgstr ""
 
@@ -617,38 +644,58 @@ msgstr ""
 msgid "Auth token"
 msgstr ""
 
-#: users/models.py:55
+#: users/models.py:56
 msgid "token"
 msgstr ""
 
-#: users/models.py:57
+#: users/models.py:58
 msgid "valid"
 msgstr ""
 
-#: users/views.py:50
-msgid "Trojsten Graph - password reset"
+#: users/views.py:53
+msgid "Trihedron Graph - password reset"
 msgstr ""
 
-#: users/views.py:57
+#: users/views.py:60
 msgid "Reset link has been sent to your email"
 msgstr ""
 
-#: users/views.py:88
+#: users/views.py:91
 msgid "Your password has been successfully changed."
 msgstr ""
 
-#: users/views.py:114
+#: users/views.py:108
+msgid "New email"
+msgstr ""
+
+#: users/views.py:116
+msgid "New email has to be different"
+msgstr ""
+
+#: users/views.py:154
+msgid "Trihedron Graph - email change"
+msgstr ""
+
+#: users/views.py:163
+msgid "Confirmation link has been sent to the specified email"
+msgstr ""
+
+#: users/views.py:185
+msgid "Your email was successfully changed"
+msgstr ""
+
+#: users/views.py:201
 msgid "Your content has been submitted for review"
 msgstr ""
 
-#: users/views.py:166
-msgid "Trojsten Graph - registration confirmation"
+#: users/views.py:252
+msgid "Trihedron Graph - registration confirmation"
 msgstr ""
 
-#: users/views.py:173
+#: users/views.py:259
 msgid "Activation link has been sent to your email"
 msgstr ""
 
-#: users/views.py:188
+#: users/views.py:274
 msgid "Your account has been successfully activated"
 msgstr ""

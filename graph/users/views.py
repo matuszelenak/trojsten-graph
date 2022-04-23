@@ -1,7 +1,10 @@
+from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.views import LoginView as Login
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
 from django.db import transaction
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.template.loader import get_template
@@ -47,11 +50,11 @@ class PasswordResetRequestView(FormView):
 
         if settings.PRODUCTION:
             user.email_user(
-                _('Trojsten Graph - password reset'),
+                _('Trihedron Graph - password reset'),
                 get_template('people/email/password_reset_mail.html').render({'token': token.token})
             )
         else:
-            print('Trojsten Graph - password reset')
+            print('Trihedron Graph - password reset')
             print(get_template('people/email/password_reset_mail.html').render({'token': token.token}))
 
         messages.success(self.request, _('Reset link has been sent to your email'))
@@ -91,6 +94,7 @@ class PasswordResetView(FormView):
 
 
 class ChangePasswordView(View):
+    @transaction.atomic
     def dispatch(self, request, *args, **kwargs):
         try:
             token = Token.objects.get(user=request.user, valid=True, type=Token.Types.PASSWORD_RESET)
@@ -98,6 +102,89 @@ class ChangePasswordView(View):
             token = Token.create_for_user(request.user, token_type=Token.Types.PASSWORD_RESET)
             token.save()
         return HttpResponseRedirect(reverse('password-reset', kwargs=dict(token=token.token)))
+
+
+class ChangeEmailForm(forms.Form):
+    new_email = forms.EmailField(label=_('New email'))
+
+    def __init__(self, *args, **kwargs):
+        self.current_email = kwargs.pop('current_email')
+        super(ChangeEmailForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.cleaned_data.get('email') == self.current_email:
+            raise ValidationError(_('New email has to be different'))
+
+        return self.cleaned_data
+
+
+class ChangeEmailView(FormView):
+    template_name = 'people/email_change.html'
+    form_class = ChangeEmailForm
+    success_url = reverse_lazy('email_change')
+
+    def get_initial(self):
+        return {
+            'new_email': self.request.user.email
+        }
+
+    def get_form_kwargs(self):
+        kwargs = super(ChangeEmailView, self).get_form_kwargs()
+        kwargs['current_email'] = self.request.user.email
+        return kwargs
+
+    @transaction.atomic
+    def form_valid(self, form):
+        try:
+            token = Token.objects.get(
+                user=self.request.user,
+                valid=True,
+                type=Token.Types.EMAIL_CHANGE,
+                extra_data__email=form.cleaned_data['new_email']
+            )
+        except Token.DoesNotExist:
+            token = Token.create_for_user(self.request.user, token_type=Token.Types.EMAIL_CHANGE)
+            token.extra_data = {
+                'email': form.cleaned_data['new_email']
+            }
+            token.save()
+
+        if settings.PRODUCTION:
+            send_mail(
+                _('Trihedron Graph - email change'),
+                get_template('people/email/change_email.html').render({'token': token.token}),
+                None,
+                [form.cleaned_data['new_email']]
+            )
+        else:
+            print('Trihedron Graph - email change')
+            print(get_template('people/email/change_email.html').render({'token': token.token}))
+
+        messages.success(self.request, _('Confirmation link has been sent to the specified email'))
+        return super().form_valid(form)
+
+
+class ChangeEmailConfirmView(View):
+    @transaction.atomic
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            token = Token.objects.select_related('user').get(
+                token=kwargs['token'],
+                valid=True,
+                type=Token.Types.EMAIL_CHANGE
+            )
+
+            user = token.user
+
+            user.email = token.extra_data['email']
+            user.save()
+
+        except Token.DoesNotExist:
+            return HttpResponseForbidden()
+
+        messages.success(self.request, _('Your email was successfully changed'))
+
+        return HttpResponseRedirect(reverse('person-content-management'))
 
 
 class ContentUpdateRequestView(FormView):
@@ -139,7 +226,9 @@ class RegistrationView(FormView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['invite_code'] = self.invite_code
-        data['allowed_patterns'] = ', '.join([whitelist.pattern.replace('\\', '').replace('$', '').replace('.*', '') for whitelist in EmailPatternWhitelist.objects.all()])
+        data['allowed_patterns'] = ', '.join(
+            [whitelist.pattern.replace('\\', '').replace('$', '').replace('.*', '') for whitelist in
+             EmailPatternWhitelist.objects.all()])
         return data
 
     @transaction.atomic
@@ -160,11 +249,11 @@ class RegistrationView(FormView):
 
         if settings.PRODUCTION:
             user.email_user(
-                _('Trojsten Graph - registration confirmation'),
+                _('Trihedron Graph - registration confirmation'),
                 get_template('people/email/activation_email.html').render({'token': token.token})
             )
         else:
-            print('Trojsten Graph - registration confirmation')
+            print('Trihedron Graph - registration confirmation')
             print(get_template('people/email/activation_email.html').render({'token': token.token}))
 
         messages.success(self.request, _('Activation link has been sent to your email'))
