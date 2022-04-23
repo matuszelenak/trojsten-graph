@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-23 13:32+0000\n"
+"POT-Creation-Date: 2022-04-23 14:13+0000\n"
 "PO-Revision-Date: 2022-02-03 16:32+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -335,15 +335,15 @@ msgstr "členstvo"
 msgid "group"
 msgstr "skupina"
 
-#: people/templates/people/base.html:83
+#: people/templates/people/base.html:85
 msgid "Content management"
 msgstr "Správa údajov"
 
-#: people/templates/people/base.html:89
+#: people/templates/people/base.html:91
 msgid "Change password"
 msgstr "Zmena hesla"
 
-#: people/templates/people/base.html:95
+#: people/templates/people/base.html:97
 msgid "Sign out"
 msgstr "Odhlásiť"
 
@@ -389,7 +389,7 @@ msgstr "Uložiť zmeny"
 msgid "Relationship with"
 msgstr "Vzťah s"
 
-#: people/templates/people/gather_emails.html:13
+#: people/templates/people/gather_emails.html:14
 msgid ""
 "Gathered emails will be used exclusively to inform and apologize to people "
 "that have at some point been in the Graph and will be deleted afterwards"
@@ -397,11 +397,11 @@ msgstr ""
 "Zozbierané emaily budú použité výhradne na informovanie a ospravedlnenie sa "
 "ľudom, ktorí sa v Grafe niekedy nachádzali a následne budú vymazané."
 
-#: people/templates/people/gather_emails.html:44
+#: people/templates/people/gather_emails.html:56
 msgid "Add another"
 msgstr "Pridať ďalšie"
 
-#: people/templates/people/gather_emails.html:45
+#: people/templates/people/gather_emails.html:57
 msgid "Submit"
 msgstr "Odoslať"
 
@@ -527,19 +527,23 @@ msgstr "November"
 msgid "December"
 msgstr "December"
 
-#: people/views/contact_gathering.py:28
+#: people/views/contact_gathering.py:25
+msgid "I'm sure it's active"
+msgstr "Určite je aktívny"
+
+#: people/views/contact_gathering.py:29
 msgid "Supplier"
 msgstr "Zadávateľ"
 
-#: people/views/contact_gathering.py:29
+#: people/views/contact_gathering.py:30
 msgid "Email of the supplier"
 msgstr "Email zadávateľa"
 
-#: people/views/contact_gathering.py:86
+#: people/views/contact_gathering.py:88
 msgid "You did not submit anything!"
 msgstr "Nič ste nevyplnili!"
 
-#: people/views/contact_gathering.py:91 people/views/content_management.py:85
+#: people/views/contact_gathering.py:93 people/views/content_management.py:85
 #: people/views/content_management.py:135
 #: people/views/content_management.py:159
 msgid "Changes were successfully saved."

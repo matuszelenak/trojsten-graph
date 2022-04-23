@@ -16,12 +16,13 @@ from people.models import ContactEmail, Person
 class ContactEmailForm(forms.Form):
     person = forms.ModelChoiceField(queryset=Person.objects.filter(
         ~Exists(
-            ContactEmail.objects.filter(person=OuterRef('pk'))
+            ContactEmail.objects.filter(person=OuterRef('pk'), sure_its_active=True)
         ),
         visible=False,
         death_date__isnull=True
     ).order_by('last_name', 'first_name'), label=_('person'))
     email = forms.EmailField()
+    sure = forms.BooleanField(initial=True, label=_("I'm sure it's active"))
 
 
 class ContactAuthorForm(forms.Form):
@@ -75,7 +76,8 @@ class EmailGatheringView(FormView):
                         supplier_email=author_form.cleaned_data['supplier_email'],
                         supplier_name=author_form.cleaned_data['supplier_name'],
                         person=person_data['person'],
-                        email=person_data['email']
+                        email=person_data['email'],
+                        sure_its_active=person_data['sure']
                     )
                 )
             except KeyError:

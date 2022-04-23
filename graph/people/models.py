@@ -485,4 +485,6 @@ class ContactEmail(models.Model):
     supplier_name = models.CharField(max_length=256)
     supplier_email = models.EmailField(blank=True, null=True)
 
+    sure_its_active = models.BooleanField(default=True)
+
     created_at = models.DateTimeField(auto_now_add=True)

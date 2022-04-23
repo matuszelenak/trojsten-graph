@@ -16,7 +16,7 @@
 
             <form id="form-container" method="POST">
                 {% csrf_token %}
-                <div class="row">
+                <div class="row border border-success rounded p-4 mb-3 ">
                     {% for field in author_form %}
                         {% if field.name != 'captcha' %}
                             <div class="col-sm-6">
@@ -26,22 +26,18 @@
                     {% endfor %}
                 </div>
 
-                <br><br>
-
                 {{ form.management_form }}
 
-                <div class="emails-form">
+                <div class="emails-form border border-success rounded p-4 mb-3">
                     {% for email in form %}
                         <div class="row">
                             {% for field in email %}
-                                <div class="col-sm-6">
+                                <div class="col-sm-4">
                                     <b>{{ field.label_tag }}</b> {{ field }}
-
                                 </div>
                             {% endfor %}
                         </div>
                     {% endfor %}
-                    <br>
                 </div>
 
                 <div class="limiter"></div>

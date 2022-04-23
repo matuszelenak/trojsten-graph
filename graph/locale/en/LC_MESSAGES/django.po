@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-23 13:32+0000\n"
+"POT-Creation-Date: 2022-04-23 14:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -326,15 +326,15 @@ msgstr ""
 msgid "group"
 msgstr ""
 
-#: people/templates/people/base.html:83
+#: people/templates/people/base.html:85
 msgid "Content management"
 msgstr ""
 
-#: people/templates/people/base.html:89
+#: people/templates/people/base.html:91
 msgid "Change password"
 msgstr ""
 
-#: people/templates/people/base.html:95
+#: people/templates/people/base.html:97
 msgid "Sign out"
 msgstr ""
 
@@ -380,17 +380,17 @@ msgstr ""
 msgid "Relationship with"
 msgstr ""
 
-#: people/templates/people/gather_emails.html:13
+#: people/templates/people/gather_emails.html:14
 msgid ""
 "Gathered emails will be used exclusively to inform and apologize to people "
 "that have at some point been in the Graph and will be deleted afterwards"
 msgstr ""
 
-#: people/templates/people/gather_emails.html:44
+#: people/templates/people/gather_emails.html:56
 msgid "Add another"
 msgstr ""
 
-#: people/templates/people/gather_emails.html:45
+#: people/templates/people/gather_emails.html:57
 msgid "Submit"
 msgstr ""
 
@@ -507,19 +507,23 @@ msgstr ""
 msgid "December"
 msgstr ""
 
-#: people/views/contact_gathering.py:28
-msgid "Supplier"
+#: people/views/contact_gathering.py:25
+msgid "I'm sure it's active"
 msgstr ""
 
 #: people/views/contact_gathering.py:29
+msgid "Supplier"
+msgstr ""
+
+#: people/views/contact_gathering.py:30
 msgid "Email of the supplier"
 msgstr ""
 
-#: people/views/contact_gathering.py:86
+#: people/views/contact_gathering.py:88
 msgid "You did not submit anything!"
 msgstr ""
 
-#: people/views/contact_gathering.py:91 people/views/content_management.py:85
+#: people/views/contact_gathering.py:93 people/views/content_management.py:85
 #: people/views/content_management.py:135
 #: people/views/content_management.py:159
 msgid "Changes were successfully saved."
