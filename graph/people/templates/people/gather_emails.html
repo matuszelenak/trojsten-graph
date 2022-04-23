@@ -1,0 +1,71 @@
+{% extends "people/base.html" %}
+{% load static %}
+{% load l10n %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block content %}
+    {{ block.super }}
+    <div class="row text-white">
+        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-8 col-xs-10 mx-auto text-center p-4">
+            <h3>{% translate "Supply emails to people" %}</h3>
+            <form id="form-container" method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    {% for field in author_form %}
+                        <div class="col-sm-6">
+                            <b>{{ field.label_tag }}</b> {{ field }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <br><br>
+
+                {{ form.management_form }}
+
+                <div class="emails-form">
+                    {% for email in form %}
+                        <div class="row">
+                            {% for field in email %}
+                                <div class="col-sm-6">
+                                    <b>{{ field.label_tag }}</b> {{ field }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <br>
+
+                <button class="btn-lg btn-trihedron mx-5" id="add-form" type="button">Add another</button>
+                <input class="btn-lg btn-success" type="submit" name="save" value="{% translate 'Submit' %}"/>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block tail_scripts %}
+    {{ block.super }}
+    <script>
+        let form = document.querySelectorAll(".emails-form")
+        let container = document.querySelector("#form-container")
+        let addButton = document.querySelector("#add-form")
+        let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+
+        let formNum = form.length - 1
+        addButton.addEventListener('click', addForm)
+
+        function addForm(e) {
+            e.preventDefault()
+
+            let newForm = form[0].cloneNode(true)
+            let formRegex = RegExp(`form-(\\d){1}-`, 'g')
+
+            formNum++
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`)
+            container.insertBefore(newForm, addButton)
+
+            totalForms.setAttribute('value', `${formNum + 1}`)
+        }
+    </script>
+{% endblock %}
