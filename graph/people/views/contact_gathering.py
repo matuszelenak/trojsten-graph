@@ -18,7 +18,8 @@ class ContactEmailForm(forms.Form):
         ~Exists(
             ContactEmail.objects.filter(person=OuterRef('pk'))
         ),
-        visible=False
+        visible=False,
+        death_date__isnull=True
     ).order_by('last_name', 'first_name'))
     email = forms.EmailField()
 
