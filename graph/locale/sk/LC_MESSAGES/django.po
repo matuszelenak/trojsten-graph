@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-03 15:24+0000\n"
+"POT-Creation-Date: 2022-04-23 13:32+0000\n"
 "PO-Revision-Date: 2022-02-03 16:32+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -19,11 +19,19 @@ msgstr ""
 ">= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: graph/settings/base.py:147
+#: api/views/login.py:48
+msgid "Unable to log in with provided credentials."
+msgstr "Neporadilo sa prihlásiť so zadanými údajmi."
+
+#: api/views/login.py:51
+msgid "Must include \"email\" and \"password\"."
+msgstr "Musí obsahovať \"email\" a \"heslo\"."
+
+#: graph/settings/base.py:152
 msgid "English"
 msgstr "Angličtina"
 
-#: graph/settings/base.py:148
+#: graph/settings/base.py:153
 msgid "Slovak"
 msgstr "Slovenčina"
 
@@ -39,36 +47,36 @@ msgstr "Aktuálne má vzťah stavu"
 msgid "Current dating status"
 msgstr "Aktuálny stav"
 
-#: people/admin.py:115 people/templates/people/content_management/base.html:16
+#: people/admin.py:116 people/templates/people/content_management/base.html:16
 #: people/templates/people/content_management/person.html:10
 msgid "Personal info"
 msgstr "Osobné údaje"
 
-#: people/admin.py:116
+#: people/admin.py:119
 msgid "Permissions"
 msgstr "Povolenia"
 
-#: people/admin.py:119
+#: people/admin.py:122
 msgid "Important dates"
 msgstr "Dôležité dátumy"
 
-#: people/admin.py:222
+#: people/admin.py:244
 msgid "Current"
 msgstr "Aktuálne"
 
-#: people/admin.py:285
+#: people/admin.py:307
 msgid "Child must have at least one parent"
 msgstr "Musí mať aspoň jedného rodiča"
 
-#: people/admin.py:287
+#: people/admin.py:309
 msgid "Parents must be different people"
 msgstr "Rodičia musia byť odlišné osoby"
 
-#: people/admin.py:290
+#: people/admin.py:312
 msgid "Cannot be your own parent"
 msgstr "Nemôžeš byť vlastným rodičom"
 
-#: people/admin.py:293
+#: people/admin.py:315
 msgid "Child cannot be younger than their parent. WTF"
 msgstr "Dieťa nemôže byť staršie než rodič WTF"
 
@@ -84,203 +92,246 @@ msgstr "Potvrdené druhou stranou"
 msgid "Incorrect confirmation phrase"
 msgstr "Nesprávna potvrdzovacia fráza"
 
-#: people/models.py:21
+#: people/models.py:25
 msgid "Public note"
 msgstr "Verejná poznámka"
 
-#: people/models.py:22
+#: people/models.py:26
 msgid "Private note"
 msgstr "Súkromná poznámka"
 
-#: people/models.py:25 users/models.py:53
+#: people/models.py:29 users/models.py:54
 msgid "type"
 msgstr "typ"
 
-#: people/models.py:26 users/models.py:19 users/models.py:57
+#: people/models.py:30 users/models.py:19 users/models.py:58
 msgid "date created"
 msgstr "dátum vytvorenia"
 
-#: people/models.py:27
+#: people/models.py:31
 msgid "created by"
 msgstr "vytvorené"
 
-#: people/models.py:95
+#: people/models.py:99
 msgid "first person"
 msgstr "prvá osoba"
 
-#: people/models.py:96
+#: people/models.py:100
 msgid "second person"
 msgstr "druhá osoba"
 
-#: people/models.py:109
+#: people/models.py:113
 msgid "Note on relationship start"
 msgstr "Poznámka k začiatku vzťahu"
 
-#: people/models.py:110
+#: people/models.py:114
 msgid "Note on relationship end"
 msgstr "Poznámka k ukončeniu vzťahu"
 
-#: people/models.py:111
+#: people/models.py:115
 msgid "Unspecified reason"
 msgstr "Nešpecifikovaný dôvod"
 
-#: people/models.py:113
+#: people/models.py:117
 msgid "reason"
 msgstr "dôvod"
 
-#: people/models.py:114 people/models.py:180 users/models.py:16
+#: people/models.py:118 people/models.py:184 users/models.py:16
 msgid "status"
 msgstr "stav"
 
-#: people/models.py:165
+#: people/models.py:169
 msgid "Blood relatives"
 msgstr "Pokrvní príbuzní"
 
-#: people/models.py:166
+#: people/models.py:170
 msgid "Siblings"
 msgstr "Súrodenci"
 
-#: people/models.py:167
+#: people/models.py:171
 msgid "Parent-child"
 msgstr "Rodič-dieťa"
 
-#: people/models.py:168
+#: people/models.py:172
 msgid "Married"
 msgstr "Zosobášení"
 
-#: people/models.py:169
+#: people/models.py:173
 msgid "Engaged"
 msgstr "Zasnúbení"
 
-#: people/models.py:170
+#: people/models.py:174
 msgid "Dating"
 msgstr "Randia"
 
-#: people/models.py:171
+#: people/models.py:175
 msgid "Rumour"
 msgstr "Drb"
 
-#: people/models.py:174
+#: people/models.py:178
 msgid "Awaiting approval from both people in the relationship"
 msgstr "Vyžaduje potvrdenie oboch strán"
 
-#: people/models.py:175
+#: people/models.py:179
 msgid "Confirmed by the first person"
 msgstr "Potvrdené prvou osobou"
 
-#: people/models.py:176
+#: people/models.py:180
 msgid "Confirmed by the second person"
 msgstr "Potvrdené druhou osobou"
 
-#: people/models.py:177
+#: people/models.py:181
 msgid "Confirmed by both people"
 msgstr "Potvrdené oboma stranami"
 
-#: people/models.py:179
+#: people/models.py:183
 msgid "relationship"
 msgstr "vzťah"
 
-#: people/models.py:182 people/models.py:385
+#: people/models.py:186 people/models.py:468
 msgid "date start"
 msgstr "dátum začiatku"
 
-#: people/models.py:183 people/models.py:386
+#: people/models.py:187 people/models.py:469
 msgid "date end"
 msgstr "dátum ukončenia"
 
-#: people/models.py:185
+#: people/models.py:189
 msgid "confirmed by"
 msgstr "potvrdené"
 
-#: people/models.py:186 people/models.py:317 people/models.py:388
+#: people/models.py:190 people/models.py:389 people/models.py:471
 msgid "visible"
 msgstr "viditeľné"
 
-#: people/models.py:239
+#: people/models.py:243
 msgid "relationship statuses"
 msgstr "stavy vzťahu"
 
-#: people/models.py:304
+#: people/models.py:357
 msgid "Male"
 msgstr "Muž"
 
-#: people/models.py:305
+#: people/models.py:358
 msgid "Female"
 msgstr "Žena"
 
-#: people/models.py:306 people/models.py:354
+#: people/models.py:359 people/models.py:437
 msgid "Other"
 msgstr "Iné"
 
-#: people/models.py:308
+#: people/models.py:361
+msgid "email address"
+msgstr ""
+
+#: people/models.py:362
+#, fuzzy
+#| msgid "first person"
+msgid "first name"
+msgstr "prvá osoba"
+
+#: people/models.py:363
+#, fuzzy
+#| msgid "name"
+msgid "last name"
+msgstr "meno"
+
+#: people/models.py:366
+#, fuzzy
+#| msgid "status"
+msgid "staff status"
+msgstr "stav"
+
+#: people/models.py:368
+msgid "Designates whether the user can log into this admin site."
+msgstr ""
+
+#: people/models.py:371
+msgid "active"
+msgstr ""
+
+#: people/models.py:374
+msgid ""
+"Designates whether this user should be treated as active. Unselect this "
+"instead of deleting accounts."
+msgstr ""
+
+#: people/models.py:378
+#, fuzzy
+#| msgid "date end"
+msgid "date joined"
+msgstr "dátum ukončenia"
+
+#: people/models.py:380
 msgid "maiden name"
 msgstr "meno za slobodna"
 
-#: people/models.py:310
+#: people/models.py:382
 msgid "nickname"
 msgstr "prezývka"
 
-#: people/models.py:312
+#: people/models.py:384
 msgid "gender"
 msgstr "pohlavie"
 
-#: people/models.py:314
+#: people/models.py:386
 msgid "birth date"
 msgstr "dátum narodenia"
 
-#: people/models.py:315
+#: people/models.py:387
 msgid "death date"
 msgstr "dátum úmrtia"
 
-#: people/models.py:334 people/models.py:382
+#: people/models.py:417 people/models.py:465
+#: people/views/contact_gathering.py:23
 msgid "person"
 msgstr "osoba"
 
-#: people/models.py:335
+#: people/models.py:418
 msgid "people"
 msgstr "osoby"
 
-#: people/models.py:341
+#: people/models.py:424
 msgid "manager"
 msgstr "správca"
 
-#: people/models.py:342
+#: people/models.py:425
 msgid "subject"
 msgstr "spravovaný"
 
-#: people/models.py:350
+#: people/models.py:433
 msgid "Elementary school"
 msgstr "Základná škola"
 
-#: people/models.py:351
+#: people/models.py:434
 msgid "High school"
 msgstr "Stredná škola"
 
-#: people/models.py:352
+#: people/models.py:435
 msgid "University"
 msgstr "Univerzita"
 
-#: people/models.py:353
+#: people/models.py:436
 msgid "Seminar"
 msgstr "Seminár"
 
-#: people/models.py:356
+#: people/models.py:439
 msgid "category"
 msgstr "kategória"
 
-#: people/models.py:359
+#: people/models.py:442
 msgid "parent"
 msgstr "rodič"
 
-#: people/models.py:360
+#: people/models.py:443
 msgid "name"
 msgstr "meno"
 
-#: people/models.py:370
+#: people/models.py:453
 msgid "membership"
 msgstr "členstvo"
 
-#: people/models.py:383
+#: people/models.py:466
 msgid "group"
 msgstr "skupina"
 
@@ -338,6 +389,22 @@ msgstr "Uložiť zmeny"
 msgid "Relationship with"
 msgstr "Vzťah s"
 
+#: people/templates/people/gather_emails.html:13
+msgid ""
+"Gathered emails will be used exclusively to inform and apologize to people "
+"that have at some point been in the Graph and will be deleted afterwards"
+msgstr ""
+"Zozbierané emaily budú použité výhradne na informovanie a ospravedlnenie sa "
+"ľudom, ktorí sa v Grafe niekedy nachádzali a následne budú vymazané."
+
+#: people/templates/people/gather_emails.html:44
+msgid "Add another"
+msgstr "Pridať ďalšie"
+
+#: people/templates/people/gather_emails.html:45
+msgid "Submit"
+msgstr "Odoslať"
+
 #: people/templates/people/login.html:16
 msgid "Login with Google"
 msgstr "Prihlásiť sa cez Google"
@@ -347,7 +414,7 @@ msgid "If you have a @trojsten.sk mail, you should log in through it here"
 msgstr "Ak máte @trojsten.sk mail, prihláste sa tu pomocou neho."
 
 #: people/templates/people/login.html:31
-#: people/templates/people/registration.html:23
+#: people/templates/people/registration.html:15
 msgid "Register"
 msgstr "Registrovať"
 
@@ -372,27 +439,11 @@ msgstr "Nastaviť nové heslo"
 msgid "Reset"
 msgstr "Resetovať"
 
-#: people/templates/people/registration.html:11
-#, python-format
-msgid ""
-"\n"
-"                    If you own an active %(allowed_patterns)s email, we "
-"suggest you first try to log in using it, or try resetting your password, as "
-"there is a chance you were already in the graph and your account could be "
-"linked automatically.\n"
-"                "
-msgstr ""
-"\n"
-"                    Ak vlastníte aktívny %(allowed_patterns)s email, skúste "
-"sa pomocou neho najprv prihlásiť alebo obnoviť heslo, je šanca, že sa v "
-"grafe už nachádzate a týmto sa vám nalinkuje účet automaticky.\n"
-"                "
-
-#: people/templates/people/registration.html:18
+#: people/templates/people/registration.html:10
 msgid "Registration"
 msgstr "Registrácia"
 
-#: people/templates/people/registration.html:30
+#: people/templates/people/registration.html:22
 #, python-format
 msgid ""
 "\n"
@@ -405,7 +456,7 @@ msgstr ""
 "aktívnych %(allowed_patterns)s mailových adries.\n"
 "                "
 
-#: people/templates/people/registration.html:36
+#: people/templates/people/registration.html:28
 #, python-format
 msgid ""
 "\n"
@@ -476,7 +527,20 @@ msgstr "November"
 msgid "December"
 msgstr "December"
 
-#: people/views/content_management.py:85 people/views/content_management.py:135
+#: people/views/contact_gathering.py:28
+msgid "Supplier"
+msgstr "Zadávateľ"
+
+#: people/views/contact_gathering.py:29
+msgid "Email of the supplier"
+msgstr "Email zadávateľa"
+
+#: people/views/contact_gathering.py:86
+msgid "You did not submit anything!"
+msgstr "Nič ste nevyplnili!"
+
+#: people/views/contact_gathering.py:91 people/views/content_management.py:85
+#: people/views/content_management.py:135
 #: people/views/content_management.py:159
 msgid "Changes were successfully saved."
 msgstr "Zmeny boli uložené."
@@ -502,30 +566,26 @@ msgid "User with this email already exists"
 msgstr "Účet s týmto emailom už existuje"
 
 #: users/forms.py:62
-msgid "User with this username already exists"
-msgstr "Účet s týmto menom už existuje"
-
-#: users/forms.py:66
 msgid "Passwords do not match"
 msgstr "Heslá sa nezhodujú"
 
-#: users/forms.py:90
+#: users/forms.py:86
 msgid "You can login using Trojsten Google OAuth"
 msgstr "Viete sa prihlásiť cez Google OAuth"
 
-#: users/forms.py:96
+#: users/forms.py:92
 msgid "No user with this email exists"
 msgstr "Žiaden účet s týmto emailom neexistuje"
 
-#: users/forms.py:101
+#: users/forms.py:97
 msgid "New password"
 msgstr "Nové heslo"
 
-#: users/forms.py:102
+#: users/forms.py:98
 msgid "Confirm new password"
 msgstr "Potvrdenie hesla"
 
-#: users/forms.py:116
+#: users/forms.py:112
 msgid "The passwords do not match"
 msgstr "Heslá sa nezhodujú"
 
@@ -553,7 +613,7 @@ msgstr "obsah"
 msgid "date resolved"
 msgstr "dátum vyriešenia"
 
-#: users/models.py:32 users/models.py:55
+#: users/models.py:32 users/models.py:56
 msgid "user"
 msgstr "uživateľ"
 
@@ -569,11 +629,17 @@ msgstr "vzor"
 msgid "Account activation"
 msgstr "Aktivácia účtu"
 
-#: users/models.py:54
+#: users/models.py:52
+#, fuzzy
+#| msgid "token"
+msgid "Auth token"
+msgstr "token"
+
+#: users/models.py:55
 msgid "token"
 msgstr "token"
 
-#: users/models.py:56
+#: users/models.py:57
 msgid "valid"
 msgstr "platný"
 
@@ -604,9 +670,3 @@ msgstr "Aktivačný odkaz vám bol zaslaný na mail"
 #: users/views.py:188
 msgid "Your account has been successfully activated"
 msgstr "Váš účet bol aktivovaný"
-
-#~ msgid "Home"
-#~ msgstr "Hlavná stránka"
-
-#~ msgid "Back to managing my account"
-#~ msgstr "Späť na správu môjho profilu"

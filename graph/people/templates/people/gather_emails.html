@@ -4,23 +4,25 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
+{% block toolbar %}{% endblock %}
 {% block content %}
     {{ block.super }}
     <div class="row text-white">
-        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-8 col-xs-10 mx-auto text-center p-4">
+        <div class="col-xl-5 col-lg-7 col-md-8 col-sm-9 col-xs-10 mx-auto text-center p-4">
             <h3>Zber emailov</h3>
             <p>
-                Zozbierané emaily budú použité výhradne na informovanie a ospravedlnenie sa
-                ľudom, ktorí sa v Grafe niekedy nachádzali a následne budú vymazané
+                {% translate 'Gathered emails will be used exclusively to inform and apologize to people that have at some point been in the Graph and will be deleted afterwards' %}
             </p>
 
             <form id="form-container" method="POST">
                 {% csrf_token %}
                 <div class="row">
                     {% for field in author_form %}
-                        <div class="col-sm-6">
-                            <b>{{ field.label_tag }}</b> {{ field }}
-                        </div>
+                        {% if field.name != 'captcha' %}
+                            <div class="col-sm-6">
+                                <b>{{ field.label_tag }}</b> {{ field }}
+                            </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
 
@@ -34,15 +36,28 @@
                             {% for field in email %}
                                 <div class="col-sm-6">
                                     <b>{{ field.label_tag }}</b> {{ field }}
+
                                 </div>
                             {% endfor %}
                         </div>
                     {% endfor %}
+                    <br>
                 </div>
 
-                <br>
+                <div class="limiter"></div>
 
-                <button class="btn-lg btn-trihedron mx-5" id="add-form" type="button">Add another</button>
+                <div class="row text-center mx-auto">
+                    {% for field in author_form %}
+                        {% if field.name == 'captcha' %}
+                            {{ field }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+
+
+                <button class="btn-lg btn-trihedron mx-5" id="add-form"
+                        type="button">{% translate 'Add another' %}</button>
                 <input class="btn-lg btn-success" type="submit" name="save" value="{% translate 'Submit' %}"/>
             </form>
         </div>
@@ -56,6 +71,7 @@
         let container = document.querySelector("#form-container")
         let addButton = document.querySelector("#add-form")
         let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+        let limiter = document.querySelector('.limiter')
 
         let formNum = form.length - 1
         addButton.addEventListener('click', addForm)
@@ -68,7 +84,7 @@
 
             formNum++
             newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`)
-            container.insertBefore(newForm, addButton)
+            container.insertBefore(newForm, limiter)
 
             totalForms.setAttribute('value', `${formNum + 1}`)
         }

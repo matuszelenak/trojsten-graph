@@ -20,13 +20,13 @@ class ContactEmailForm(forms.Form):
         ),
         visible=False,
         death_date__isnull=True
-    ).order_by('last_name', 'first_name'))
+    ).order_by('last_name', 'first_name'), label=_('person'))
     email = forms.EmailField()
 
 
 class ContactAuthorForm(forms.Form):
-    supplier_name = forms.CharField(max_length=256)
-    supplier_email = forms.EmailField(required=False)
+    supplier_name = forms.CharField(max_length=256, label=_('Supplier'))
+    supplier_email = forms.EmailField(required=False, label=_('Email of the supplier'))
     captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox(
         attrs={
             'data-theme': 'dark',
