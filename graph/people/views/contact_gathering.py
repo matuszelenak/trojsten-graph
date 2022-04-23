@@ -14,12 +14,12 @@ from people.models import ContactEmail, Person
 
 
 class ContactEmailForm(forms.Form):
-    person = forms.ModelChoiceField(queryset=Person.objects.filter(
+    person = forms.ModelChoiceField(queryset=Person.qs.in_age_range(18, None).filter(
         ~Exists(
             ContactEmail.objects.filter(person=OuterRef('pk'), sure_its_active=True)
         ),
         visible=False,
-        death_date__isnull=True
+        death_date__isnull=True,
     ).order_by('last_name', 'first_name'), label=_('person'))
     email = forms.EmailField()
     unsure = forms.BooleanField(initial=False, label=_("I'm not sure it's active"), required=False)
