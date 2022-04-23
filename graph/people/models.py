@@ -394,7 +394,7 @@ class Person(AbstractBaseUser, PermissionsMixin):
         SENT = 'sent'
         READ = 'read'
 
-    # apology_status = models.CharField(max_length=128, choices=ApologyStatus.choices, default=ApologyStatus.UNSENT)
+    apology_status = models.CharField(max_length=128, choices=ApologyStatus.choices, default=ApologyStatus.UNSENT)
 
     objects = PersonManager()
     qs = PersonQuerySet.as_manager()

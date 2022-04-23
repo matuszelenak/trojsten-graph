@@ -1,0 +1,121 @@
+{% load hosts %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="sk">
+<body>
+
+<img src="{% host_url 'email_read' token=token host 'www' %}" width=1 height=1 style="display:block;">
+
+<p>Dobrý deň,</p>
+
+<p>Píšeme Vám ohľadom komunitného projektu známeho ako “Trojsten Graf”, v ktorom ste sa donedávna nachádzali.</p>
+
+<p>Graf je webová stránka, ktorá zobrazuje ľudí primárne zo spoločenskej bubliny občianskeho združenia Trojsten a Fakulky Matematiky, Fyziky a Informatiky UK, ako aj vzťahy medzi týmito ľuďmi. Tieto informácie nie sú a (pokiaľ pamäť siaha) neboli verejné a boli prístupné buď za heslom, alebo prihlasovacími údajmi dostupnými len pre organizátorov Trojstenu, alebo osoby nachádzajúce sa v Grafe. V súčasnosti sú dostupné iba osobné informácie ľudí, ktorí nám už udelili explicitný súhlas.</p>
+
+<p>Aktuálni admini Grafu sa pri pridávaní nových údajov dotknutých osôb pýtajú na ich súhlas a správnosť informácií, sme si ale vedomí, že to tak nebývalo vždy a teda určite nechtiac ukladáme aj osobné informácie, ku ktorým buď nemáme schválenie, alebo ktoré nie sú korektné.</p>
+
+<p><b>Týmto mailom by sme sa Vám chceli ospravedlniť v prípade, že ste sa v Grafe či už ocitli bez svojho vedomia a súhlasu, alebo o Vás v Grafe boli zverejnené nepravdivé či neodsúhlasené informácie, tak ako aj za akékoľvek negatívne dôsledky ktoré Vám týmto mohli byť spôsobené.</b></p>
+
+<p>Účelom Grafu nie je vytvárať hanlivý obraz alebo špekulácie o ľuďoch, no chápeme, že s citlivými informáciami, ako sú tie o vzťahoch, treba narábať obozretnejšie a v tomto aspekte Graf a jeho správcovia naisto neraz pochybili.</p>
+
+<p>Za účelom transparentnosti Vám poskytujeme výpis všetkých informácií, ktoré o Vás v Grafe v nejakom bode boli uložené:</p>
+
+{% language 'sk' %}
+
+    <h2>Osobné údaje</h2>
+
+    <ul>
+        <li>Meno: {{ person.first_name }}</li>
+        <li>Priezvisko: {{ person.last_name }}</li>
+        {% if person.maiden_name %}
+            <li>Priezvisko za slobodna: {{ person.maiden_name }}</li>
+        {% endif %}
+        {% if person.birth_date %}
+            <li>Dátum narodenia: {{ person.birth_date }}</li>
+        {% endif %}
+        {% if person.death_date %}
+            <li>Dátum úmrtia: {{ person.death_date }}</li>
+        {% endif %}
+        <li>Pohlavie: {{ person.get_gender_display }}</li>
+    </ul>
+
+    {% if group_memberships %}
+        <h2>Účasť v skupinách</h2>
+
+        <table>
+            <thead>
+            <tr>
+                <td>Skupina</td>
+                <td>Od</td>
+                <td>Do</td>
+            </tr>
+            </thead>
+            <tbody>
+            {% for gm in group_memberships %}
+                <tr>
+                    <td>{{ gm.group.name }}</td>
+                    <td>{{ gm.date_started }}</td>
+                    <td>{% if gm.date_ended %}{{ gm.date_ended }}{% endif %}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if relationships %}
+        <h2>Vzťahy</h2>
+
+        {% for with_person, statuses in relationships %}
+            <h3>Vzťah s {{ with_person }}</h3>
+            <table>
+                <thead>
+                <tr>
+                    <td>Status</td>
+                    <td>Od</td>
+                    <td>Do</td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for status in statuses %}
+                    <tr>
+                        <td>{{ status.get_status_display }}</td>
+                        <td>{{ status.date_start }}</td>
+                        <td>{% if status.date_end %}{{ status.date_end }}{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    {% endif %}
+
+    {% if managed_people %}
+        <h3>Vám zverené osoby</h3>
+        <ul>
+            {% for subject in managed_people %}
+                <li>
+                    <a href="{% host_url 'person-content-management' host 'www' %}?auth_token={{ person.auth_token.token }}&user_override={{ subject.pk }}">{{ subject.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+{% endlanguage %}
+
+<p>Pokiaľ na túto správu nezareagujete do X dní, všetky údaje, ktoré sme o Vás ukladali permanentne odstránime.</p>
+
+<p>Kliknutím na tento odkaz môžete svoje informácie zmazať alebo upraviť a odsúhlasiť ich ukladanie a zobrazenie ostatným uživateľom Grafu.</p>
+
+{% host_url 'person-content-management' host 'www' %}?auth_token={{ person.auth_token.token }}
+
+<p>V prípade, že sa vám projekt Grafu páči, môžete si pomocou tohto odkazu aj nastaviť email a heslo ako prihlasovacie údaje (odkaz tiež expiruje po X dňoch)</p>
+
+<p>Pre upresnenie, hoci počas doterajšej existencie sa tento projekt kolokviálne prezýval "Trojsten Graf", nejedná sa o aktivitu v akejkoľvek miere podporovanú občianskym združením Trojsten, ani žiadnou inou inštitúciou, ide o dlho tradovaný hobby projekt zopár jednotlivcov.</p>
+
+<p>Dúfame, že z Vašej prítomnosti v Grafe Vám nevyplynuli závažné problémy.</p>
+
+<p>za správcovský tím Grafu,</p>
+
+<p>Matúš Zeleňák</p>
+
+</body>
+</html>

@@ -115,7 +115,7 @@ class PersonAdmin(UserAdmin):
         (None, {'fields': ('password',)}),
         (_('Personal info'), {'fields': (
             'first_name', 'last_name', 'email', 'maiden_name', 'nickname', 'gender', 'birth_date', 'death_date',
-            'visible')}),
+            'visible', 'apology_status')}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
