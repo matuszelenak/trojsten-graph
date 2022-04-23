@@ -44,8 +44,10 @@ class EmailGatheringView(FormView):
 
     def get_context_data(self, **kwargs):
         registered = len(Person.qs.filter(email__isnull=False))
-        with_contact = len(list(Person.qs.in_age_range(18).filter(email__isnull=True).filter(Exists(ContactEmail.objects.filter(person=OuterRef('pk'))))))
-        without_contact = len(list(Person.qs.in_age_range(18).filter(email__isnull=True).filter(~Exists(ContactEmail.objects.filter(person=OuterRef('pk'))))))
+        with_contact = len(list(Person.qs.in_age_range(18).filter(email__isnull=True).filter(
+            Exists(ContactEmail.objects.filter(person=OuterRef('pk'))))))
+        without_contact = len(list(Person.qs.in_age_range(18).filter(email__isnull=True).filter(
+            ~Exists(ContactEmail.objects.filter(person=OuterRef('pk'))))))
         unregistered = len(list(Person.qs.in_age_range(18).filter(email__isnull=True)))
 
         """Insert the form into the context dict."""
@@ -80,28 +82,27 @@ class EmailGatheringView(FormView):
 
     @transaction.atomic
     def form_valid(self, form: BaseFormSet, author_form):
-        contacts = []
 
         for person_data in form.cleaned_data:
             try:
-                contacts.append(
-                    ContactEmail(
+                obj, created = ContactEmail.objects.get_or_create(
+                    person=person_data['person'],
+                    email=person_data['email'],
+                    defaults=dict(
                         supplier_email=author_form.cleaned_data['supplier_email'],
                         supplier_name=author_form.cleaned_data['supplier_name'],
-                        person=person_data['person'],
-                        email=person_data['email'],
-                        sure_its_active=not person_data['unsure']
+                        sure_its_active=False,
                     )
                 )
+                obj.sure_its_active = obj.sure_its_active or not person_data['unsure']
+                obj.save()
             except KeyError:
                 # SEE NO EVIL
                 pass
 
-        if len(contacts) == 0:
+        if len(form.cleaned_data) == 0:
             messages.warning(self.request, _('You did not submit anything!'))
             return self.render_to_response(self.get_context_data(form=form, author_form=author_form))
-
-        ContactEmail.objects.bulk_create(contacts, batch_size=100)
 
         messages.success(self.request, _('Changes were successfully saved.'))
         return HttpResponseRedirect(self.get_success_url())
