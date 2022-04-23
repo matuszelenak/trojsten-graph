@@ -22,7 +22,7 @@ class ContactEmailForm(forms.Form):
         death_date__isnull=True
     ).order_by('last_name', 'first_name'), label=_('person'))
     email = forms.EmailField()
-    unsure = forms.BooleanField(initial=False, label=_("I'm not sure it's active"))
+    unsure = forms.BooleanField(initial=False, label=_("I'm not sure it's active"), required=False)
 
 
 class ContactAuthorForm(forms.Form):
@@ -94,4 +94,5 @@ class EmailGatheringView(FormView):
         return HttpResponseRedirect(self.get_success_url())
 
     def invalid(self, form, author_form):
+        messages.error(self.request, _('There were errors in the submitted data.'))
         return self.render_to_response(self.get_context_data(form=form, author_form=author_form))

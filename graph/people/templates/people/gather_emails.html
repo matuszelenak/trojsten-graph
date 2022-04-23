@@ -20,7 +20,9 @@
                     {% for field in author_form %}
                         {% if field.name != 'captcha' %}
                             <div class="col-sm-6">
+                                {{ field.errors }}
                                 <b>{{ field.label_tag }}</b> {{ field }}
+                                {{ field.help_text }}
                             </div>
                         {% endif %}
                     {% endfor %}
@@ -33,7 +35,9 @@
                         <div class="row">
                             {% for field in email %}
                                 <div class="col-sm-4">
+                                    {{ field.errors }}
                                     <b>{{ field.label_tag }}</b> {{ field }}
+                                    {{ field.help_text }}
                                 </div>
                             {% endfor %}
                         </div>
@@ -45,7 +49,9 @@
                 <div class="row text-center mx-auto">
                     {% for field in author_form %}
                         {% if field.name == 'captcha' %}
+                            {{ field.errors }}
                             {{ field }}
+                            {{ field.help_text }}
                         {% endif %}
                     {% endfor %}
                 </div>
