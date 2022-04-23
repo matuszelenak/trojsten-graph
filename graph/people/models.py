@@ -488,3 +488,6 @@ class ContactEmail(models.Model):
     sure_its_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('person', 'email')

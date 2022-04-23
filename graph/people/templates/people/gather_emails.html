@@ -14,6 +14,13 @@
                 {% translate 'Gathered emails will be used exclusively to inform and apologize to people that have at some point been in the Graph and will be deleted afterwards' %}
             </p>
 
+            <div class="p-4 mb-3">
+                <h4>Progress: {{ with_contact }} z {{ without_contact }} kontaktov zozbieraných</h4>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ with_contact }}" aria-valuemin="0" aria-valuemax="{{ unregistered }}" style="width: {{ ratio }}%"></div>
+                </div>
+            </div>
+
             <form id="form-container" method="POST">
                 {% csrf_token %}
                 <div class="row border border-success rounded p-4 mb-3 ">
