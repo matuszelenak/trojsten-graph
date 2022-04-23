@@ -13,7 +13,7 @@ from django.urls import reverse, re_path
 from django.utils.translation import gettext_lazy as _
 
 from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, \
-    GroupMembership, ManagementAuthority
+    GroupMembership, ManagementAuthority, ContactEmail
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -331,3 +331,8 @@ class AddChildForm(forms.Form):
 @admin.register(ManagementAuthority)
 class ManagementAuthority(admin.ModelAdmin):
     raw_id_fields = ('manager', 'subject')
+
+
+@admin.register(ContactEmail)
+class ContactEmailAdmin(admin.ModelAdmin):
+    list_display = ('person', 'email', 'supplier_name')

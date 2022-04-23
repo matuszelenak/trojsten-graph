@@ -475,3 +475,14 @@ class GroupMembership(models.Model):
     class Meta:
         unique_together = ('person', 'group')
         ordering = ('-date_started',)
+
+
+class ContactEmail(models.Model):
+    person = models.ForeignKey('people.Person', related_name='contacts', on_delete=models.CASCADE)
+
+    email = models.EmailField()
+
+    supplier_name = models.CharField(max_length=256)
+    supplier_email = models.EmailField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
