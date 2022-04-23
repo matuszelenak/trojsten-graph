@@ -4,6 +4,7 @@ from django.views.generic import RedirectView
 
 from .views.content_management import PersonContentManagementView, RelationshipContentManagementView, \
     GroupContentManagementView, DeletionManagementView
+from .views.other import email_read
 from .views.graph import GraphView, GraphDataView
 from .views.contact_gathering import EmailGatheringView
 
@@ -17,5 +18,6 @@ urlpatterns = [
     re_path(r'^content-management/groups/$', login_required(GroupContentManagementView.as_view()), name='groups-content-management'),
     re_path(r'^content-management/delete/$', login_required(DeletionManagementView.as_view()), name='deletion-content-management'),
     # url(r'^about/$', login_required(views.AboutView.as_view()), name='about')
-    re_path(r'^gather-emails/$', (EmailGatheringView.as_view()), name='email_gather')
+    re_path(r'^gather-emails/$', (EmailGatheringView.as_view()), name='email_gather'),
+    re_path(r'^email-read/(?P<token>\w{50}).gif$', email_read, name='email_read')
 ]

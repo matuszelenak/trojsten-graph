@@ -1,0 +1,8 @@
+{% load hosts %}
+{% load i18n %}
+
+{% trans 'Finish changing your email by clicking the link below:' %}
+
+{% host_url 'email_change_confirm' token=token host 'www' %}
+
+{% trans 'Please do not reply to this email' %}

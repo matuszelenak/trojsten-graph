@@ -2,6 +2,7 @@ from django.contrib import auth
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.middleware import AuthenticationMiddleware
 
+from people.models import Person
 from users.models import Token
 
 TOKEN_QUERY_PARAM = "auth_token"
@@ -29,8 +30,11 @@ class AuthTokenMiddleware(AuthenticationMiddleware):
             else:
                 auth.logout(request)
 
-        user = auth.authenticate(request, token=auth_token)
+        user: Person = auth.authenticate(request, token=auth_token)
         if user:
+            # user.apology_status = Person.ApologyStatus.READ
+            # user.save()
+
             request.user = user
             auth.login(request, user)
 

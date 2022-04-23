@@ -138,7 +138,7 @@ AUTH_USER_MODEL = 'people.Person'
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = 'sk'
 
 TIME_ZONE = 'UTC'
 
@@ -149,8 +149,8 @@ USE_L10N = True
 USE_TZ = True
 
 LANGUAGES = (
-    ('en', gettext_noop('English')),
     ('sk', gettext_noop('Slovak')),
+    ('en', gettext_noop('English')),
 )
 global_settings.LANGUAGES = LANGUAGES
 

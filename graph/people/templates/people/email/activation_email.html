@@ -1,7 +1,9 @@
 {% load hosts %}
+{% load i18n %}
 
-Activate your account by clicking the link below
+{% trans 'Activate your account by clicking the link below' %}
 
 {% host_url 'activation' token=token host 'www' %}
 
-Please do not reply to this email
+{% trans 'Please do not reply to this email' %}
+
