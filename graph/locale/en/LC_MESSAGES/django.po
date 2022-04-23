@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-23 14:13+0000\n"
+"POT-Creation-Date: 2022-04-23 14:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -508,7 +508,7 @@ msgid "December"
 msgstr ""
 
 #: people/views/contact_gathering.py:25
-msgid "I'm sure it's active"
+msgid "I'm not sure it's active"
 msgstr ""
 
 #: people/views/contact_gathering.py:29
