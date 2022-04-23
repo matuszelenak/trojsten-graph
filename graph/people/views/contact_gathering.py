@@ -43,9 +43,10 @@ class EmailGatheringView(FormView):
         return formset_factory(ContactEmailForm, extra=1)
 
     def get_context_data(self, **kwargs):
-        registered = len(Person.qs.in_age_range(18).filter(email__isnull=False))
-        with_contact = len(Person.qs.in_age_range(18).filter(Exists(ContactEmail.objects.filter(person=OuterRef('pk'))), email__isnull=True))
-        without_contact = len(Person.qs.in_age_range(18).filter(~Exists(ContactEmail.objects.filter(person=OuterRef('pk'))), email__isnull=True))
+        registered = len(Person.qs.filter(email__isnull=False))
+        with_contact = len(list(Person.qs.in_age_range(18).filter(email__isnull=True).filter(Exists(ContactEmail.objects.filter(person=OuterRef('pk'))))))
+        without_contact = len(list(Person.qs.in_age_range(18).filter(email__isnull=True).filter(~Exists(ContactEmail.objects.filter(person=OuterRef('pk'))))))
+        unregistered = len(list(Person.qs.in_age_range(18).filter(email__isnull=True)))
 
         """Insert the form into the context dict."""
         if 'form' not in kwargs:
@@ -57,8 +58,8 @@ class EmailGatheringView(FormView):
             'registered': registered,
             'with_contact': with_contact,
             'without_contact': without_contact,
-            'unregistered': with_contact + without_contact,
-            'ratio': int(with_contact / without_contact)
+            'unregistered': unregistered,
+            'ratio': int(with_contact / unregistered * 100)
         })
         return super().get_context_data(**kwargs)
 
