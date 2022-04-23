@@ -151,26 +151,23 @@ class RegistrationView(FormView):
         if self.invite_code:
             self.invite_code.user = user
             self.invite_code.save()
-            login(self.request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return HttpResponseRedirect(reverse('graph'))
 
+        user.is_active = False
+        user.save()
+
+        token = Token.create_for_user(user, token_type=Token.Types.ACCOUNT_ACTIVATION)
+        token.save()
+
+        if settings.PRODUCTION:
+            user.email_user(
+                _('Trojsten Graph - registration confirmation'),
+                get_template('people/email/activation_email.html').render({'token': token.token})
+            )
         else:
-            user.is_active = False
-            user.save()
+            print('Trojsten Graph - registration confirmation')
+            print(get_template('people/email/activation_email.html').render({'token': token.token}))
 
-            token = Token.create_for_user(user)
-            token.save()
-
-            if settings.PRODUCTION:
-                user.email_user(
-                    _('Trojsten Graph - registration confirmation'),
-                    get_template('people/email/activation_email.html').render({'token': token.token})
-                )
-            else:
-                print('Trojsten Graph - registration confirmation')
-                print(get_template('people/email/activation_email.html').render({'token': token.token}))
-
-            messages.success(self.request, _('Activation link has been sent to your email'))
+        messages.success(self.request, _('Activation link has been sent to your email'))
         return super().form_valid(form)
 
 

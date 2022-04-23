@@ -37,8 +37,6 @@ class RegistrationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.has_invite = kwargs.pop('has_invite', False)
         super().__init__(*args, **kwargs)
-        if self.has_invite:
-            self.fields.pop('email')
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -48,14 +46,15 @@ class RegistrationForm(forms.ModelForm):
         return pw
 
     def clean(self):
-        if not self.has_invite and self.cleaned_data.get('email'):
-            email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get('email')
+
+        if not self.has_invite:
             if not any(
                     [re.compile(whitelist.pattern).match(email) for whitelist in EmailPatternWhitelist.objects.all()]):
                 self.add_error('email', _('The email pattern is invalid'))
 
-            if UserModel.objects.filter(email=email).exists():
-                self.add_error('email', _('User with this email already exists'))
+        if UserModel.objects.filter(email=email).exists():
+            self.add_error('email', _('User with this email already exists'))
 
         if self.cleaned_data.get('password_confirm') and self.cleaned_data.get('password') != self.cleaned_data.get(
                 'password_confirm'):
