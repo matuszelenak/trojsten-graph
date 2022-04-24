@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 
 from people.models import Person, Group, Relationship, RelationshipStatus, PersonNote, RelationshipStatusNote, \
     GroupMembership, ManagementAuthority, ContactEmail
+from people.utils.mail import send_mass_html_mail
 
 
 class BaseNoteInlineForm(forms.ModelForm):
@@ -131,11 +132,27 @@ class PersonAdmin(UserAdmin):
         'id', 'email', 'first_name', 'last_name', 'nickname', 'birth_date', 'date_joined', 'last_login', 'visible')
     search_fields = ('first_name', 'last_name', 'nickname', 'email')
     list_filter = (
-        PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group', ('email', admin.EmptyFieldListFilter))
+        'apology_status', PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group', ('email', admin.EmptyFieldListFilter))
     inlines = (GroupMembershipInline,)
     exclude = ('notes',)
     change_list_template = 'people/admin/person_changelist.html'
     ordering = ('last_name', 'first_name')
+    actions = ('issue_apology', )
+
+    @admin.action(description='Issue apology email')
+    @transaction.atomic
+    def issue_apology(self, request, queryset):
+        mails = []
+        for person in queryset:
+            msg = person.construct_apology_mail()
+            print(msg)
+            if msg:
+                mails.append(msg)
+
+        sent = send_mass_html_mail(mails)
+
+        queryset.update(apology_status=Person.ApologyStatus.SENT)
+        messages.success(request, f'Successfully sent {sent} mails')
 
     def get_queryset(self, request):
         qs = get_user_model().qs

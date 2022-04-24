@@ -10,7 +10,9 @@ from django.core.mail import send_mail
 from django.db import models
 from django.db.models import Prefetch, Q, F, Exists, OuterRef, QuerySet, Case, When, Value
 from django.db.models.functions import Coalesce
+from django.template.loader import get_template
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 
 from people.utils.variable_res_date import VariableResolutionDateField
@@ -424,6 +426,48 @@ class Person(AbstractBaseUser, PermissionsMixin):
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+    def construct_apology_mail(self):
+        if self.email is not None:
+            contact_emails = [self.email]
+        else:
+            all_contacts = list(ContactEmail.objects.filter(person=self).order_by('-sure_its_active'))
+            if len(all_contacts) == 0:
+                return None
+
+            if all_contacts[0].sure_its_active:
+                contact_emails = [all_contacts[0].email]
+            else:
+                contact_emails = [x.email for x in all_contacts]
+
+        auth_token, created = Token.objects.get_or_create(user=self, type=Token.Types.AUTH, token=Token.get_random_token())
+
+        group_memberships = GroupMembership.objects.select_related('group').filter(person=self)
+
+        relationships = Relationship.objects.filter(Q(first_person=self) | Q(second_person=self))
+
+        managed_people = Person.qs.filter(
+            Exists(ManagementAuthority.objects.filter(manager=self, subject=OuterRef('pk')))
+        )
+
+        html_message = get_template('people/email/notice_and_apology.html').render(
+            {
+                'token': auth_token.token,
+                'person': self,
+                'group_memberships': list(group_memberships),
+                'relationships': [
+                    (
+                        r.first_person.name if r.second_person == self else r.second_person.name,
+                        RelationshipStatus.objects.filter(relationship=r).order_by('date_start')
+                    )
+                    for r in relationships
+                ],
+                'managed_people': managed_people
+            }
+        )
+        plain_message = strip_tags(html_message)
+
+        return ('Trojsten Graf - informovanie o použití osobných dát', plain_message, html_message, None, contact_emails)
 
     class Meta:
         verbose_name = _("person")

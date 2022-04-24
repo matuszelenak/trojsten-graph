@@ -22,7 +22,7 @@
 
 {% language 'sk' %}
 
-    <h2>Osobné údaje</h2>
+    <h4>Osobné údaje</h4>
 
     <ul>
         <li>Meno: {{ person.first_name }}</li>
@@ -40,7 +40,7 @@
     </ul>
 
     {% if group_memberships %}
-        <h2>Účasť v skupinách</h2>
+        <h4>Účasť v skupinách</h4>
 
         <table>
             <thead>
@@ -63,7 +63,7 @@
     {% endif %}
 
     {% if relationships %}
-        <h2>Vzťahy</h2>
+        <h4>Vzťahy</h4>
 
         {% for with_person, statuses in relationships %}
             <h3>Vzťah s {{ with_person }}</h3>
@@ -89,7 +89,7 @@
     {% endif %}
 
     {% if managed_people %}
-        <h3>Vám zverené osoby</h3>
+        <h4>Vám zverené osoby</h4>
         <ul>
             {% for subject in managed_people %}
                 <li>
@@ -101,13 +101,13 @@
 
 {% endlanguage %}
 
-<p>Pokiaľ na túto správu nezareagujete do X dní, všetky údaje, ktoré sme o Vás ukladali permanentne odstránime.</p>
+<p>Pokiaľ na túto správu nezareagujete do 14 dní, všetky údaje, ktoré sme o Vás ukladali permanentne odstránime.</p>
 
 <p>Kliknutím na tento odkaz môžete svoje informácie zmazať alebo upraviť a odsúhlasiť ich ukladanie a zobrazenie ostatným uživateľom Grafu.</p>
 
 {% host_url 'person-content-management' host 'www' %}?auth_token={{ person.auth_token.token }}
 
-<p>V prípade, že sa vám projekt Grafu páči, môžete si pomocou tohto odkazu aj nastaviť email a heslo ako prihlasovacie údaje (odkaz tiež expiruje po X dňoch)</p>
+<p>V prípade, že sa vám projekt Grafu páči, môžete si pomocou tohto odkazu aj nastaviť email a heslo ako prihlasovacie údaje (odkaz tiež expiruje po 14 dňoch)</p>
 
 <p>Pre upresnenie, hoci počas doterajšej existencie sa tento projekt kolokviálne prezýval "Trojsten Graf", nejedná sa o aktivitu v akejkoľvek miere podporovanú občianskym združením Trojsten, ani žiadnou inou inštitúciou, ide o dlho tradovaný hobby projekt zopár jednotlivcov.</p>
 
