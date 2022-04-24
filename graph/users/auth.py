@@ -32,8 +32,8 @@ class AuthTokenMiddleware(AuthenticationMiddleware):
 
         user: Person = auth.authenticate(request, token=auth_token)
         if user:
-            # user.apology_status = Person.ApologyStatus.READ
-            # user.save()
+            user.apology_status = Person.ApologyStatus.READ
+            user.save()
 
             request.user = user
             auth.login(request, user)
