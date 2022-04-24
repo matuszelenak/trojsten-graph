@@ -129,7 +129,7 @@ class PersonAdmin(UserAdmin):
         }),
     )
     list_display = (
-        'id', 'email', 'first_name', 'last_name', 'nickname', 'birth_date', 'date_joined', 'last_login', 'visible')
+        'id', 'email', 'first_name', 'last_name', 'apology_status', 'nickname', 'birth_date', 'date_joined', 'last_login', 'visible')
     search_fields = ('first_name', 'last_name', 'nickname', 'email')
     list_filter = (
         'apology_status', PersonAgeFilter, PersonCurrentStatusFilter, PersonDatingStatusFilter, 'gender', 'visible', 'memberships__group', ('email', admin.EmptyFieldListFilter))
@@ -145,7 +145,6 @@ class PersonAdmin(UserAdmin):
         mails = []
         for person in queryset:
             msg = person.construct_apology_mail()
-            print(msg)
             if msg:
                 mails.append(msg)
 

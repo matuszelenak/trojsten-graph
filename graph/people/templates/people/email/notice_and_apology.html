@@ -4,13 +4,11 @@
 <html lang="sk">
 <body>
 
-<img src="{% host_url 'email_read' token=token host 'www' %}" width=1 height=1 style="display:block;">
-
 <p>Dobrý deň,</p>
 
 <p>Píšeme Vám ohľadom komunitného projektu známeho ako “Trojsten Graf”, v ktorom ste sa donedávna nachádzali.</p>
 
-<p>Graf je webová stránka, ktorá zobrazuje ľudí primárne zo spoločenskej bubliny občianskeho združenia Trojsten a Fakulky Matematiky, Fyziky a Informatiky UK, ako aj vzťahy medzi týmito ľuďmi. Tieto informácie nie sú a (pokiaľ pamäť siaha) neboli verejné a boli prístupné buď za heslom, alebo prihlasovacími údajmi dostupnými len pre organizátorov Trojstenu, alebo osoby nachádzajúce sa v Grafe. V súčasnosti sú dostupné iba osobné informácie ľudí, ktorí nám už udelili explicitný súhlas.</p>
+<p>Graf je webová stránka, ktorá zobrazuje ľudí primárne zo spoločenskej bubliny občianskeho združenia Trojsten a Fakulty Matematiky, Fyziky a Informatiky UK, ako aj vzťahy medzi týmito ľuďmi. Tieto informácie nie sú a (pokiaľ pamäť siaha) neboli verejné a boli prístupné buď za heslom, alebo prihlasovacími údajmi dostupnými len pre organizátorov Trojstenu, alebo osoby nachádzajúce sa v Grafe. V súčasnosti sú dostupné iba osobné informácie ľudí, ktorí nám už udelili explicitný súhlas.</p>
 
 <p>Aktuálni admini Grafu sa pri pridávaní nových údajov dotknutých osôb pýtajú na ich súhlas a správnosť informácií, sme si ale vedomí, že to tak nebývalo vždy a teda určite nechtiac ukladáme aj osobné informácie, ku ktorým buď nemáme schválenie, alebo ktoré nie sú korektné.</p>
 
@@ -22,7 +20,7 @@
 
 {% language 'sk' %}
 
-    <h4>Osobné údaje</h4>
+    <h3>Osobné údaje</h3>
 
     <ul>
         <li>Meno: {{ person.first_name }}</li>
@@ -40,7 +38,7 @@
     </ul>
 
     {% if group_memberships %}
-        <h4>Účasť v skupinách</h4>
+        <h3>Účasť v skupinách</h3>
 
         <table>
             <thead>
@@ -63,10 +61,10 @@
     {% endif %}
 
     {% if relationships %}
-        <h4>Vzťahy</h4>
+        <h3>Vzťahy</h3>
 
         {% for with_person, statuses in relationships %}
-            <h3>Vzťah s {{ with_person }}</h3>
+            <h4>Vzťah s {{ with_person }}</h4>
             <table>
                 <thead>
                 <tr>
@@ -103,9 +101,7 @@
 
 <p>Pokiaľ na túto správu nezareagujete do 14 dní, všetky údaje, ktoré sme o Vás ukladali permanentne odstránime.</p>
 
-<p>Kliknutím na tento odkaz môžete svoje informácie zmazať alebo upraviť a odsúhlasiť ich ukladanie a zobrazenie ostatným uživateľom Grafu.</p>
-
-{% host_url 'person-content-management' host 'www' %}?auth_token={{ person.auth_token.token }}
+<p>Kliknutím na <a href="{% host_url 'person-content-management' host 'www' %}?auth_token={{ person.auth_token.token }}">tento odkaz</a> môžete svoje informácie zmazať alebo upraviť a odsúhlasiť ich ukladanie a zobrazenie ostatným uživateľom Grafu.</p>
 
 <p>V prípade, že sa vám projekt Grafu páči, môžete si pomocou tohto odkazu aj nastaviť email a heslo ako prihlasovacie údaje (odkaz tiež expiruje po 14 dňoch)</p>
 

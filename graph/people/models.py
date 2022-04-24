@@ -467,7 +467,7 @@ class Person(AbstractBaseUser, PermissionsMixin):
         )
         plain_message = strip_tags(html_message)
 
-        return ('Trojsten Graf - informovanie o použití osobných dát', plain_message, html_message, None, contact_emails)
+        return ('Trojsten Graf - informačný mail', plain_message, html_message, None, contact_emails)
 
     class Meta:
         verbose_name = _("person")

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'captcha',
     'hijack',
     'hijack.contrib.admin',
+    'anymail',
 
     'api',
     'people',

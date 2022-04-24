@@ -24,3 +24,12 @@ sentry_sdk.init(
 )
 
 REST_FRAMEWORK['EXCEPTION_HANDLER'] = 'api.utils.sentry_capture_exception_handler'
+
+if os.environ.get('MAILGUN_API_KEY') is not None:
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+
+    ANYMAIL = {
+        "MAILGUN_API_KEY": os.environ.get('MAILGUN_API_KEY'),
+        "MAILGUN_API_URL": "https://api.eu.mailgun.net/v3",
+        "MAILGUN_SENDER_DOMAIN": "info.trihedron.wtf"
+    }
