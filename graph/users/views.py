@@ -112,7 +112,7 @@ class ChangeEmailForm(forms.Form):
         super(ChangeEmailForm, self).__init__(*args, **kwargs)
 
     def clean(self):
-        if self.cleaned_data.get('email') == self.current_email:
+        if self.cleaned_data.get('new_email') == self.current_email:
             raise ValidationError(_('New email has to be different'))
 
         return self.cleaned_data
