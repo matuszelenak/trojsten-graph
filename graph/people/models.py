@@ -422,6 +422,8 @@ class Person(AbstractBaseUser, PermissionsMixin):
 
     def clean(self):
         super().clean()
+        if self.email is None:
+            return
         self.email = self.__class__.objects.normalize_email(self.email)
 
     def email_user(self, subject, message, from_email=None, **kwargs):
