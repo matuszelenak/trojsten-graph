@@ -21,6 +21,8 @@ MIDDLEWARE = (
 
 SESSION_COOKIE_SECURE = False
 
+SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ['localhost:8000', 'localhost:3000']
+
 import mimetypes
 
 mimetypes.add_type("application/javascript", ".js", True)

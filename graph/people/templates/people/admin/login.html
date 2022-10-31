@@ -3,7 +3,7 @@
 
 {% block content %}
     <div class="submit-row">
-        <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}" class="btn btn-trihedron google-login">
+        <a href="{% url 'begin' 'google-oauth2' %}?next={{ request.path }}" class="btn btn-trihedron google-login">
             <img src="{% static 'people/img/google.svg' %}" width="24">
             Login
         </a>
