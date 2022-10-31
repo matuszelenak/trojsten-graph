@@ -6,6 +6,15 @@ DEBUG = False
 
 PRODUCTION = True
 
+MIDDLEWARE = list(MIDDLEWARE)
+MIDDLEWARE.remove('django_hosts.middleware.HostsRequestMiddleware')
+MIDDLEWARE = tuple(MIDDLEWARE)
+
+MIDDLEWARE = ('django_hosts.middleware.HostsRequestMiddleware',
+              'whitenoise.middleware.WhiteNoiseMiddleware',) + MIDDLEWARE
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 HOST_SCHEME = 'https://'
 
 SECURE_SSL_REDIRECT = True
@@ -13,6 +22,16 @@ SECURE_HSTS_SECONDS = 3600
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://graph.trihedron.wtf",
+    "https://www.graph.trihedron.wtf",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://graph.trihedron.wtf',
+    'https://www.graph.trihedron.wtf',
+]
 
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -24,12 +43,3 @@ sentry_sdk.init(
 )
 
 REST_FRAMEWORK['EXCEPTION_HANDLER'] = 'api.utils.sentry_capture_exception_handler'
-
-if os.environ.get('MAILGUN_API_KEY') is not None:
-    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
-
-    ANYMAIL = {
-        "MAILGUN_API_KEY": os.environ.get('MAILGUN_API_KEY'),
-        "MAILGUN_API_URL": "https://api.eu.mailgun.net/v3",
-        "MAILGUN_SENDER_DOMAIN": "info.trihedron.wtf"
-    }
