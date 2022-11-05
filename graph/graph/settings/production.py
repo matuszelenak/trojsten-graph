@@ -6,19 +6,7 @@ DEBUG = False
 
 PRODUCTION = True
 
-MIDDLEWARE = list(MIDDLEWARE)
-MIDDLEWARE.remove('django_hosts.middleware.HostsRequestMiddleware')
-MIDDLEWARE = tuple(MIDDLEWARE)
-
-MIDDLEWARE = ('django_hosts.middleware.HostsRequestMiddleware',
-              'whitenoise.middleware.WhiteNoiseMiddleware',) + MIDDLEWARE
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 HOST_SCHEME = 'https://'
-
-SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 3600
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
