@@ -1,4 +1,3 @@
-{% load hosts %}
 {% load i18n %}
 <!DOCTYPE html>
 <html lang="sk">
@@ -91,7 +90,7 @@
         <ul>
             {% for subject in managed_people %}
                 <li>
-                    <a href="{% host_url 'person-content-management' host 'www' %}?auth_token={{ person.auth_token.token }}&user_override={{ subject.pk }}">{{ subject.name }}</a>
+                    <a href="{% url 'person-content-management' %}?auth_token={{ person.auth_token.token }}&user_override={{ subject.pk }}">{{ subject.name }}</a>
                 </li>
             {% endfor %}
         </ul>

@@ -27,12 +27,11 @@ SECRET_KEY = '5l7t%9d==wwy$=8_+r32(kytqwhu^&ks_%9q5-b*q&9=n-&vv4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", 'localhost').split(" ")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", 'localhost graph.trihedron.top').split(" ")
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django_hosts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,7 +46,6 @@ INSTALLED_APPS = [
     'captcha',
     'hijack',
     'hijack.contrib.admin',
-    'anymail',
 
     'api',
     'people',
@@ -71,10 +69,8 @@ INTERNAL_IPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    'django_hosts.middleware.HostsRequestMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -82,14 +78,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'hijack.middleware.HijackUserMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware'
 ]
 
 ROOT_URLCONF = 'graph.urls'
-ROOT_HOSTCONF = 'graph.hosts'
-DEFAULT_HOST = 'www'
-HOST_SCHEME = 'http://'
-HOST_PORT = os.environ.get('HOST_PORT', '')
-PARENT_HOST = os.environ.get('PARENT_HOST', 'localhost')
 
 TEMPLATES = [
     {
@@ -102,6 +94,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends'
             ],
         },
     },
@@ -129,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = (
     'users.auth.AuthTokenBackend',
-    'social_core.backends.open_id.OpenIdAuth',  # for Google authentication
+    # 'social_core.backends.open_id.OpenIdAuth',  # for Google authentication
     'social_core.backends.google.GoogleOAuth2',  # for Google authentication
     'django.contrib.auth.backends.ModelBackend',
 )
@@ -139,9 +132,9 @@ AUTH_USER_MODEL = 'people.Person'
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
-LANGUAGE_CODE = 'sk'
+LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Bratislava'
 
 USE_I18N = True
 
@@ -149,18 +142,10 @@ USE_L10N = True
 
 USE_TZ = True
 
-LANGUAGES = (
-    ('sk', gettext_noop('Slovak')),
-    ('en', gettext_noop('English')),
-)
-global_settings.LANGUAGES = LANGUAGES
-
-LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'api-static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
@@ -196,14 +181,13 @@ DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "http://graph.top"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 APPEND_SLASH = True
-
-PREPEND_WWW = False
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -233,3 +217,5 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
+
+FORCE_SCRIPT_NAME = '/api'

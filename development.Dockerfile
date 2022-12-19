@@ -1,14 +1,22 @@
-FROM python:3.9-alpine
+FROM python:alpine3.16
 
 WORKDIR /usr/src/graph
 
-ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-RUN apk add --no-cache --virtual build-deps cargo curl gcc g++ libc-dev libffi-dev make postgresql-dev postgresql-client rust openssl-dev bash
-
+RUN apk update && apk add supervisor postgresql-dev libpq gcc python3-dev musl-dev bash
 RUN pip install --upgrade pip
+
 COPY ./requirements.txt /usr/src/graph/requirements.txt
 RUN pip install -r requirements.txt
 
-COPY /graph /usr/src/graph/
+
+RUN mkdir -p /home/graph
+# RUN addgroup -S capila && adduser -S capila -G capila
+
+ENV APP_HOME=/home/graph/web
+RUN mkdir $APP_HOME
+WORKDIR $APP_HOME
+
+ADD /graph .
