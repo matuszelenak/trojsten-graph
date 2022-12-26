@@ -1,9 +1,9 @@
 version: '3'
 services:
   db:
-    image: postgres:10-alpine
+    image: postgres:13-alpine
     env_file:
-      - .envfile
+      - .env
     environment:
       - POSTGRES_USER=graph
       - POSTGRES_PASSWORD=graph
@@ -18,7 +18,7 @@ services:
       dockerfile: development.Dockerfile
     image: trojsten-graph
     env_file:
-      - .envfile
+      - .env
     environment:
       - DJANGO_SETTINGS_MODULE=graph.settings.development
       - POSTGRES_HOST=db

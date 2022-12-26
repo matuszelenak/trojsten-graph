@@ -6,9 +6,10 @@ from typing import Union
 from django.contrib.admin.options import FORMFIELD_FOR_DBFIELD_DEFAULTS
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.forms import MultiWidget, Select, CharField
+from django import forms
 from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
+from rest_framework.fields import Field
 
 VARIABLE_RESOLUTION_DATE_RE = re.compile(r'^(\d{4})-(\d{2})-(\d{2})$')
 VARIABLE_RESOLUTION_DATE_LENGTH = 10
@@ -22,6 +23,20 @@ class VariableDate:
 
     def __str__(self):
         return f'{self.year}-{self.month:02}-{self.day:02}'
+
+    @property
+    def is_precise(self):
+        return self.year != 0 and self.month != 0 and self.day != 0
+
+
+def ensure_date(obj):
+    if isinstance(obj, datetime.date):
+        return obj
+
+    if isinstance(obj, VariableDate):
+        return datetime.date(obj.year, obj.month | 1, obj.day | 1)
+
+    raise ValueError()
 
 
 def parse(value) -> Union[VariableDate, datetime.date]:
@@ -90,7 +105,7 @@ class VariableResolutionDateField(models.CharField):
         })
 
 
-class Datalist(Select):
+class Datalist(forms.Select):
     allow_multiple_selected = False
     input_type = 'text'
     template_name = 'people/forms/datalist.html'
@@ -106,7 +121,7 @@ class Datalist(Select):
         return str(value)
 
 
-class DateSelectorWidget(MultiWidget):
+class DateSelectorWidget(forms.MultiWidget):
     template_name = 'people/widgets/variable_date.html'
 
     def __init__(self, attrs=None, years=None):
@@ -129,8 +144,8 @@ class DateSelectorWidget(MultiWidget):
         years = [("", "")] + [(str(x), str(x)) for x in range(1900, 2023)]
 
         _widgets = (
-            Select(attrs=attrs, choices=days),
-            Select(attrs=attrs, choices=months),
+            forms.Select(attrs=attrs, choices=days),
+            forms.Select(attrs=attrs, choices=months),
             Datalist(attrs=dict(size=4, **(attrs or {})), choices=years),
         )
         super().__init__(_widgets, attrs)
@@ -150,7 +165,7 @@ class DateSelectorWidget(MultiWidget):
         return date_parts
 
 
-class VariableResolutionDateFormField(CharField):
+class VariableResolutionDateFormField(forms.CharField):
     widget = DateSelectorWidget
 
     def clean(self, value):
@@ -174,6 +189,44 @@ class VariableResolutionDateFormField(CharField):
     def has_changed(self, initial, data):
         c = super().has_changed(initial, data)
         return c
+
+
+class VariableResolutionDateSerializerField(Field):
+
+    def __init__(self, *args, **kwargs):
+        kwargs.pop('allow_blank', False)
+        kwargs.pop('trim_whitespace', True)
+        kwargs.pop('max_length', None)
+        kwargs.pop('min_length', None)
+        super().__init__(*args, **kwargs)
+
+    def to_internal_value(self, data):
+        if isinstance(data, (datetime.date, VariableDate)):
+            return data
+        if isinstance(data, dict):
+            try:
+                year = int(data['year'])
+                month = int(data.get('month', 0))
+                day = int(data.get('day', 0))
+
+                if month != 0 and day != 0:
+                    return datetime.date(year, month, day)
+                else:
+                    return VariableDate(year, month, day)
+            except (KeyError, ValueError) as e:
+                self.fail(f'{e}')
+
+        if isinstance(data, str):
+            return parse(data)
+
+        self.fail('invalid format')
+
+    def to_representation(self, value):
+        return {
+            'year': value.year,
+            'month': value.month,
+            'day': value.day
+        }
 
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS.update({
