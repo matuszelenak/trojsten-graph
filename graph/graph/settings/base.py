@@ -5,7 +5,7 @@ from django.conf import global_settings
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '5l7t%9d==wwy$=8_+r32(kytqwhu^&ks_%9q5-b*q&9=n-&vv4'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
