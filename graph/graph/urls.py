@@ -5,10 +5,9 @@ from django.urls import include, path, re_path
 
 urlpatterns = i18n_patterns(
     path('admin/', admin.site.urls),
-    re_path(r'^auth/', include('social_django.urls', namespace='social')),
+    path('hijack/', include('hijack.urls')),
     re_path(r'^', include('people.urls')),
     re_path(r'^', include('users.urls')),
-    path('hijack/', include('hijack.urls'))
 ) + [
     re_path(r'^api/', include('api.urls'))
 ]
