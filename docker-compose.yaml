@@ -1,35 +1,51 @@
-version: '3'
+version: '3.5'
 services:
   db:
     image: postgres:13-alpine
+    container_name: trojsten-graph-db
     env_file:
       - .env
-    environment:
-      - POSTGRES_USER=graph
-      - POSTGRES_PASSWORD=graph
-      - POSTGRES_DB=graph
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
-  web:
+
+  api:
     build:
       context: .
       dockerfile: development.Dockerfile
     image: trojsten-graph
+    container_name: trojsten-graph-api
     env_file:
       - .env
-    environment:
-      - DJANGO_SETTINGS_MODULE=graph.settings.development
-      - POSTGRES_HOST=db
-      - HOST_PORT=8000
-    ports:
-      - "8000:8000"
     volumes:
-      - ./graph/:/usr/src/graph/
+      - static:/home/graph/web/static
+      - ./graph:/home/graph/web
     depends_on:
       - db
+    entrypoint: bash entrypoint.sh
     command: python manage.py runserver 0.0.0.0:8000
+
+  nginx:
+    image: nginx:alpine
+    container_name: trojsten-graph-nginx
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - static:/var/www/api-static
+    depends_on:
+      - api
+    ports:
+      - "80:80"
 
 volumes:
   postgres_data:
+  static:
+
+networks:
+  default:
+    name: trojsten_graph
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.42.0/24
+          gateway: 192.168.42.1

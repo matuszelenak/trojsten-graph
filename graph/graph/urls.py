@@ -1,16 +1,14 @@
 from django.conf import settings
-from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.urls import include, path, re_path
 
-urlpatterns = i18n_patterns(
+urlpatterns = [
     path('admin/', admin.site.urls),
-    re_path(r'^auth/', include('social_django.urls', namespace='social')),
+    re_path(r'^auth/', include('social_django.urls')),
     re_path(r'^', include('people.urls')),
     re_path(r'^', include('users.urls')),
-    path('hijack/', include('hijack.urls'))
-) + [
-    re_path(r'^api/', include('api.urls'))
+    re_path(r'^', include('api.urls')),
+    path('hijack/', include('hijack.urls')),
 ]
 
 if settings.DEBUG:

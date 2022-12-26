@@ -6,19 +6,12 @@ DEBUG = False
 
 PRODUCTION = True
 
-HOST_SCHEME = 'https://'
-
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-CORS_ALLOWED_ORIGINS = [
-    "https://graph.trihedron.wtf",
-    "https://www.graph.trihedron.wtf",
-]
-
 CSRF_TRUSTED_ORIGINS = [
-    'https://graph.trihedron.wtf',
-    'https://www.graph.trihedron.wtf',
+    f'https://{origin}'
+    for origin in os.environ.get("ALLOWED_HOSTS").split(" ")
 ]
 
 import sentry_sdk
