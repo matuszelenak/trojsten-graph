@@ -6,11 +6,16 @@ from .views.content_management import PersonContentManagementView, RelationshipC
     GroupContentManagementView, DeletionManagementView
 from .views.other import email_read
 from .views.graph import GraphView, GraphDataView
+from .views.graph_v2 import GraphViewV2, PeopleView, RelationshipView
 from .views.contact_gathering import EmailGatheringView
 
 urlpatterns = [
     re_path(r'^$', login_required(GraphView.as_view()), name='graph'),
     re_path(r'^graph-data/$', login_required(GraphDataView.as_view()), name='graph_data'),
+
+    re_path(r'^v2/$', login_required(GraphViewV2.as_view()), name='graphV2'),
+    re_path(r'api/people/$', login_required(PeopleView.as_view()), name='graph_people'),
+    re_path(r'api/relationships/$', login_required(RelationshipView.as_view()), name='graph_relationships'),
 
     re_path(r'^content-management/$', login_required(RedirectView.as_view(pattern_name='person-content-management', permanent=True))),
     re_path(r'^content-management/person/$', login_required(PersonContentManagementView.as_view()), name='person-content-management'),
