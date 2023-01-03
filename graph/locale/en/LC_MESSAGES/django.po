@@ -3,12 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#: people/templates/people/base.html:31
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-23 22:12+0000\n"
+"POT-Creation-Date: 2023-01-03 01:14+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,56 +27,56 @@ msgstr ""
 msgid "Must include \"email\" and \"password\"."
 msgstr ""
 
-#: graph/settings/base.py:152
-msgid "English"
-msgstr ""
-
-#: graph/settings/base.py:153
+#: graph/settings/base.py:120
 msgid "Slovak"
 msgstr ""
 
-#: people/admin.py:58
+#: graph/settings/base.py:121
+msgid "English"
+msgstr ""
+
+#: people/admin.py:59
 msgid "In age range"
 msgstr ""
 
-#: people/admin.py:79
+#: people/admin.py:80
 msgid "Has current relationship with status"
 msgstr ""
 
-#: people/admin.py:92
+#: people/admin.py:93
 msgid "Current dating status"
 msgstr ""
 
-#: people/admin.py:116 people/templates/people/content_management/base.html:16
+#: people/admin.py:117 people/templates/people/content_management/base.html:16
 #: people/templates/people/content_management/person.html:10
 msgid "Personal info"
 msgstr ""
 
-#: people/admin.py:119
+#: people/admin.py:120
 msgid "Permissions"
 msgstr ""
 
-#: people/admin.py:122
+#: people/admin.py:123
 msgid "Important dates"
 msgstr ""
 
-#: people/admin.py:244
+#: people/admin.py:260
 msgid "Current"
 msgstr ""
 
-#: people/admin.py:307
+#: people/admin.py:323
 msgid "Child must have at least one parent"
 msgstr ""
 
-#: people/admin.py:309
+#: people/admin.py:325
 msgid "Parents must be different people"
 msgstr ""
 
-#: people/admin.py:312
+#: people/admin.py:328
 msgid "Cannot be your own parent"
 msgstr ""
 
-#: people/admin.py:315
+#: people/admin.py:331
 msgid "Child cannot be younger than their parent. WTF"
 msgstr ""
 
@@ -91,254 +92,263 @@ msgstr ""
 msgid "Incorrect confirmation phrase"
 msgstr ""
 
-#: people/models.py:26
+#: people/models.py:28
 msgid "Public note"
 msgstr ""
 
-#: people/models.py:27
+#: people/models.py:29
 msgid "Private note"
 msgstr ""
 
-#: people/models.py:30 users/models.py:55
+#: people/models.py:32 users/models.py:55
 msgid "type"
 msgstr ""
 
-#: people/models.py:31 users/models.py:19 users/models.py:59
+#: people/models.py:33 users/models.py:19 users/models.py:59
 msgid "date created"
 msgstr ""
 
-#: people/models.py:32
+#: people/models.py:34
 msgid "created by"
 msgstr ""
 
-#: people/models.py:100
+#: people/models.py:102
 msgid "first person"
 msgstr ""
 
-#: people/models.py:101
+#: people/models.py:103
 msgid "second person"
 msgstr ""
 
-#: people/models.py:114
+#: people/models.py:116
 msgid "Note on relationship start"
 msgstr ""
 
-#: people/models.py:115
+#: people/models.py:117
 msgid "Note on relationship end"
 msgstr ""
 
-#: people/models.py:116
+#: people/models.py:118
 msgid "Unspecified reason"
 msgstr ""
 
-#: people/models.py:118
+#: people/models.py:120
 msgid "reason"
 msgstr ""
 
-#: people/models.py:119 people/models.py:185 users/models.py:16
+#: people/models.py:121 people/models.py:187 users/models.py:16
 msgid "status"
 msgstr ""
 
-#: people/models.py:170
+#: people/models.py:172
 msgid "Blood relatives"
 msgstr ""
 
-#: people/models.py:171
+#: people/models.py:173
 msgid "Siblings"
 msgstr ""
 
-#: people/models.py:172
+#: people/models.py:174
 msgid "Parent-child"
 msgstr ""
 
-#: people/models.py:173
+#: people/models.py:175
 msgid "Married"
 msgstr ""
 
-#: people/models.py:174
+#: people/models.py:176
 msgid "Engaged"
 msgstr ""
 
-#: people/models.py:175
+#: people/models.py:177
 msgid "Dating"
 msgstr ""
 
-#: people/models.py:176
+#: people/models.py:178
 msgid "Rumour"
 msgstr ""
 
-#: people/models.py:179
+#: people/models.py:181
 msgid "Awaiting approval from both people in the relationship"
 msgstr ""
 
-#: people/models.py:180
+#: people/models.py:182
 msgid "Confirmed by the first person"
 msgstr ""
 
-#: people/models.py:181
+#: people/models.py:183
 msgid "Confirmed by the second person"
 msgstr ""
 
-#: people/models.py:182
+#: people/models.py:184
 msgid "Confirmed by both people"
 msgstr ""
 
-#: people/models.py:184
+#: people/models.py:186
 msgid "relationship"
 msgstr ""
 
-#: people/models.py:187 people/models.py:480
+#: people/models.py:189 people/models.py:526
 msgid "date start"
 msgstr ""
 
-#: people/models.py:188 people/models.py:481
+#: people/models.py:190 people/models.py:527
 msgid "date end"
 msgstr ""
 
-#: people/models.py:190
+#: people/models.py:192
 msgid "confirmed by"
 msgstr ""
 
-#: people/models.py:191 people/models.py:390 people/models.py:483
+#: people/models.py:193 people/models.py:392 people/models.py:529
 msgid "visible"
 msgstr ""
 
-#: people/models.py:244
+#: people/models.py:246
 msgid "relationship statuses"
 msgstr ""
 
-#: people/models.py:358
+#: people/models.py:360
 msgid "Male"
 msgstr ""
 
-#: people/models.py:359
+#: people/models.py:361
 msgid "Female"
 msgstr ""
 
-#: people/models.py:360 people/models.py:449
+#: people/models.py:362 people/models.py:495
 msgid "Other"
 msgstr ""
 
-#: people/models.py:362
+#: people/models.py:364
 msgid "email address"
 msgstr ""
 
-#: people/models.py:363
+#: people/models.py:365
 msgid "first name"
 msgstr ""
 
-#: people/models.py:364
+#: people/models.py:366
 msgid "last name"
 msgstr ""
 
-#: people/models.py:367
+#: people/models.py:369
 msgid "staff status"
 msgstr ""
 
-#: people/models.py:369
+#: people/models.py:371
 msgid "Designates whether the user can log into this admin site."
 msgstr ""
 
-#: people/models.py:372
+#: people/models.py:374
 msgid "active"
 msgstr ""
 
-#: people/models.py:375
+#: people/models.py:377
 msgid ""
 "Designates whether this user should be treated as active. Unselect this "
 "instead of deleting accounts."
 msgstr ""
 
-#: people/models.py:379
+#: people/models.py:381
 msgid "date joined"
 msgstr ""
 
-#: people/models.py:381
+#: people/models.py:383
 msgid "maiden name"
 msgstr ""
 
-#: people/models.py:383
+#: people/models.py:385
 msgid "nickname"
 msgstr ""
 
-#: people/models.py:385
+#: people/models.py:387
 msgid "gender"
 msgstr ""
 
-#: people/models.py:387
+#: people/models.py:389
 msgid "birth date"
 msgstr ""
 
-#: people/models.py:388
+#: people/models.py:390
 msgid "death date"
 msgstr ""
 
-#: people/models.py:429 people/models.py:477
+#: people/models.py:475 people/models.py:523
 #: people/views/contact_gathering.py:23
 msgid "person"
 msgstr ""
 
-#: people/models.py:430
+#: people/models.py:476
 msgid "people"
 msgstr ""
 
-#: people/models.py:436
+#: people/models.py:482
 msgid "manager"
 msgstr ""
 
-#: people/models.py:437
+#: people/models.py:483
 msgid "subject"
 msgstr ""
 
-#: people/models.py:445
+#: people/models.py:491
 msgid "Elementary school"
 msgstr ""
 
-#: people/models.py:446
+#: people/models.py:492
 msgid "High school"
 msgstr ""
 
-#: people/models.py:447
+#: people/models.py:493
 msgid "University"
 msgstr ""
 
-#: people/models.py:448
+#: people/models.py:494
 msgid "Seminar"
 msgstr ""
 
-#: people/models.py:451
+#: people/models.py:497
 msgid "category"
 msgstr ""
 
-#: people/models.py:454
+#: people/models.py:500
 msgid "parent"
 msgstr ""
 
-#: people/models.py:455
+#: people/models.py:501
 msgid "name"
 msgstr ""
 
-#: people/models.py:465
+#: people/models.py:511
 msgid "membership"
 msgstr ""
 
-#: people/models.py:478
+#: people/models.py:524
 msgid "group"
 msgstr ""
 
-#: people/templates/people/base.html:85
+#: people/templates/people/base.html:28
+#, python-format
+msgid ""
+"\n"
+"            On 11th of January, Graph will be permanently moved to <a "
+"href=\"%(link)s\" target=\"%(target)s\">%(link)s</a>\n"
+"        "
+msgstr ""
+
+#: people/templates/people/base.html:92
 msgid "Content management"
 msgstr ""
 
-#: people/templates/people/base.html:91
+#: people/templates/people/base.html:98
 msgid "Change password"
 msgstr ""
 
-#: people/templates/people/base.html:96
+#: people/templates/people/base.html:103
 msgid "Change email"
 msgstr ""
 
-#: people/templates/people/base.html:102
+#: people/templates/people/base.html:109
 msgid "Sign out"
 msgstr ""
 
@@ -384,21 +394,21 @@ msgstr ""
 msgid "Relationship with"
 msgstr ""
 
-#: people/templates/people/email/activation_email.html:4
+#: people/templates/people/email/activation_email.html:3
 msgid "Activate your account by clicking the link below"
 msgstr ""
 
-#: people/templates/people/email/activation_email.html:8
-#: people/templates/people/email/change_email.html:8
-#: people/templates/people/email/password_reset_mail.html:8
+#: people/templates/people/email/activation_email.html:7
+#: people/templates/people/email/change_email.html:7
+#: people/templates/people/email/password_reset_mail.html:7
 msgid "Please do not reply to this email"
 msgstr ""
 
-#: people/templates/people/email/change_email.html:4
+#: people/templates/people/email/change_email.html:3
 msgid "Finish changing your email by clicking the link below:"
 msgstr ""
 
-#: people/templates/people/email/password_reset_mail.html:4
+#: people/templates/people/email/password_reset_mail.html:3
 msgid "Reset the password for your account by clicking the link below"
 msgstr ""
 
@@ -478,59 +488,59 @@ msgid ""
 "                "
 msgstr ""
 
-#: people/utils/variable_res_date.py:38 people/utils/variable_res_date.py:46
+#: people/utils/variable_res_date.py:54 people/utils/variable_res_date.py:62
 msgid "Must be a valid year, year-month, or year-month-day"
 msgstr ""
 
-#: people/utils/variable_res_date.py:42
+#: people/utils/variable_res_date.py:58
 msgid "Can not specify day without a month"
 msgstr ""
 
-#: people/utils/variable_res_date.py:116
+#: people/utils/variable_res_date.py:132
 msgid "January"
 msgstr ""
 
-#: people/utils/variable_res_date.py:117
+#: people/utils/variable_res_date.py:133
 msgid "February"
 msgstr ""
 
-#: people/utils/variable_res_date.py:118
+#: people/utils/variable_res_date.py:134
 msgid "March"
 msgstr ""
 
-#: people/utils/variable_res_date.py:119
+#: people/utils/variable_res_date.py:135
 msgid "April"
 msgstr ""
 
-#: people/utils/variable_res_date.py:120
+#: people/utils/variable_res_date.py:136
 msgid "May"
 msgstr ""
 
-#: people/utils/variable_res_date.py:121
+#: people/utils/variable_res_date.py:137
 msgid "June"
 msgstr ""
 
-#: people/utils/variable_res_date.py:122
+#: people/utils/variable_res_date.py:138
 msgid "July"
 msgstr ""
 
-#: people/utils/variable_res_date.py:123
+#: people/utils/variable_res_date.py:139
 msgid "August"
 msgstr ""
 
-#: people/utils/variable_res_date.py:124
+#: people/utils/variable_res_date.py:140
 msgid "September"
 msgstr ""
 
-#: people/utils/variable_res_date.py:125
+#: people/utils/variable_res_date.py:141
 msgid "October"
 msgstr ""
 
-#: people/utils/variable_res_date.py:126
+#: people/utils/variable_res_date.py:142
 msgid "November"
 msgstr ""
 
-#: people/utils/variable_res_date.py:127
+#: people/utils/variable_res_date.py:143
 msgid "December"
 msgstr ""
 
@@ -560,7 +570,7 @@ msgstr ""
 msgid "There were errors in the submitted data."
 msgstr ""
 
-#: people/views/graph.py:17
+#: people/views/graph.py:18 people/views/graph.py:51
 msgid "To view the Graph you must set yourself to visible as well."
 msgstr ""
 

@@ -53,6 +53,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -114,6 +115,14 @@ AUTH_USER_MODEL = 'people.Person'
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Europe/Bratislava'
+
+LANGUAGES = (
+    ('sk', gettext_noop('Slovak')),
+    ('en', gettext_noop('English')),
+)
+global_settings.LANGUAGES = LANGUAGES
+
+LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 
 USE_I18N = True
 
@@ -188,4 +197,4 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
 )
 
-FORCE_SCRIPT_NAME = '/api'
+FORCE_SCRIPT_NAME = os.environ.get('FORCE_SCRIPT_NAME')
