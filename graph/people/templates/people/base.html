@@ -23,6 +23,14 @@
 {% endblock %}
 
 {% block toolbar %}
+<div class="bg-warning py-2 text-black text-lg-center" style="position:relative; z-index: 999">
+    <div>
+        {% blocktrans with link="https://graph.the-killer.app/" target="_blank" %}
+            On 11th of January, Graph will be permanently moved to <a href="{{ link }}" target="{{ target }}">"{{ link }}"</a>
+        {% endblocktrans %}
+        {% translate "" %}
+    </div>
+</div>
 <nav class="navbar navbar-expand-lg navbar-dark bg-transparent p-1">
     <div class="container-fluid">
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
